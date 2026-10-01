@@ -17,9 +17,12 @@ Support for other ROMs has not been established.
 
 ## What works
 
-These results were measured on the reference device with production revision v39.
-The English publication edition changes identifiers and diagnostic text. It has passed
-parity and application checks, but has not been built and tested on a device separately.
+The baseline long-term observations were recorded with production revision v39.
+The English publication edition translates identifiers and diagnostic text to English.
+On 2026-10-01, it was built into crDroid 16.0 and verified on the reference device
+(OnePlus 13 with FiiO BTR17), confirming initial 96 kHz high-quality negotiation,
+dynamic switching to 44.1 kHz Lossless, and hardware DSP offload streaming with
+0 Bluetooth crashes.
 
 | | |
 |---|---|

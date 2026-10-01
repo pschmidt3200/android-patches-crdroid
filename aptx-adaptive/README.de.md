@@ -6,10 +6,11 @@ Referenzgerät: **OnePlus 13 (`dodge`, CPH2653, SM8750 / FastConnect 7900)**.
 **ROM-Umfang:** Das Paket ist derzeit ausschließlich für **crDroid 16.0** ausgelegt.
 Unterstützung für andere ROMs ist nicht belegt.
 
-**Die Gerätebelege gelten für den produktiven Patchstand v39.** Die englische
-Publikationsfassung übersetzt Bezeichner und Diagnosetexte.
-Paritäts- und Anwendungstests ersetzen keinen eigenen
-Build und keinen Gerätetest dieser englischen Fassung.
+**Die grundlegenden Langzeitmessungen stammen aus der produktiven v39-Messreihe.** Die englische
+Publikationsfassung übersetzt Bezeichner und Diagnosetexte; sie wurde am 01.10.2026 in crDroid 16.0
+auf dem Referenzgerät (OnePlus 13 mit FiiO BTR17) gebaut und live verifiziert (Aushandlung bei 96 kHz,
+dynamischer Wechsel zu 44,1 kHz Lossless, Hardware-DSP-Offload und 0 Bluetooth-Abstürze).
+Eigene Tests auf abweichender Hardware oder geänderten Quellständen bleiben dennoch empfohlen.
 
 ## Was enthalten ist
 

@@ -29,8 +29,8 @@ The reference device is the OnePlus 13 (dodge, CPH2653), based on SM8750 and
 Qualcomm FastConnect 7900, with the device's existing Snapdragon Sound/R2.2
 offload components. Support on other hardware is not established by this
 reference. The English patch edition changes identifiers and diagnostic text;
-the recorded production-device results do not constitute a device test of
-that translated edition.
+on 2026-10-01, it was built into crDroid 16.0 and validated on the reference
+device with hardware DSP offload and dynamic rate switching.
 
 LICENSE AND REDISTRIBUTION
 
