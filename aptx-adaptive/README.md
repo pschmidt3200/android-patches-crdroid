@@ -47,14 +47,30 @@ Being explicit about the limits is the point of this section.
 * **Latency work applies to aptX Adaptive, not to Lossless.** A value above 360 ms at 44.1 kHz is
   expected and is not a defect.
 
+## Requirements
+
+* Reference device: OnePlus 13 (`dodge`, CPH2653), Qualcomm **FastConnect 7900**.
+  Other devices need separate integration and validation; sharing the controller is not sufficient.
+* A crDroid tree on branch **`16.0`** (Android 16 / LineageOS 23.2 generation). The exact
+  reference commits are listed in [`NOTICE`](NOTICE).
+* A sink that actually supports aptX Adaptive — the patches will not fake it. Devices that do not
+  offer it keep their previous codec, and the UI says so instead of claiming success.
+* Snapdragon Sound R2.2 support in the vendor blobs for Lossless
+* A backed-up source tree and device. Do not patch a tree while a build is running.
+
+You only need **Git, the `.patch` files and a compatible crDroid source tree** to apply them.
+No generator, additional project tooling or service is required. Normal ROM build dependencies
+and the vendor-offload requirements still apply.
+
 ## Hardware & Device Compatibility
 
 | Layer | Component | Status / Notes |
 |---|---|---|
 | **Reference Device** | **OnePlus 13** (`dodge`, CPH2653) | Fully verified reference platform (production revision v39). |
 | **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
-| **Other Devices** | Modern Qualcomm platforms (e.g. 8 Gen 2 / 8 Gen 3) | **Patches 1–5 are generic AOSP/crDroid code**; Patch 6 is device-specific and needs adaptation to your device's `vendor.prop` / `device.mk`. |
-| **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181), **Bose QuietComfort** | Verified 44.1 kHz Lossless, 48 kHz / 96 kHz HQ, and 48 kHz Low-Latency. |
+| **Other Devices** | — | **Untested.** Patches 2–5 change generic AOSP/crDroid code, but patch 1 sends FastConnect 7900 vendor commands and patch 6 is device-specific. A port is your own integration and validation work. |
+| **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181) | Reference sink: 44.1 kHz Lossless, 48 / 96 kHz, 48 kHz low latency. |
+| | **Bose QuietComfort Ultra 2** | Offers 44.1 / 48 kHz only (no 96 kHz); link/setup events were logged, see above. |
 
 ---
 
@@ -127,14 +143,18 @@ To understand how these patches work together, follow the audio chain from the a
 
 ## The patches
 
+Apply in this order. Every path inside a patch is relative to its **target repository**, not to the
+Android source root — `framework/java/android/bluetooth/`, for example, belongs to the Bluetooth
+repository. Do not stack these patches on top of an older edition or prototype.
+
 | # | File | Target repository | Scope |
 |---|---|---|---|
-| 1 | `patches/crdroid_bluetooth_aptx_adaptive_native.patch` | `packages/modules/Bluetooth` | Core Stack & HAL Session Driver |
-| 2 | `patches/crdroid_framework_aptx_adaptive_offload.patch` | `frameworks/base` | AudioPolicy Offload Routing |
-| 3 | `patches/crdroid_framework_settingslib_codec_status.patch` | `frameworks/base` | SettingsLib State & Events |
-| 4 | `patches/crdroid_settings_bluetooth_codec_badges.patch` | `packages/apps/Settings` | Settings UI Codec Badges |
-| 5 | `patches/crdroid_gamespace_bluetooth_gaming_audio.patch` | `packages/apps/GameSpace` | Automatic Gaming Low-Latency Hook |
-| 6 | `patches/crdroid_aptx_r2_2_property.patch` | `device/oneplus/sm8750-common` | Vendor System Properties |
+| 1 | [crdroid_bluetooth_aptx_adaptive_native.patch](patches/crdroid_bluetooth_aptx_adaptive_native.patch) | `packages/modules/Bluetooth` | Core Stack & HAL Session Driver |
+| 2 | [crdroid_framework_aptx_adaptive_offload.patch](patches/crdroid_framework_aptx_adaptive_offload.patch) | `frameworks/base` | AudioPolicy Offload Routing |
+| 3 | [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | SettingsLib State & Events |
+| 4 | [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Settings UI Codec Badges |
+| 5 | [crdroid_gamespace_bluetooth_gaming_audio.patch](patches/crdroid_gamespace_bluetooth_gaming_audio.patch) | `packages/apps/GameSpace` | Automatic Gaming Low-Latency Hook |
+| 6 | [crdroid_aptx_r2_2_property.patch](patches/crdroid_aptx_r2_2_property.patch) | `device/oneplus/sm8750-common` | Vendor System Properties |
 
 ---
 

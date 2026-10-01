@@ -1,0 +1,68 @@
+name: Patch problem
+description: A patch does not apply, does not build, or misbehaves on the reference setup.
+title: "[module] short description"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        This is a **private hobby project**. Fixes and tests are only possible on hardware I own
+        (OnePlus 13 reference device). Reports from other devices are welcome as information, but
+        there is no promise of support or a port.
+
+        Please remove Bluetooth MAC addresses and serial numbers from logs before posting.
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have read the disclaimer and understand that there is no support guarantee.
+          required: true
+        - label: I applied all patches of the module from the same commit of this repository (no older editions mixed in).
+          required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - aptx-adaptive
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where does it fail?
+      options:
+        - git apply / apply-patches.sh --check
+        - ROM build (compile or link error)
+        - On the device (runtime behaviour)
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and codename
+      placeholder: e.g. OnePlus 13 (dodge)
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: ROM, branch and date of your last repo sync
+      placeholder: e.g. crDroid 16.0, synced 2026-10-01
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Exact error output or log excerpt
+      description: For apply or build failures paste the full message. For runtime problems, a filtered logcat (Bluetooth / audio) around the event.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Sink / headset model, what you expected, what happened instead.

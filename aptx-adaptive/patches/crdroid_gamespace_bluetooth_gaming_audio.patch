@@ -133,7 +133,7 @@ index 35ba42f..0d03255 100644
 +            android.provider.Settings.Secure.putInt(
 +                contentResolver,
 +                SETTING_BLUETOOTH_GAMING_AUDIO,
-+                0 // Zurueck zu Standard / Hi-Res
++                0 // Back to standard / Hi-Res
 +            )
 +            Log.i(TAG, "Restored bluetooth gaming audio mode=0")
 +        } catch (e: Exception) {
@@ -280,13 +280,13 @@ index 2d52d14..1bfb4ab 100644
 +     * not support aptX Adaptive and nothing changes on the radio link. The Bluetooth side
 +     * writes the state to Settings.Secure (A2dpCodecConfig.SETTING_GAMING_AUDIO_STATUS).
 +     */
-+    private fun updateBluetoothAudioStatus(neueVorgabe: String? = null) {
++    private fun updateBluetoothAudioStatus(newSelection: String? = null) {
 +        val pref = findPreference<ListPreference>("gamespace_bluetooth_audio_mode") ?: return
 +
 +        // In the change listener pref.value still holds the OLD value; it is stored only
 +        // after we return true. Without this parameter line 1 showed the previous choice.
-+        val vorgabe = neueVorgabe ?: pref.value
-+        val eintrag = neueVorgabe
++        val selectedValue = newSelection ?: pref.value
++        val entryText = newSelection
 +            ?.let { pref.entries?.getOrNull(pref.findIndexOfValue(it))?.toString() }
 +            ?: pref.entry
 +
@@ -317,11 +317,11 @@ index 2d52d14..1bfb4ab 100644
 +        // Exceptions: status 5 ("no aptX Adaptive") and STATUS_UNCONFIRMED describe the
 +        // CONNECTION, not the preference. They are always shown; hiding them would remove
 +        // the line exactly when it is needed.
-+        val passtZurVorgabe =
-+            status == 5 || status == STATUS_UNCONFIRMED || status == vorgabe?.toIntOrNull()
++        val matchesSelection =
++            status == 5 || status == STATUS_UNCONFIRMED || status == selectedValue?.toIntOrNull()
 +
 +        pref.summary =
-+            if (statusText == null || !passtZurVorgabe) eintrag else "$eintrag\n$statusText"
++            if (statusText == null || !matchesSelection) entryText else "$entryText\n$statusText"
      }
  
      override fun onResume() {
@@ -363,16 +363,16 @@ index cf35e3e..b3628e8 100644
 +    <!-- Audiosteuerung -->
 +    <string name="audio_control_category_title">Audiosteuerung</string>
 +    <string name="audio_control_switch_title">Klangprofil beim Spielstart umschalten</string>
-+    <string name="audio_control_switch_summary">Off: the Bluetooth setting stays as it is. On: the profile selected below is applied when a game starts and reverted when it exits. Only effective with headsets that support aptX Adaptive and 48 kHz - otherwise the switch has no effect.</string>
++    <string name="audio_control_switch_summary">Aus: Die Bluetooth-Einstellung bleibt so, wie sie ist. An: Beim Start eines Spiels wird das unten gewählte Profil gesetzt und beim Verlassen zurückgenommen. Wirkt nur mit Kopfhörern, die aptX Adaptive und 48 kHz beherrschen — sonst bleibt die Umschaltung ohne Wirkung.</string>
 +    <string name="bluetooth_gaming_audio_title">Profil beim Spielen</string>
 +    <string name="bluetooth_gaming_audio_auto">Dem System überlassen</string>
 +    <string name="bluetooth_gaming_audio_ll">Geringe Verzögerung</string>
 +    <string name="bluetooth_gaming_audio_hq">Hohe Klangqualität</string>
-+    <string name="bt_gaming_status_system">Currently controlled by the system</string>
++    <string name="bt_gaming_status_system">Das System steuert gerade</string>
 +    <string name="bt_gaming_status_ll">Geringe Verzögerung liegt an</string>
 +    <string name="bt_gaming_status_hq">Hohe Klangqualität erzwungen</string>
-+    <string name="bt_gaming_status_no_aptx">Unavailable - the connected headset does not run aptX Adaptive</string>
-+    <string name="bt_gaming_status_unconfirmed">Not confirmed - takes effect with the next playback</string>
++    <string name="bt_gaming_status_no_aptx">Nicht möglich — der verbundene Kopfhörer fährt kein aptX Adaptive</string>
++    <string name="bt_gaming_status_unconfirmed">Nicht bestätigt — wirkt mit der nächsten Wiedergabe</string>
 +    <string name="tile_gaming_audio">Gaming-Audio</string>
  </resources>
 diff --git a/app/src/main/res/values/arrays.xml b/app/src/main/res/values/arrays.xml

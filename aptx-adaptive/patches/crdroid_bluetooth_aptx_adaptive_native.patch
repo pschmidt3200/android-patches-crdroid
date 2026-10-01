@@ -192,9 +192,9 @@ index 0e5ba8a76b..41144a0a39 100644
 +        // The status setting is global rather than per device. Clear it only when
 +        // this device owned tracked transition state; otherwise an unrelated
 +        // disconnect could erase the active device's status.
-+        boolean hatteZustand = mSavedAptxAdaptiveSampleRates.remove(device) != null;
-+        hatteZustand |= mGamingAudioTransitions.remove(device) != null;
-+        if (hatteZustand) {
++        boolean hadState = mSavedAptxAdaptiveSampleRates.remove(device) != null;
++        hadState |= mGamingAudioTransitions.remove(device) != null;
++        if (hadState) {
 +            reportGamingStatus(STATUS_UNCONFIRMED);
 +            Log.i(TAG, "Gaming audio: state for " + device + " discarded (disconnect)");
 +        }
@@ -286,9 +286,9 @@ index 0e5ba8a76b..41144a0a39 100644
 +        } catch (ReflectiveOperationException | RuntimeException e) {
 +            Log.e(
 +                    TAG,
-+                    "setAptxMode: could not set persist.bluetooth.aptx_adaptive.mode to "
++                    "setAptxMode: persist.bluetooth.aptx_adaptive.mode="
 +                            + mode
-+                            + " gesetzt werden",
++                            + " could not be set",
 +                    e);
 +            return false;
 +        }
@@ -304,7 +304,7 @@ index 0e5ba8a76b..41144a0a39 100644
 +            case BluetoothCodecConfig.SAMPLE_RATE_96000 -> "96000";
 +            case BluetoothCodecConfig.SAMPLE_RATE_176400 -> "176400";
 +            case BluetoothCodecConfig.SAMPLE_RATE_192000 -> "192000";
-+            default -> "unbekannt(0x" + Integer.toHexString(rateMask) + ")";
++            default -> "unknown(0x" + Integer.toHexString(rateMask) + ")";
 +        };
 +    }
 +
@@ -433,7 +433,7 @@ index 0e5ba8a76b..41144a0a39 100644
 +                        .build();
 +        Log.i(
 +                TAG,
-+                "Gaming-Audio: fordere bestaetigten Ratenwechsel auf "
++                "Gaming audio: requesting confirmed rate change to "
 +                        + sampleRateToHz(sampleRate)
 +                        + " Hz for "
 +                        + device);
@@ -482,7 +482,7 @@ index 0e5ba8a76b..41144a0a39 100644
 +        }
 +        if (status != 0) {
 +            failGamingAudioTransition(
-+                    device, "Controller lehnte Modus 0x" + Long.toHexString(mode) + " ab");
++                    device, "Controller rejected mode 0x" + Long.toHexString(mode));
 +            return;
 +        }
 +        if (mode == APTX_MODE_LL) {
@@ -1650,7 +1650,7 @@ index 95c8539e7f..90e7932dba 100644
 +      // measured. Only the offer itself is checked; the provider decides at
 +      // startSession and logs the result.
 +      case CodecType::APTX_ADAPTIVE: {
-+        log::info("aptX Adaptive: Provider bietet den Codec als Offload an");
++        log::info("aptX Adaptive: provider offers the codec for offload");
 +        return true;
 +      }
        case CodecType::UNKNOWN:
@@ -1663,13 +1663,13 @@ index 95c8539e7f..90e7932dba 100644
 +  // No offloading_preference entry matched. For aptX Adaptive, log what the provider
 +  // offers instead so the mismatch can be diagnosed.
 +  if (codec_config.codecType == CodecType::APTX_ADAPTIVE) {
-+    std::string angebot;
++    std::string offered_codecs;
 +    for (auto preference : offloading_preference) {
-+      angebot += toString(preference.get<AudioCapabilities::a2dpCapabilities>().codecType);
-+      angebot += " ";
++      offered_codecs += toString(preference.get<AudioCapabilities::a2dpCapabilities>().codecType);
++      offered_codecs += " ";
 +    }
 +    log::error("aptX Adaptive missing from the provider's offload list. Offered: [{}]",
-+               angebot);
++               offered_codecs);
 +  }
    log::info("software codec={}", codec_config.toString());
    return false;
@@ -1740,7 +1740,7 @@ index 95c8539e7f..90e7932dba 100644
 +          config_stream, config_stream + A2DP_APTX_ADAPTIVE_CONFIG_STREAM_LEN);
 +  codec_config->config.set<CodecConfiguration::CodecSpecific::aptxAdaptiveConfig>(aptx_ad_config);
 +  log::info(
-+          "aptX Adaptive HAL-Konfiguration gebaut: rate={} bits={} chan={} mode=0x{:x} stream_len={} "
++          "aptX Adaptive HAL configuration built: rate={} bits={} chan={} mode=0x{:x} stream_len={} "
 +          "(Patch {})",
 +          aptx_ad_config.sampleRateHz, aptx_ad_config.bitsPerSample,
 +          static_cast<int>(aptx_ad_config.channelMode),
@@ -1780,7 +1780,7 @@ index 95c8539e7f..90e7932dba 100644
 +        log::error("aptX Adaptive: provider capability list is empty, no safe bypass");
 +        return false;
 +      }
-+      log::info("aptX Adaptive: validierte Konfiguration trotz fehlendem Provider-Eintrag nutzen");
++      log::info("aptX Adaptive: using the validated configuration despite a missing provider entry");
 +      return true;
 +
      case BTAV_A2DP_CODEC_INDEX_MAX:
@@ -1813,28 +1813,28 @@ index e3366236e1..5a9a51e657 100644
  
 +// A START can race HAL session creation and receive Unknown Connection Identifier.
 +// Retain the payload for bounded delayed retries rather than blocking the main thread.
-+static uint8_t vsqc_letzter_start[66];
-+static bool vsqc_start_gemerkt = false;
++static uint8_t vsqc_last_start[66];
++static bool vsqc_start_saved = false;
 +// Track which offload path created the active session. Codec selection may advance
 +// before STOP, so the teardown path must not infer ownership from current codec state.
-+static bool vsqc_offload_ueber_qti = false;
++static bool vsqc_offload_via_qti = false;
 +static alarm_t* vsqc_retry_alarm = nullptr;
-+static int vsqc_retry_zaehler = 0;
++static int vsqc_retry_count = 0;
 +static void offload_vendor_callback(tBTM_VSC_CMPL* param);
 +
 +// Runtime mode updates use a single controller command and do not require AVDTP
 +// reconfiguration. Keep confirmed and pending modes separate for reliable deduplication.
 +static uint16_t vsqc_last_confirmed_mode = 0;
-+struct tVSQC_AUSSTEHENDER_MODUS {
++struct tVSQC_PENDING_MODE {
 +  tBTA_AV_HNDL hndl;
 +  uint16_t mode;
 +};
-+static std::deque<tVSQC_AUSSTEHENDER_MODUS> vsqc_pending_modes;
++static std::deque<tVSQC_PENDING_MODE> vsqc_pending_modes;
 +static void update_mode_vendor_callback(tBTM_VSC_CMPL* param);
 +
 +static void vsqc_report_update_mode_result(tBTA_AV_HNDL hndl, uint16_t mode, uint8_t status) {
 +  if (bta_av_cb.p_cback == nullptr) {
-+    log::warn("FastConnect VSQC UPDATE_MODE Ergebnis ohne BTA-Callback");
++    log::warn("FastConnect VSQC UPDATE_MODE result without BTA callback");
 +    return;
 +  }
 +  tBTA_AV result{};
@@ -1884,7 +1884,7 @@ index e3366236e1..5a9a51e657 100644
 +  // session. SBC, AAC, LDAC, aptX and aptX HD run over AOSP 0xFD5D, where an aptX mode
 +  // command addresses nothing. Gate before deduplication so no synthetic ACK is reported;
 +  // the next QTI START publishes the mode and its ACK itself.
-+  if (!vsqc_offload_ueber_qti) {
++  if (!vsqc_offload_via_qti) {
 +    log::info("Step 2b: active offload session is not a QTI aptX Adaptive session, no UPDATE_MODE");
 +    return;
 +  }
@@ -1912,38 +1912,38 @@ index e3366236e1..5a9a51e657 100644
 +
 +static void update_mode_vendor_callback(tBTM_VSC_CMPL* param) {
 +  if (vsqc_pending_modes.empty()) {
-+    log::warn("FastConnect VSQC UPDATE_MODE Antwort ohne ausstehenden Modus");
++    log::warn("FastConnect VSQC UPDATE_MODE response without a pending mode");
 +    return;
 +  }
 +
-+  const tVSQC_AUSSTEHENDER_MODUS ausstehend = vsqc_pending_modes.front();
++  const tVSQC_PENDING_MODE pending_mode = vsqc_pending_modes.front();
 +  vsqc_pending_modes.pop_front();
 +  const uint8_t status = (param != nullptr && param->param_len > 0) ? param->p_param_buf[0] : 0xff;
 +  const uint8_t sub_opcode = (param != nullptr && param->param_len > 1) ? param->p_param_buf[1] : 0;
 +
 +  if (status == 0 && sub_opcode == VSQC_SUB_OPCODE_UPDATE_MODE) {
-+    vsqc_last_confirmed_mode = ausstehend.mode;
-+    log::info("FastConnect VSQC UPDATE_MODE accepted: mode=0x{:04x}", ausstehend.mode);
-+    vsqc_report_update_mode_result(ausstehend.hndl, ausstehend.mode, 0);
++    vsqc_last_confirmed_mode = pending_mode.mode;
++    log::info("FastConnect VSQC UPDATE_MODE accepted: mode=0x{:04x}", pending_mode.mode);
++    vsqc_report_update_mode_result(pending_mode.hndl, pending_mode.mode, 0);
 +    return;
 +  }
 +
 +  // A NACK must not block the next attempt through deduplication, so only a
 +  // confirmed mode is stored.
 +  log::warn("FastConnect VSQC UPDATE_MODE rejected: mode=0x{:04x} status=0x{:02x} sub=0x{:02x}",
-+            ausstehend.mode, status, sub_opcode);
-+  vsqc_report_update_mode_result(ausstehend.hndl, ausstehend.mode,
++            pending_mode.mode, status, sub_opcode);
++  vsqc_report_update_mode_result(pending_mode.hndl, pending_mode.mode,
 +                                   status == 0 ? static_cast<uint8_t>(0xfe) : status);
 +}
 +
-+static void vsqc_retry_ausfuehren(void* /* data */) {
-+  if (!vsqc_start_gemerkt) {
++static void vsqc_run_retry(void* /* data */) {
++  if (!vsqc_start_saved) {
 +    return;
 +  }
-+  log::info("FastConnect VSQC: Wiederholung {} des START (Patch {})", vsqc_retry_zaehler,
++  log::info("FastConnect VSQC: START retry {} (patch {})", vsqc_retry_count,
 +            APTX_VSQC_PATCH_VERSION);
 +  get_btm_client_interface().vendor.BTM_VendorSpecificCommand(
-+          HCI_VSQC_CONTROLLER_A2DP_OPCODE, 66, vsqc_letzter_start, offload_vendor_callback);
++          HCI_VSQC_CONTROLLER_A2DP_OPCODE, 66, vsqc_last_start, offload_vendor_callback);
 +}
 +
  static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
@@ -1978,7 +1978,7 @@ index e3366236e1..5a9a51e657 100644
          if (bta_av_cb.offload_start_pending_hndl) {
 -          log::verbose("VS_HCI_START_A2DP_MEDIA successful");
 +          log::info("VS_HCI_START_A2DP_MEDIA successful");
-+          vsqc_start_gemerkt = false;  // No retry needed.
++          vsqc_start_saved = false;  // No retry needed.
 +          if (vsqc_retry_alarm != nullptr) {
 +            alarm_cancel(vsqc_retry_alarm);
 +          }
@@ -2010,28 +2010,28 @@ index e3366236e1..5a9a51e657 100644
 -    if (param->opcode != VS_HCI_A2DP_OFFLOAD_STOP && param->opcode != VS_HCI_A2DP_OFFLOAD_STOP_V2) {
 +    // `0x02` on a VSQC START means the controller does not know the stream yet, usually
 +    // because the HAL session is not ready. Retry after a short delay.
-+    const uint8_t fehler_sub = (param->param_len > 1) ? param->p_param_buf[1] : 0;
++    const uint8_t failed_sub_opcode = (param->param_len > 1) ? param->p_param_buf[1] : 0;
 +    if (param->opcode == HCI_VSQC_CONTROLLER_A2DP_OPCODE &&
-+        fehler_sub == VSQC_SUB_OPCODE_START && value.status == 0x02 && vsqc_start_gemerkt) {
-+      const int32_t max_versuche =
++        failed_sub_opcode == VSQC_SUB_OPCODE_START && value.status == 0x02 && vsqc_start_saved) {
++      const int32_t max_attempts =
 +              osi_property_get_int32("persist.bluetooth.aptx_adaptive.retry_max", 5);
-+      const int32_t warte_ms =
++      const int32_t wait_ms =
 +              osi_property_get_int32("persist.bluetooth.aptx_adaptive.retry_delay_ms", 150);
-+      if (max_versuche > 0 && vsqc_retry_zaehler < max_versuche) {
-+        vsqc_retry_zaehler++;
++      if (max_attempts > 0 && vsqc_retry_count < max_attempts) {
++        vsqc_retry_count++;
 +        if (vsqc_retry_alarm == nullptr) {
 +          vsqc_retry_alarm = alarm_new("vsqc_retry");
 +        }
 +        if (vsqc_retry_alarm != nullptr) {
-+          log::info("FastConnect VSQC: 0x02 — Wiederholung {} von {} in {} ms",
-+                    vsqc_retry_zaehler, max_versuche, warte_ms);
-+          alarm_set_on_mloop(vsqc_retry_alarm, static_cast<uint64_t>(warte_ms),
-+                             vsqc_retry_ausfuehren, nullptr);
++          log::info("FastConnect VSQC: 0x02 - retry {} of {} in {} ms",
++                    vsqc_retry_count, max_attempts, wait_ms);
++          alarm_set_on_mloop(vsqc_retry_alarm, static_cast<uint64_t>(wait_ms),
++                             vsqc_run_retry, nullptr);
 +        }
 +      } else {
-+        log::warn("FastConnect VSQC: 0x02 — {} Wiederholungen erschoepft, gebe auf",
-+                  vsqc_retry_zaehler);
-+        vsqc_start_gemerkt = false;
++        log::warn("FastConnect VSQC: 0x02 - {} retries exhausted, giving up",
++                  vsqc_retry_count);
++        vsqc_start_saved = false;
 +      }
 +    }
 +    if (param->opcode == HCI_VSQC_CONTROLLER_A2DP_OPCODE) {
@@ -2047,13 +2047,13 @@ index e3366236e1..5a9a51e657 100644
  
 +// Diagnostic switch for isolating the AOSP offload path (0xFD5D) from VSQC.
 +// Default false preserves normal behavior.
-+static bool bta_av_aosp_offload_deaktiviert() {
++static bool bta_av_aosp_offload_disabled() {
 +  return osi_property_get_int32("persist.bluetooth.aptx_adaptive.disable_aosp", 0) != 0;
 +}
 +
  static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* offload_start) {
 +  // Default to AOSP ownership; the QTI branch below overrides it after sending START.
-+  vsqc_offload_ueber_qti = false;
++  vsqc_offload_via_qti = false;
 +  // Optional diagnostic: route SBC through VSQC to distinguish a transport failure
 +  // from an aptX-Adaptive-specific failure. Other codecs remain unchanged.
 +  if (offload_start->codec_type == BTA_AV_CODEC_TYPE_SBC &&
@@ -2080,7 +2080,7 @@ index e3366236e1..5a9a51e657 100644
 +    param[22] = 6;                         // SBC codec information length
 +    // SBC codec-specific bytes following the media-codec header.
 +    param[24] = 0x00; param[25] = 0x21; param[26] = 0x15; param[27] = 0x02; param[28] = 0x35;
-+    log::info("QTI-TESTPFAD SBC: opcode=0x000A len=66 codec=0x00 rate=0x{:02x} mtu={} cid=0x{:04x}",
++    log::info("QTI test path SBC: opcode=0x000A len=66 codec=0x00 rate=0x{:02x} mtu={} cid=0x{:04x}",
 +              param[9], mtu, cid);
 +    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(
 +        HCI_VSQC_CONTROLLER_A2DP_OPCODE, 66, param, offload_vendor_callback);
@@ -2129,16 +2129,16 @@ index e3366236e1..5a9a51e657 100644
 +    // Parameters 13..14 require the remote AVDTP media CID, not the signaling CID.
 +    // Resolve it by channel role and retain the builder value as a fallback.
 +    uint16_t stream_l2c_cid = 0;
-+    const char* cid_quelle = "avdt";
++    const char* cid_source = "avdt";
 +    uint16_t media_lcid = AVDT_GetL2CapChannel(p_scb->avdt_handle);
 +    if (media_lcid == 0 ||
 +        !stack::l2cap::get_interface().L2CA_GetRemoteChannelId(media_lcid, &stream_l2c_cid) ||
 +        stream_l2c_cid == 0) {
 +      stream_l2c_cid = offload_start->l2c_rcid;
-+      cid_quelle = "builder";
++      cid_source = "builder";
 +    }
-+    log::info("FastConnect VSQC media RCID: quelle={} media_lcid=0x{:04x} builder_rcid=0x{:04x} -> rcid=0x{:04x}",
-+              cid_quelle, media_lcid, offload_start->l2c_rcid, stream_l2c_cid);
++    log::info("FastConnect VSQC media RCID: source={} media_lcid=0x{:04x} builder_rcid=0x{:04x} -> rcid=0x{:04x}",
++              cid_source, media_lcid, offload_start->l2c_rcid, stream_l2c_cid);
 +    param[13] = static_cast<uint8_t>(stream_l2c_cid & 0xFF);
 +    param[14] = static_cast<uint8_t>((stream_l2c_cid >> 8) & 0xFF);
 +
@@ -2172,24 +2172,24 @@ index e3366236e1..5a9a51e657 100644
 +      // codec_info[2]. Do not require >= 43: that assumption rejected every valid element
 +      // ("losc=42 type=0xff vendor=0xd7 codec=0xad" reported as implausible).
 +      // Validate length, vendor type, vendor ID and codec ID before copying the element.
-+      const bool plausibel = (cie[0] >= A2DP_APTX_ADAPTIVE_CODEC_LEN) &&
++      const bool plausible = (cie[0] >= A2DP_APTX_ADAPTIVE_CODEC_LEN) &&
 +                             (cie[2] == 0xFF) &&        // Non-A2DP / Vendor
 +                             (cie[3] == 0xD7) &&        // Vendor ID 0x000000D7 Qualcomm
 +                             (cie[7] == 0xAD);          // Codec ID 0x00AD aptX Adaptive
-+      if (plausibel) {
-+        char alt_hex[32] = {0};
-+        snprintf(alt_hex, sizeof(alt_hex), "%02x %02x", param[31], param[41]);
++      if (plausible) {
++        char old_hex[32] = {0};
++        snprintf(old_hex, sizeof(old_hex), "%02x %02x", param[31], param[41]);
 +        // Parameter 31 carries the negotiated wire rate directly from the CIE. The
 +        // 48-kHz (0x10) and 96-kHz (0xA0) configurations use different values for
 +        // this byte; the former fixed 0xA0 made the 48-kHz START inconsistent.
 +        memcpy(&param[24], &cie[2], 42);
 +        log::info(
-+                "FastConnect VSQC: ausgehandeltes Element uebernommen, Drahtrate aus dem "
-+                "CIE (losc={}, Patch {}) — vorher [{}] jetzt [{:02x} {:02x}]",
-+                cie[0], APTX_VSQC_PATCH_VERSION, alt_hex, param[31], param[41]);
++                "FastConnect VSQC: negotiated element applied, wire rate from the "
++                "CIE (losc={}, Patch {}) - before [{}] now [{:02x} {:02x}]",
++                cie[0], APTX_VSQC_PATCH_VERSION, old_hex, param[31], param[41]);
 +      } else {
 +        log::warn(
-+                "FastConnect VSQC: ausgehandeltes Element unplausibel "
++                "FastConnect VSQC: negotiated element implausible "
 +                "(losc={} type=0x{:02x} vendor=0x{:02x} codec=0x{:02x}) - keeping template",
 +                cie[0], cie[2], cie[3], cie[7]);
 +      }
@@ -2251,11 +2251,11 @@ index e3366236e1..5a9a51e657 100644
 +                offload_start->acl_hdl);
 +    }
 +
-+    // Keep the payload for a retry after 0x02 (see vsqc_retry_ausfuehren).
-+    memcpy(vsqc_letzter_start, param, 66);
-+    vsqc_start_gemerkt = true;
-+    vsqc_retry_zaehler = 0;
-+    vsqc_offload_ueber_qti = true;   // Retain ownership until this session is stopped.
++    // Keep the payload for a retry after 0x02 (see vsqc_run_retry).
++    memcpy(vsqc_last_start, param, 66);
++    vsqc_start_saved = true;
++    vsqc_retry_count = 0;
++    vsqc_offload_via_qti = true;   // Retain ownership until this session is stopped.
 +
 +    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(
 +        HCI_VSQC_CONTROLLER_A2DP_OPCODE, 66, param, offload_vendor_callback);
@@ -2268,7 +2268,7 @@ index e3366236e1..5a9a51e657 100644
            offload_start->codec_type, offload_start->sample_rate, offload_start->bits_per_sample,
            offload_start->ch_mode, offload_start->encoded_audio_bitrate, offload_start->acl_hdl,
            offload_start->l2c_rcid, offload_start->mtu);
-+  if (bta_av_aosp_offload_deaktiviert()) {
++  if (bta_av_aosp_offload_disabled()) {
 +    log::info("AOSP offload (0xFD5D) disabled via disable_aosp - nothing sent");
 +    osi_free(param);
 +    return;
@@ -2280,7 +2280,7 @@ index e3366236e1..5a9a51e657 100644
  
  static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigExt* offload_codec) {
    log::verbose("");
-+  vsqc_offload_ueber_qti = false;   // This path sends only 0xFD5D.
++  vsqc_offload_via_qti = false;   // This path sends only 0xFD5D.
  
    uint16_t connection_handle = get_btm_client_interface().peer.BTM_GetHCIConnHandle(
            p_scb->PeerAddress(), BT_TRANSPORT_BR_EDR);
@@ -2288,7 +2288,7 @@ index e3366236e1..5a9a51e657 100644
    bta_av_cb.offload_start_pending_hndl = p_scb->hndl;
    bta_av_cb.offload_start_v2 = true;
  
-+  if (bta_av_aosp_offload_deaktiviert()) {
++  if (bta_av_aosp_offload_disabled()) {
 +    log::info("AOSP offload (0xFD5D) disabled via disable_aosp - nothing sent");
 +    return;
 +  }
@@ -2302,10 +2302,10 @@ index e3366236e1..5a9a51e657 100644
 +  // aptX Adaptive starts through Qualcomm's 0xFC0A command family, so it must
 +  // also stop through that family. Sending the generic 0xFD5D stop leaves the
 +  // controller/DSP session alive across a 96 <-> 48 kHz reconfiguration.
-+  if (vsqc_offload_ueber_qti) {
++  if (vsqc_offload_via_qti) {
 +    uint8_t vsqc_stop[2] = {VSQC_SUB_OPCODE_STOP, 0x00};
 +    log::info("FastConnect VSQC: QTI STOP for the session started via 0xFC0A");
-+    vsqc_offload_ueber_qti = false;
++    vsqc_offload_via_qti = false;
 +    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(
 +            HCI_VSQC_CONTROLLER_A2DP_OPCODE, sizeof(vsqc_stop), vsqc_stop,
 +            offload_vendor_callback);
@@ -2319,7 +2319,7 @@ index e3366236e1..5a9a51e657 100644
      *p_param++ = VS_HCI_A2DP_OFFLOAD_STOP;
    }
  
-+  if (bta_av_aosp_offload_deaktiviert()) {
++  if (bta_av_aosp_offload_disabled()) {
 +    log::info("AOSP offload (0xFD5D) disabled via disable_aosp - nothing sent");
 +    return;
 +  }
@@ -2580,7 +2580,7 @@ index ae00fa4323..357a961974 100644
 +  static constexpr char kRuntimeKey[] = "bluetooth.aptx_adaptive.mode.runtime";
 +  // Zero means no runtime override; readers then use the persistent default.
 +  // An empty string is invalid because osi_property_get_int32 parses the raw value.
-+  static constexpr char kUnbestimmt[] = "0";
++  static constexpr char kUnset[] = "0";
 +
 +  const char* reason = nullptr;
 +  if (!osi_property_get_bool("persist.bluetooth.aptx_adaptive.follow_latency", true)) {
@@ -2599,7 +2599,7 @@ index ae00fa4323..357a961974 100644
 +    }
 +  }
 +
-+  const char* value = (reason != nullptr) ? kUnbestimmt : (low_latency ? "8192" : "4096");
++  const char* value = (reason != nullptr) ? kUnset : (low_latency ? "8192" : "4096");
 +  // osi_property_set returns zero on success; do not report a mode change otherwise.
 +  const int result = osi_property_set(kRuntimeKey, value);
 +  if (result != 0) {
@@ -2643,23 +2643,23 @@ index ae00fa4323..357a961974 100644
 +  // Adaptive has no AOSP software encoder, so allow setup to continue when offload
 +  // is enabled. The software transmit path already avoids encoder access while an
 +  // offload session is running.
-+  const bool offload_aktiv = btif_av_is_a2dp_offload_enabled();
-+  const bool encoder_pruefung_ueberspringen =
-+          offload_aktiv &&
++  const bool offload_active = btif_av_is_a2dp_offload_enabled();
++  const bool bypass_encoder_check =
++          offload_active &&
 +          osi_property_get_int32("persist.bluetooth.aptx_adaptive.skip_encoder_check", 1) != 0;
 +
    const tA2DP_ENCODER_INTERFACE* encoder_interface = bta_av_co_get_encoder_interface(peer_address);
    if (encoder_interface == nullptr) {
 -    log::error("Cannot stream audio: no source encoder interface");
 -    return;
-+    if (!encoder_pruefung_ueberspringen) {
++    if (!bypass_encoder_check) {
 +      log::error("Cannot stream audio: no source encoder interface");
 +      return;
 +    }
 +    log::warn(
 +            "No software encoder for this codec - offload path, continuing without "
 +            "(offload={}, Patch {})",
-+            offload_aktiv, APTX_VSQC_PATCH_VERSION);
++            offload_active, APTX_VSQC_PATCH_VERSION);
    }
  
    A2dpCodecConfig* a2dp_codec_config = bta_av_get_a2dp_current_codec();

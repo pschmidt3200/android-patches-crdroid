@@ -63,6 +63,10 @@ if [[ $# -lt 1 ]]; then
     usage 1
 fi
 
+if [[ ! -d "$1" ]]; then
+    echo "[-] Error: ANDROID_BUILD_ROOT is not a directory: $1" >&2
+    exit 1
+fi
 ANDROID_ROOT="$(cd "$1" && pwd)"
 
 # Definition of the 6 patches and their respective target repositories
@@ -113,10 +117,12 @@ for item in "${PATCHES[@]}"; do
         APPLY_ARGS+=(--reverse)
     fi
 
-    if git -C "${target_repo}" apply "${APPLY_ARGS[@]}" "${patch_path}" 2>/dev/null; then
+    if check_output="$(git -C "${target_repo}" apply "${APPLY_ARGS[@]}" "${patch_path}" 2>&1)"; then
         echo " [+] OK: ${patch_file} -> ${rel_repo} (${desc})"
     else
         echo " [-] FAILED check: ${patch_file} cannot be applied to ${rel_repo}" >&2
+        # Show git's own reason (first lines only), e.g. "patch does not apply".
+        printf '%s\n' "${check_output}" | head -n 5 | sed 's/^/       /' >&2
         FAILED_CHECKS=$((FAILED_CHECKS + 1))
     fi
 done
@@ -138,7 +144,17 @@ fi
 echo ""
 echo "[*] Phase 2: Executing [${MODE^^}]..."
 
-for item in "${PATCHES[@]}"; do
+# Revert in the opposite order of application.
+ORDER=("${PATCHES[@]}")
+if [[ "${MODE}" == "reverse" ]]; then
+    ORDER=()
+    for (( i=${#PATCHES[@]}-1; i>=0; i-- )); do
+        ORDER+=("${PATCHES[i]}")
+    done
+fi
+
+DONE_LIST=()
+for item in "${ORDER[@]}"; do
     IFS=":" read -r rel_repo patch_file desc <<< "$item"
     target_repo="${ANDROID_ROOT}/${rel_repo}"
     patch_path="${PATCH_DIR}/${patch_file}"
@@ -153,16 +169,31 @@ for item in "${PATCHES[@]}"; do
         EXEC_ARGS+=(--reverse)
     fi
 
-    git -C "${target_repo}" apply "${EXEC_ARGS[@]}" "${patch_path}"
-    echo " [✓] Applied: ${patch_file} to ${rel_repo}"
+    if ! git -C "${target_repo}" apply "${EXEC_ARGS[@]}" "${patch_path}"; then
+        echo "" >&2
+        echo "[-] ABORTED: ${patch_file} failed on ${rel_repo} although the check passed." >&2
+        if [[ ${#DONE_LIST[@]} -gt 0 ]]; then
+            echo "    Already processed in this run (tree is now partially changed):" >&2
+            printf '      %s\n' "${DONE_LIST[@]}" >&2
+            echo "    Inspect with 'git -C <repo> status' and undo with 'git -C <repo> apply --reverse <patch>'." >&2
+        fi
+        exit 3
+    fi
+    DONE_LIST+=("${patch_file} -> ${rel_repo}")
+    if [[ "${MODE}" == "reverse" ]]; then
+        echo " [✓] Reverted: ${patch_file} from ${rel_repo}"
+    else
+        echo " [✓] Applied: ${patch_file} to ${rel_repo}"
+    fi
 done
 
 echo ""
 echo "===================================================================="
 if [[ "${MODE}" == "reverse" ]]; then
-    echo " [+] Successfully reverted all aptX Adaptive patches."
+    echo " [+] Reverted all aptX Adaptive patches."
 else
-    echo " [+] Successfully applied all aptX Adaptive patches!"
-    echo "     Your tree is now ready to build."
+    echo " [+] Applied all aptX Adaptive patches."
+    echo "     Next: review 'git -C <repo> diff' in each target repository, then"
+    echo "     build and validate on your device. A clean apply is not a working build."
 fi
 echo "===================================================================="

@@ -15,16 +15,40 @@ android-patches-crdroid/
 ├── README.md                  # Allgemeine Übersicht und Anleitung (EN)
 ├── README.de.md               # Deutsche Dokumentation
 ├── LICENSE                    # Lizenz (Apache 2.0)
+├── .github/ISSUE_TEMPLATE/    # Formular für Patch-Probleme
 │
 ├── aptx-adaptive/             # aptX Adaptive DSP-Offload & Bluetooth-Anbindung
 │   ├── README.md              # Modul-Dokumentation & Voraussetzungen (EN)
 │   ├── README.de.md           # Deutsche Modul-Dokumentation
 │   ├── apply-patches.sh       # Automatisches Installations- & Prüfskript
-│   ├── NOTICE                 # Herkunftsnachweise & Lizenzen
-│   └── patches/               # Git-Patches (Bluetooth, Frameworks, Settings)
+│   ├── NOTICE                 # Herkunftsnachweise, Referenz-Commits & Lizenzen
+│   ├── LICENSE                # Modul-Lizenz (Apache 2.0)
+│   └── patches/               # Git-Patches (Bluetooth, Frameworks, Settings, GameSpace, Device)
 │
 └── [weitere-module]/          # Künftige Patch-Kategorien (Kernel, System etc.)
 ```
+
+---
+
+## Wie die Module getrennt sind
+
+Jedes Patch-Set ist ein **eigenständiger Modulordner**. Ein Modul hängt von keinem anderen ab,
+verweist nicht darauf und dokumentiert es nicht — außer seine eigene README sagt es ausdrücklich.
+
+| Ort | Gehört zu | Inhalt |
+|---|---|---|
+| Repository-Wurzel | der ganzen Sammlung | diese Übersicht, das Modulverzeichnis, der Haftungsausschluss und die Standard-`LICENSE` — **keine Patches** |
+| `<modul>/` | genau einem Patch-Set | `README.md` + `README.de.md`, `NOTICE` (Upstream-Quellen und Referenz-Commits), `LICENSE`, optional `apply-patches.sh` |
+| `<modul>/patches/` | nur diesem Patch-Set | `.patch`-Dateien; jede beginnt mit einer Kopfzeile `# Target repository:`, die das Android-Zielrepository nennt |
+
+Regeln für jedes Modul:
+
+* **Ein Feature, ein Ordner** (`kebab-case`). Fremde Änderungen kommen nie in das `patches/` eines bestehenden Moduls.
+* **Die Doku beschreibt nur das eigene Modul:** Voraussetzungen, crDroid-Branch, Referenz-Commits, getestete Geräte und bekannte Grenzen.
+* **Der Support endet dort, wo die Modul-README endet.** Ein Modul ist nur so weit getestet, wie seine README es sagt.
+* **Skripte bleiben im eigenen Modul** und fassen nur dessen `patches/`-Ordner an.
+* **Fassungen werden nicht gemischt:** alle Patches eines Moduls aus demselben Commit dieses Repositories anwenden.
+* **Die Liste *Verfügbare Module* unten ist die einzige Stelle, an der Module miteinander verlinkt werden.**
 
 ---
 
@@ -54,6 +78,16 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 ## Verfügbare Module
 
 * **[aptX Adaptive Audio Integration](aptx-adaptive/):** Vollständige Sitzungsanmeldung und Framework-Offload-Anbindung für Qualcomm Hardware-DSP-Audio.
+  Basis: crDroid-Branch `16.0` (Android 16). Referenzgerät: OnePlus 13 (`dodge`). Andere Geräte: ungetestet.
+
+---
+
+## Probleme melden
+
+Wenn ein Patch nicht anwendbar ist, nicht baut oder sich auf dem Referenz-Setup falsch verhält,
+bitte ein Issue über das Formular **Patch problem** anlegen und die genaue Fehlermeldung einfügen.
+Bluetooth-MAC-Adressen und Seriennummern vorher aus den Logs entfernen. Meldungen von anderen
+Geräten sind als Information willkommen — bitte vorher den Haftungsausschluss unten lesen.
 
 ---
 

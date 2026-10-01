@@ -31,9 +31,9 @@ oder eines durchgehend bittransparenten Android-Audiopfads gleichzusetzen.
 
 ## Voraussetzungen und Referenzstände
 
-- Vollständiger, baubarer crDroid-Quellbaum der Android-16-/LineageOS-23.2-
-  Generation mit passenden Gerätedateien und Vendor-Komponenten für das
-  Zielgerät; die Android-Repository-Pfade unten müssen vorhanden sein.
+- Vollständiger, baubarer crDroid-Quellbaum auf Branch **`16.0`** (Android-16-/
+  LineageOS-23.2-Generation) mit passenden Gerätedateien und Vendor-Komponenten
+  für das Zielgerät; die Android-Repository-Pfade unten müssen vorhanden sein.
 - Kompatibler Qualcomm-AIDL-Audio-Provider, DSP-Firmware und Controller.
   Vendor-Bibliotheken, Firmware, APKs und ROM-Abbilder sind nicht enthalten.
 - Eine Gegenstelle, die aptX Adaptive tatsächlich anbietet; für Lossless muss
@@ -64,8 +64,9 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 |---|---|---|
 | **Referenzgerät** | **OnePlus 13** (`dodge`, CPH2653) | Vollständig verifizierte Referenzplattform (Produktionsstand v39). |
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
-| **Andere Geräte** | Moderne Snapdragon-Geräte (z. B. 8 Gen 2 / 8 Gen 3) | **Patches 1–5 sind generischer AOSP/crDroid-Code.** Patch 6 ist gerätespezifisch und muss an das jeweilige `vendor.prop` / `device.mk` angepasst werden. |
-| **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181), **Bose QuietComfort** | Belegt für 44.1 kHz Lossless, 48 kHz / 96 kHz HQ sowie 48 kHz Low-Latency. |
+| **Andere Geräte** | — | **Ungetestet.** Patches 2–5 ändern generischen AOSP/crDroid-Code, Patch 1 sendet aber FastConnect-7900-Herstellerbefehle und Patch 6 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
+| **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |
+| | **Bose QuietComfort Ultra 2** | Bietet nur 44,1 / 48 kHz an (kein 96 kHz); Link-/Aufbauereignisse erfasst, siehe „Belege und Grenzen“. |
 
 ---
 
@@ -137,6 +138,11 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 ---
 
 ## Zuordnung der Patchdateien
+
+In dieser Reihenfolge anwenden. **Die Pfade innerhalb eines Diffs sind relativ zum
+angegebenen Zielrepository, nicht zur Android-Wurzel** — `framework/java/android/bluetooth/`
+gehört zum Beispiel zum Bluetooth-Repository. Nicht über ältere Fassungen oder Prototypen
+dieser Patches stapeln.
 
 | # | Patchdatei | Zielrepository | Aufgabe |
 |---|---|---|---|
