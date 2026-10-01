@@ -4,19 +4,18 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/releases/aptx-adaptive-v*.md'
+      - '.github/releases/*-v*.md'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing aptX tag with a matching file in .github/releases/'
+        description: 'Existing module tag with matching .github/releases/<tag>.md notes'
         required: true
-        default: 'aptx-adaptive-v1.0'
 
 permissions:
   contents: read
 
 concurrency:
-  group: aptx-release
+  group: module-releases
   cancel-in-progress: false
 
 jobs:
@@ -33,41 +32,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Verify and publish existing aptX tags
+      - name: Verify and publish existing module tags
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ inputs.tag }}
-        run: |
-          set -euo pipefail
-          if [[ -n "${TAG}" ]]; then
-            [[ "${TAG}" == aptx-adaptive-v* ]] || { echo 'ERROR: expected an aptx-adaptive-v tag' >&2; exit 1; }
-            [[ "${TAG}" != */* ]] || { echo 'ERROR: tag must not contain a slash' >&2; exit 1; }
-            [[ -f ".github/releases/${TAG}.md" ]] || { echo 'ERROR: release notes are missing' >&2; exit 1; }
-          fi
-
-          # An API/authentication failure stops here; it is never treated as "no release".
-          published="$(gh api "repos/${GH_REPO}/releases" --paginate --jq '.[].tag_name')"
-          for notes in .github/releases/aptx-adaptive-v*.md; do
-            tag="$(basename "${notes}" .md)"
-            if [[ -n "${TAG}" && "${TAG}" != "${tag}" ]]; then
-              continue
-            fi
-            if grep -Fxq -- "${tag}" <<< "${published}"; then
-              echo "Already exists; leaving release unchanged: ${tag}"
-              continue
-            fi
-
-            git rev-parse --verify "refs/tags/${tag}^{commit}"
-            git diff --quiet "refs/tags/${tag}" HEAD -- aptx-adaptive/ || {
-              echo "ERROR: ${tag} differs from the module being tested" >&2
-              exit 1
-            }
-            bash .github/scripts/check-modules.sh
-            bash .github/scripts/test-apply-script.sh aptx-adaptive
-            bash .github/scripts/check-reference.sh aptx-adaptive
-            bash .github/scripts/check-reference.sh --branch 16.0 aptx-adaptive
-            gh release create "${tag}" --verify-tag \
-              --title "aptX Adaptive & Lossless ${tag#aptx-adaptive-}" \
-              --notes-file "${notes}"
-          done
+        run: bash .github/scripts/release-modules.sh "${TAG}"

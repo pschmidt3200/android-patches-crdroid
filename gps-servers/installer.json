@@ -1,0 +1,16 @@
+{
+  "title": "GPS Server Choices",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "device/oneplus/sm8750-common",
+      "file": "sm8750_grapheneos_supl.patch",
+      "description": "Select the GrapheneOS SUPL proxy for the SM8750 GNSS configuration."
+    },
+    {
+      "repository": "device/oneplus/sm8750-common",
+      "file": "sm8750_ntp_germany.patch",
+      "description": "Select the German NTP pool for GNSS assistance time."
+    }
+  ]
+}

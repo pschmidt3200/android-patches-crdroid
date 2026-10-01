@@ -1,0 +1,26 @@
+{
+  "title": "GMS Compatibility",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "frameworks/base",
+      "file": "gms_query_visibility.patch",
+      "description": "Make only com.google.android.gms queryable through PackageManager."
+    },
+    {
+      "repository": "vendor/gms",
+      "file": "gms_google_clock_permission.patch",
+      "description": "Allow the privileged Google Clock package to schedule exact alarms."
+    },
+    {
+      "repository": "vendor/gms",
+      "file": "gms_uses_libraries.patch",
+      "description": "Limit uses-library exceptions to three prebuilts and correct one optional-library declaration."
+    },
+    {
+      "repository": "vendor/gms",
+      "file": "gms_oneplus_package_selection.patch",
+      "description": "Exclude ten incompatible Pixel package prefixes from the OnePlus product lists."
+    }
+  ]
+}

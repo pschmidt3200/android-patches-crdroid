@@ -1,0 +1,21 @@
+{
+  "title": "Donation Disable",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "packages/apps/crDroidSettings",
+      "file": "donation_components.patch",
+      "description": "Remove donation UI and replace reminders with cleanup only."
+    },
+    {
+      "repository": "packages/apps/crDroidSettings",
+      "file": "donation_about.patch",
+      "description": "Remove the donation entry and default donation URL."
+    },
+    {
+      "repository": "packages/apps/Settings",
+      "file": "donation_settings.patch",
+      "description": "Remove the donation activity registration and donation links from maintainer and version preferences."
+    }
+  ]
+}

@@ -20,6 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Generated standalone installers and generator behaviour
+        run: |
+          python3 .github/scripts/generate-installers.py --check
+          python3 .github/scripts/test-generate-installers.py
+
+      - name: Module release selection and publication guards
+        run: python3 .github/scripts/test-release-modules.py
+
       - name: ShellCheck
         run: |
           command -v shellcheck >/dev/null || { sudo apt-get update && sudo apt-get install -y shellcheck; }
