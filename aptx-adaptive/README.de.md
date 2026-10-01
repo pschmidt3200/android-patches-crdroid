@@ -1,14 +1,14 @@
 # aptX Adaptive für crDroid
 
 Stand: 2026-10-01. Quellpatch-Paket für **crDroid 16.0 (Android 16)**;
-Referenzgerät: **OnePlus 13 (`dodge`, CPH2653, SM8750 / FastConnect 7900)**.
+Referenzgeräte: **OnePlus 13 (`dodge`, CPH2653)** und **OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415)** (jeweils SM8750 / FastConnect 7900).
 
 **ROM-Umfang:** Das Paket ist derzeit ausschließlich für **crDroid 16.0** ausgelegt.
 Unterstützung für andere ROMs ist nicht belegt.
 
 **Die grundlegenden Langzeitmessungen stammen aus der produktiven v39-Messreihe.** Die englische
 Publikationsfassung übersetzt Bezeichner und Diagnosetexte; sie wurde am 01.10.2026 in crDroid 16.0
-auf dem Referenzgerät (OnePlus 13 mit FiiO BTR17) gebaut und live verifiziert (Aushandlung bei 96 kHz,
+auf beiden Referenzgeräten (OnePlus 13 sowie OnePlus Pad 3 mit FiiO BTR17) gebaut und live verifiziert (Aushandlung bei 96 kHz,
 dynamischer Wechsel zu 44,1 kHz Lossless, Hardware-DSP-Offload und 0 Bluetooth-Abstürze).
 Eigene Tests auf abweichender Hardware oder geänderten Quellständen bleiben dennoch empfohlen.
 
@@ -66,7 +66,7 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 
 | Ebene | Komponente | Status & Hinweise |
 |---|---|---|
-| **Referenzgerät** | **OnePlus 13** (`dodge`, CPH2653) | Vollständig verifizierte Referenzplattform (Produktionsstand v39). |
+| **Referenzgeräte** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Vollständig verifizierte Referenzplattformen (SM8750 / FastConnect 7900). |
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
 | **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 16.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 6 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
 | **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |

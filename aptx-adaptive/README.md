@@ -1,8 +1,8 @@
-# aptX Adaptive & aptX Lossless for crDroid 16.0 on the OnePlus 13
+# aptX Adaptive & aptX Lossless for crDroid 16.0 on the OnePlus 13 & OnePlus Pad 3
 
 Patches that bring working **aptX Adaptive** — including **aptX Lossless** at 44.1 kHz and a
-**low-latency mode for games** — to crDroid 16.0 (Android 16) on the OnePlus 13 (`dodge`, CPH2653) with a
-Qualcomm FastConnect 7900 controller.
+**low-latency mode for games** — to crDroid 16.0 (Android 16) on SM8750 devices (OnePlus 13 / `dodge`, CPH2653
+and OnePlus Pad 3 / Pad 2 Pro / `erhai`, OPD2415) with a Qualcomm FastConnect 7900 controller.
 
 The Android Bluetooth stack can negotiate aptX Adaptive, but on this platform the parts that
 actually make it *work* — the vendor-specific controller commands, the DSP mode, and the
@@ -55,7 +55,7 @@ Being explicit about the limits is the point of this section.
 
 ## Requirements
 
-* Reference device: OnePlus 13 (`dodge`, CPH2653), Qualcomm **FastConnect 7900**.
+* Reference devices: OnePlus 13 (`dodge`, CPH2653) and OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415), Qualcomm **FastConnect 7900**.
   Other devices need separate integration and validation; sharing the controller is not sufficient.
 * A crDroid tree on branch **`16.0`** (Android 16). The exact
   reference commits are listed in [`NOTICE`](NOTICE).
@@ -72,7 +72,7 @@ and the vendor-offload requirements still apply.
 
 | Layer | Component | Status / Notes |
 |---|---|---|
-| **Reference Device** | **OnePlus 13** (`dodge`, CPH2653) | Fully verified reference platform (production revision v39). |
+| **Reference Devices** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Fully verified reference platforms (SM8750 / FastConnect 7900). |
 | **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
 | **Other Devices** | — | **Untested.** The patches target crDroid 16.0; patch 1 sends FastConnect 7900 vendor commands and patch 6 is device-specific. A port is your own integration and validation work. |
 | **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181) | Reference sink: 44.1 kHz Lossless, 48 / 96 kHz, 48 kHz low latency. |

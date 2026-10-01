@@ -18,12 +18,13 @@ android-patches-crdroid/
 ├── README.md                  # General documentation & overview
 ├── README.de.md               # German documentation
 ├── LICENSE                    # Repository license (Apache 2.0)
-├── .github/                   # Issue form and CI checks (workflows/, scripts/)
+├── .github/                   # Issue form, installer template, CI and release tooling
 │
 ├── aptx-adaptive/             # Qualcomm aptX Adaptive DSP offload & BT integration
 │   ├── README.md              # Detailed module documentation & requirements
 │   ├── README.de.md           # German module documentation
 │   ├── apply-patches.sh       # Automated patch installation & verification script
+│   ├── installer.json         # Title, ordered patch list and optional target repository
 │   ├── NOTICE                 # Upstream attribution, reference commits & licensing
 │   ├── LICENSE                # Module license (Apache 2.0)
 │   └── patches/               # .patch files (Bluetooth, frameworks, Settings, GameSpace, device)
@@ -43,7 +44,7 @@ documents another module unless its own README says so explicitly.
 | Location | Belongs to | Contains |
 |---|---|---|
 | Repository root | the whole collection | this overview, the module index, the disclaimer and the default `LICENSE` — **no patches** |
-| `<module>/` | exactly one patch set | `README.md` + `README.de.md`, `NOTICE` (upstream sources and reference commits), `LICENSE`, optional `apply-patches.sh` |
+| `<module>/` | exactly one patch set | `README.md` + `README.de.md`, `NOTICE` (upstream sources and reference commits), `LICENSE`, `installer.json` and standalone `apply-patches.sh` |
 | `<module>/patches/` | that patch set only | `.patch` files; each starts with a `# Target repository:` header naming the Android repository it applies to |
 
 Rules for every module:
@@ -68,6 +69,22 @@ another branch; leaving the branch empty selects the NOTICE commits. A fourth NO
 It checks, applies and
 reverses the real patches, requiring every source repository to be clean afterwards. Only the
 touched files are downloaded. All four scripts can be run locally from the repository root.
+
+Installer logic is maintained once in `.github/installer/apply-patches.sh.in`. Each module's
+`installer.json` supplies its title, patch order and optional target repository. The generated
+`apply-patches.sh` remains a complete standalone Bash script: users need only the module directory,
+Bash and Git; Python and the template are used only when maintaining this repository.
+Edit the template or metadata, then regenerate from the repository root:
+
+```bash
+python3 .github/scripts/generate-installers.py
+python3 .github/scripts/generate-installers.py --check
+```
+
+Do not edit generated installers directly. CI rejects generation drift and tests malformed
+metadata, standalone use and every module's existing installer behaviour. The generator validates
+all modules before writing the first installer. If an I/O failure interrupts generation, fix the
+reported error and rerun it; `--check` never changes files.
 
 CI uses standard `ubuntu-latest` runners, which are [free for public repositories](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 Jobs skip private repositories, have time limits and use no cache or artifact uploads. GitHub may
@@ -103,7 +120,7 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 ## Available Modules
 
 * **[aptX Adaptive Audio Integration](aptx-adaptive/):** Complete session setup and framework offload integration for Qualcomm hardware DSP audio.
-  Base: crDroid branch `16.0` (Android 16). Reference device: OnePlus 13 (`dodge`). Other devices: untested.
+  Base: crDroid branch `16.0` (Android 16). Reference devices: OnePlus 13 (`dodge`), OnePlus Pad 3 / Pad 2 Pro (`erhai`). Other devices: untested.
 * **[GMS Compatibility Fixes](gms-fixes/):** Package visibility, Google Clock permission, targeted uses-library workarounds and an optional OnePlus package selection.
   Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks; ROM/device validation pending.
 * **[GPS Server Choices](gps-servers/):** Independently selectable GrapheneOS SUPL and German NTP pool configuration.
@@ -123,7 +140,19 @@ please read the disclaimer below first.
 
 ---
 
-## Reproducible Releases
+## Module Releases
+
+Each module uses its own `<module>-v<version>` tags. For example:
+
+| Module | Tag format example |
+|---|---|
+| `aptx-adaptive` | `aptx-adaptive-v1.0` (existing release) |
+| `gms-fixes` | `gms-fixes-v1.0` |
+| `gps-servers` | `gps-servers-v1.0` |
+| `donation-disable` | `donation-disable-v1.0` |
+
+Examples describe the naming scheme; they do not mean a release exists for every module.
+Versions have two or three numeric components and may have a suffix such as `-rc.1`.
 
 To use the existing aptX release, keep the whole module at its release tag:
 
@@ -138,21 +167,33 @@ from different tags or commits. A tag identifies the patch edition; source check
 a successful ROM build or device test.
 
 The [release page](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
-provides notes and GitHub's source archives. To publish an aptX release, first create its immutable
-tag and add `.github/releases/<tag>.md`. Pushing new notes to `main` runs the *release* workflow;
-it can also be started manually with a tag. The tagged module must match the module being tested.
-All four checks below must pass before publication. Existing releases are left unchanged.
+provides notes and GitHub's source archives. To publish a module release, first create and push
+its immutable tag, then add `.github/releases/<tag>.md`. Pushing new notes to `main` runs the
+*release* workflow; it can also be started manually with a tag. The tagged module must match
+the tested commit and have no uncommitted changes. The helper checks **all unpublished candidates
+before creating any release**, including generated installer consistency and the four checks below.
+Existing releases are left unchanged. A publication failure reports which releases were already
+created; rerunning checks the remaining candidates. New module releases do not automatically
+replace GitHub's global *Latest* selection.
 Only the release job receives `contents: write` via GitHub's temporary job token; it runs only
 on `main` in this public repository, using the same free standard runner and no asset uploads.
 
-For maintainers, run these checks from the repository root before a new aptX release:
+For maintainers, run these checks from the repository root for the selected module:
 
 ```bash
+MODULE=aptx-adaptive  # or gms-fixes, gps-servers, donation-disable
+python3 .github/scripts/generate-installers.py --check
 bash .github/scripts/check-modules.sh
-bash .github/scripts/test-apply-script.sh aptx-adaptive
-bash .github/scripts/check-reference.sh aptx-adaptive
-bash .github/scripts/check-reference.sh --branch 16.0 aptx-adaptive
+bash .github/scripts/test-apply-script.sh "$MODULE"
+bash .github/scripts/check-reference.sh "$MODULE"
+bash .github/scripts/check-reference.sh --branch 16.0 "$MODULE"
 ```
+
+With an authenticated GitHub CLI, `GH_REPO=pschmidt3200/android-patches-crdroid bash
+.github/scripts/release-modules.sh --check <tag>` runs the complete release preflight without
+publishing. Omitting the tag selects all notes in `.github/releases/`. The same helper is used
+by the workflow. [`--verify-tag`](https://cli.github.com/manual/gh_release_create) requires a tag
+already on GitHub; the helper never creates or moves tags.
 
 The reference checks use temporary source trees. Any failure stops the release: record the target
 repository, source revision and exact error, then correct the patch or its documented baseline.

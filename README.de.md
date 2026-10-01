@@ -18,12 +18,13 @@ android-patches-crdroid/
 ├── README.md                  # Allgemeine Übersicht und Anleitung (EN)
 ├── README.de.md               # Deutsche Dokumentation
 ├── LICENSE                    # Lizenz (Apache 2.0)
-├── .github/                   # Issue-Formular und CI-Prüfungen (workflows/, scripts/)
+├── .github/                   # Issue-Formular, Installer-Vorlage, CI und Release-Werkzeuge
 │
 ├── aptx-adaptive/             # aptX Adaptive DSP-Offload & Bluetooth-Anbindung
 │   ├── README.md              # Modul-Dokumentation & Voraussetzungen (EN)
 │   ├── README.de.md           # Deutsche Modul-Dokumentation
 │   ├── apply-patches.sh       # Automatisches Installations- & Prüfskript
+│   ├── installer.json         # Titel, Patchreihenfolge und optionales Zielrepository
 │   ├── NOTICE                 # Herkunftsnachweise, Referenz-Commits & Lizenzen
 │   ├── LICENSE                # Modul-Lizenz (Apache 2.0)
 │   └── patches/               # Git-Patches (Bluetooth, Frameworks, Settings, GameSpace, Device)
@@ -43,7 +44,7 @@ verweist nicht darauf und dokumentiert es nicht — außer seine eigene README s
 | Ort | Gehört zu | Inhalt |
 |---|---|---|
 | Repository-Wurzel | der ganzen Sammlung | diese Übersicht, das Modulverzeichnis, der Haftungsausschluss und die Standard-`LICENSE` — **keine Patches** |
-| `<modul>/` | genau einem Patch-Set | `README.md` + `README.de.md`, `NOTICE` (Upstream-Quellen und Referenz-Commits), `LICENSE`, optional `apply-patches.sh` |
+| `<modul>/` | genau einem Patch-Set | `README.md` + `README.de.md`, `NOTICE` (Upstream-Quellen und Referenz-Commits), `LICENSE`, `installer.json` und eigenständiges `apply-patches.sh` |
 | `<modul>/patches/` | nur diesem Patch-Set | `.patch`-Dateien; jede beginnt mit einer Kopfzeile `# Target repository:`, die das Android-Zielrepository nennt |
 
 Regeln für jedes Modul:
@@ -69,6 +70,22 @@ Branch-Prüfungen den abweichenden Android-Branch eines Vendors zu (GMS: `bka`).
 Die echten Patches werden geprüft, angewendet und zurückgenommen.
 Danach muss jedes Quellrepository wieder sauber sein. Geladen werden nur die betroffenen Dateien.
 Alle vier Skripte lassen sich lokal aus der Repository-Wurzel starten.
+
+Die Installer-Logik wird einmalig in `.github/installer/apply-patches.sh.in` gepflegt.
+Die `installer.json` jedes Moduls liefert Titel, Patchreihenfolge und optionales Zielrepository.
+Das erzeugte `apply-patches.sh` bleibt ein vollständiges, eigenständiges Bash-Skript:
+Anwender brauchen nur den Modulordner, Bash und Git. Python und Vorlage werden ausschließlich
+zur Pflege dieses Repositories benötigt. Vorlage oder Metadaten ändern und danach erzeugen:
+
+```bash
+python3 .github/scripts/generate-installers.py
+python3 .github/scripts/generate-installers.py --check
+```
+
+Erzeugte Installer nicht direkt bearbeiten. Die CI erkennt Abweichungen und prüft ungültige
+Metadaten, eigenständige Nutzung und das bisherige Verhalten jedes Installers. Der Generator
+validiert alle Module vor dem ersten Schreibzugriff. Bei einem E/A-Abbruch den gemeldeten Fehler
+beheben und erneut erzeugen; `--check` verändert keine Dateien.
 
 Die CI verwendet Standard-Runner vom Typ `ubuntu-latest`, die [für öffentliche Repositories kostenlos sind](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 Jobs setzen bei privaten Repositories aus, haben Zeitlimits und laden keine Caches oder Artefakte
@@ -104,7 +121,7 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 ## Verfügbare Module
 
 * **[aptX Adaptive Audio Integration](aptx-adaptive/):** Vollständige Sitzungsanmeldung und Framework-Offload-Anbindung für Qualcomm Hardware-DSP-Audio.
-  Basis: crDroid-Branch `16.0` (Android 16). Referenzgerät: OnePlus 13 (`dodge`). Andere Geräte: ungetestet.
+  Basis: crDroid-Branch `16.0` (Android 16). Referenzgeräte: OnePlus 13 (`dodge`), OnePlus Pad 3 / Pad 2 Pro (`erhai`). Andere Geräte: ungetestet.
 * **[GMS-Kompatibilitätsfixes](gms-fixes/):** Paketsichtbarkeit, Google-Uhr-Berechtigung, gezielte uses-library-Ausnahmen und eine optionale OnePlus-Paketauswahl.
   Basis: crDroid `16.0` mit Evolution X `vendor_gms`, Branch `bka`. Öffentliche Fassung: Quellprüfungen; ROM-/Geräteabnahme offen.
 * **[GPS-Serverauswahl](gps-servers/):** Unabhängig wählbare Konfiguration für GrapheneOS-SUPL und den deutschen NTP-Pool.
@@ -125,7 +142,19 @@ Geräten sind als Information willkommen — bitte vorher den Haftungsausschluss
 
 ---
 
-## Reproduzierbare Releases
+## Modul-Releases
+
+Jedes Modul verwendet eigene Tags nach `<modul>-v<version>`, beispielsweise:
+
+| Modul | Beispiel für das Tagformat |
+|---|---|
+| `aptx-adaptive` | `aptx-adaptive-v1.0` (bestehendes Release) |
+| `gms-fixes` | `gms-fixes-v1.0` |
+| `gps-servers` | `gps-servers-v1.0` |
+| `donation-disable` | `donation-disable-v1.0` |
+
+Die Beispiele zeigen das Namensschema; sie behaupten kein vorhandenes Release für jedes Modul.
+Versionen haben zwei oder drei Zahlenbestandteile und optional einen Zusatz wie `-rc.1`.
 
 Für das bestehende aptX-Release den gesamten Modulstand über sein Tag auswählen:
 
@@ -140,22 +169,34 @@ aus verschiedenen Tags oder Commits mischen. Ein Tag bezeichnet die Patchfassung
 belegen noch keinen erfolgreichen ROM-Build oder Gerätetest.
 
 Die [Release-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
-enthält Hinweise und GitHubs Quellarchive. Für ein aptX-Release zuerst das unveränderliche Tag
-anlegen und `.github/releases/<tag>.md` ergänzen. Neue Notizen auf `main` starten den Workflow
-*release*; er lässt sich auch manuell mit einem Tag starten. Das getaggte Modul muss mit dem
-geprüften Modul übereinstimmen. Alle vier Prüfungen unten müssen vor der Veröffentlichung bestehen.
-Bestehende Releases bleiben unverändert. Nur der Release-Job erhält `contents: write` über
+enthält Hinweise und GitHubs Quellarchive. Für ein Modul-Release zuerst das unveränderliche Tag
+anlegen und pushen, danach `.github/releases/<tag>.md` ergänzen. Neue Notizen auf `main` starten
+den Workflow *release*; er lässt sich auch manuell mit einem Tag starten. Das getaggte Modul muss
+mit dem geprüften Commit übereinstimmen und darf keine uncommitteten Änderungen enthalten.
+Der Helfer prüft **alle unveröffentlichten Kandidaten vor dem ersten Release**, einschließlich
+Installer-Konsistenz und der vier Prüfungen unten. Bestehende Releases bleiben unverändert.
+Bei einem Veröffentlichungsfehler nennt er bereits erzeugte Releases; ein erneuter Lauf prüft
+die verbleibenden Kandidaten. Neue Modul-Releases ersetzen nicht automatisch GitHubs globale
+*Latest*-Auswahl. Nur der Release-Job erhält `contents: write` über
 GitHubs temporäres Job-Token. Er läuft ausschließlich auf `main` dieses öffentlichen Repos,
 mit demselben kostenlosen Standard-Runner und ohne Asset-Uploads.
 
-Vor einem neuen aptX-Release führen Maintainer diese Prüfungen in der Repository-Wurzel aus:
+Für das ausgewählte Modul führen Maintainer diese Prüfungen in der Repository-Wurzel aus:
 
 ```bash
+MODULE=aptx-adaptive  # oder gms-fixes, gps-servers, donation-disable
+python3 .github/scripts/generate-installers.py --check
 bash .github/scripts/check-modules.sh
-bash .github/scripts/test-apply-script.sh aptx-adaptive
-bash .github/scripts/check-reference.sh aptx-adaptive
-bash .github/scripts/check-reference.sh --branch 16.0 aptx-adaptive
+bash .github/scripts/test-apply-script.sh "$MODULE"
+bash .github/scripts/check-reference.sh "$MODULE"
+bash .github/scripts/check-reference.sh --branch 16.0 "$MODULE"
 ```
+
+Mit angemeldeter GitHub CLI führt `GH_REPO=pschmidt3200/android-patches-crdroid bash
+.github/scripts/release-modules.sh --check <tag>` die komplette Vorabprüfung ohne Veröffentlichung
+aus. Ohne Tag werden alle Notizen in `.github/releases/` ausgewählt. Derselbe Helfer läuft im
+Workflow. [`--verify-tag`](https://cli.github.com/manual/gh_release_create) verlangt ein bereits
+auf GitHub vorhandenes Tag; der Helfer erstellt und verschiebt keine Tags.
 
 Die Referenzprüfungen verwenden temporäre Quellbäume. Bei einem Fehler den Release-Vorgang stoppen:
 Zielrepository, Quellstand und genaue Fehlermeldung festhalten, dann Patch oder dokumentierte

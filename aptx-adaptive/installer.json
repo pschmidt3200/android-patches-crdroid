@@ -1,0 +1,36 @@
+{
+  "title": "aptX Adaptive",
+  "optional_repository": "device/oneplus/sm8750-common",
+  "patches": [
+    {
+      "repository": "packages/modules/Bluetooth",
+      "file": "crdroid_bluetooth_aptx_adaptive_native.patch",
+      "description": "Bluetooth Stack & Audio HAL"
+    },
+    {
+      "repository": "frameworks/base",
+      "file": "crdroid_framework_aptx_adaptive_offload.patch",
+      "description": "AudioPolicy Framework Offload"
+    },
+    {
+      "repository": "frameworks/base",
+      "file": "crdroid_framework_settingslib_codec_status.patch",
+      "description": "SettingsLib Codec Status"
+    },
+    {
+      "repository": "packages/apps/Settings",
+      "file": "crdroid_settings_bluetooth_codec_badges.patch",
+      "description": "Settings UI Codec Badges"
+    },
+    {
+      "repository": "packages/apps/GameSpace",
+      "file": "crdroid_gamespace_bluetooth_gaming_audio.patch",
+      "description": "GameSpace Low-Latency Hook"
+    },
+    {
+      "repository": "device/oneplus/sm8750-common",
+      "file": "crdroid_aptx_r2_2_property.patch",
+      "description": "Device Tree Properties"
+    }
+  ]
+}
