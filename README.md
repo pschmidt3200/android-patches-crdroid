@@ -28,7 +28,8 @@ android-patches-crdroid/
 │   ├── LICENSE                # Module license (Apache 2.0)
 │   └── patches/               # .patch files (Bluetooth, frameworks, Settings, GameSpace, device)
 │
-└── [future-modules]/          # Future patch sets (kernel, system, display, etc.)
+├── gms-fixes/                 # GMS visibility and vendor build compatibility
+└── gps-servers/               # Optional SUPL and GNSS NTP server choices
 ```
 
 ---
@@ -61,7 +62,9 @@ links are rejected, including local links with fragments.
 The *reference-check* workflow (`.github/scripts/check-reference.sh`) also runs when patches,
 application scripts, reference notices or CI scripts change, checking the commits in each module's
 `NOTICE`. Every Monday at 06:23 UTC it checks the current crDroid `16.0` branch. Manual runs accept
-another branch; leaving the branch empty selects the NOTICE commits. It checks, applies and
+another branch; leaving the branch empty selects the NOTICE commits. A fourth NOTICE field,
+`branch=<name>`, maps a vendor's Android branch (GMS uses `bka`) during branch checks.
+It checks, applies and
 reverses the real patches, requiring every source repository to be clean afterwards. Only the
 touched files are downloaded. All four scripts can be run locally from the repository root.
 
@@ -76,7 +79,7 @@ applicability and rollback, not a ROM build or device acceptance.
 ## Design Principles & Standards
 
 * **Modular & Independent:** Each topic or feature resides in its own directory with dedicated documentation, requirements, and patch files.
-* **Pure Source Diffs:** All patches are standard git diffs against crDroid's open-source repositories. No proprietary blobs, compiled firmware binaries, or device secrets are hosted here.
+* **Pure Source Diffs:** Patches are standard git diffs against source and build configuration used by crDroid. No proprietary blobs, compiled firmware binaries, or device secrets are hosted here.
 * **Upstream Hygiene:** Changes are kept atomic and cleanly separated by Android subsystem (`packages/modules/*`, `frameworks/*`, `hardware/*`).
 
 ---
@@ -100,6 +103,10 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 
 * **[aptX Adaptive Audio Integration](aptx-adaptive/):** Complete session setup and framework offload integration for Qualcomm hardware DSP audio.
   Base: crDroid branch `16.0` (Android 16). Reference device: OnePlus 13 (`dodge`). Other devices: untested.
+* **[GMS Compatibility Fixes](gms-fixes/):** Package visibility, Google Clock permission, targeted uses-library workarounds and an optional OnePlus package selection.
+  Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks; ROM/device validation pending.
+* **[GPS Server Choices](gps-servers/):** Independently selectable GrapheneOS SUPL and German NTP pool configuration.
+  Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks; effective server use and GNSS measurements pending.
 
 ---
 

@@ -1,0 +1,15 @@
+# Target repository: device/oneplus/sm8750-common
+# Select the German NTP pool for GNSS assistance time.
+
+diff --git a/configs/gps/gps.conf b/configs/gps/gps.conf
+--- a/configs/gps/gps.conf
++++ b/configs/gps/gps.conf
+@@ -4,7 +4,7 @@
+ ERR_ESTIMATE=0
+
+ #NTP server
+-NTP_SERVER=time.xtracloud.net
++NTP_SERVER=0.de.pool.ntp.org
+
+ #XTRA CA path
+ XTRA_CA_PATH=/usr/lib/ssl-1.1/certs

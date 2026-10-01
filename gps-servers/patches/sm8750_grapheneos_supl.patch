@@ -1,0 +1,19 @@
+# Target repository: device/oneplus/sm8750-common
+# Select the GrapheneOS SUPL proxy for the SM8750 GNSS configuration.
+
+diff --git a/configs/gps/gps.conf b/configs/gps/gps.conf
+--- a/configs/gps/gps.conf
++++ b/configs/gps/gps.conf
+@@ -51,9 +51,9 @@
+ ##### AGPS server settings #####
+ ################################
+
+-# FOR SUPL SUPPORT, set the following
+-# SUPL_HOST=supl.host.com or IP
+-# SUPL_PORT=1234
++# FOR SUPL SUPPORT (GrapheneOS proxy)
++SUPL_HOST=supl.grapheneos.org
++SUPL_PORT=7275
+
+ # FOR MO SUPL SUPPORT, set the following
+ # MO_SUPL_HOST=supl.host.com or IP

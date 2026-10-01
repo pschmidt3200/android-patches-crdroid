@@ -1,0 +1,14 @@
+# Target repository: vendor/gms
+# Allow the privileged Google Clock package to schedule exact alarms.
+
+diff --git a/product/blobs/etc/permissions/privapp-permissions-google-p.xml b/product/blobs/etc/permissions/privapp-permissions-google-p.xml
+--- a/product/blobs/etc/permissions/privapp-permissions-google-p.xml
++++ b/product/blobs/etc/permissions/privapp-permissions-google-p.xml
+@@ -23,6 +23,7 @@
+ <permissions>
+
+     <privapp-permissions package="com.google.android.deskclock">
++      <permission name="android.permission.SCHEDULE_EXACT_ALARM"/>
+       <permission name="android.permission.START_FOREGROUND_SERVICES_FROM_BACKGROUND"/>
+       <permission name="android.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS"/>
+       <permission name="android.permission.QUERY_USERS" />

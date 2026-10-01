@@ -35,6 +35,8 @@ body:
       label: Module
       options:
         - aptx-adaptive
+        - gms-fixes
+        - gps-servers
     validations:
       required: true
   - type: dropdown
@@ -65,7 +67,7 @@ body:
     id: output
     attributes:
       label: Exact error output or log excerpt
-      description: For apply or build failures paste the full message. For runtime problems, a filtered logcat (Bluetooth / audio) around the event.
+      description: For apply or build failures paste the full message. For runtime problems, a module-relevant filtered logcat around the event.
       render: shell
     validations:
       required: true
@@ -73,4 +75,4 @@ body:
     id: notes
     attributes:
       label: Anything else
-      description: Sink / headset model, what you expected, what happened instead.
+      description: App, GApps vendor, receiver or network details as relevant; what you expected and what happened instead.

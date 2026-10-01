@@ -1,0 +1,27 @@
+GMS compatibility source patches for crDroid 16.0 (Android 16)
+Public edition prepared 2026-10-01.
+
+Reference repositories, commits and public sources:
+  frameworks/base a7b0e5e188fb72a566328bfed0e0412ddb7850e2 https://github.com/crdroidandroid/android_frameworks_base
+  vendor/gms 89c3940a77298c204c55a21efded92ddafb59fe9 https://github.com/Evolution-X/vendor_gms branch=bka
+
+The optional fourth field branch=bka selects the vendor's Android 16 branch
+when check-reference.sh is run with --branch. Pinned checks always use the SHA.
+
+Changes are limited to source/build-configuration diffs. No APKs, libraries,
+firmware or vendor binary payloads are included. The vendor sources being
+patched include Apache 2.0 notices from Evolution X and The Android Open
+Source Project; retain those per-file notices. This module's changes and
+documentation are provided under Apache License, Version 2.0 (see LICENSE).
+This notice grants no additional rights in upstream proprietary components.
+
+Reference setup: OnePlus 13 (dodge), crDroid 16.0 with this vendor/gms baseline.
+The GMS visibility change follows a locally used fix. The public edition as a
+whole has source apply/reverse checks only; no new ROM build or device test.
+Other vendors, vendor revisions and devices require their own validation.
+
+Patch inventory:
+  gms_query_visibility.patch
+  gms_google_clock_permission.patch
+  gms_uses_libraries.patch
+  gms_oneplus_package_selection.patch

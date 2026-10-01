@@ -7,6 +7,8 @@
 # clone plus sparse checkout: frameworks/base costs about 13 MB instead of several
 # GB). It then runs the module's own apply-patches.sh: check, apply, reverse check,
 # reverse. Every repository must be back at its original, clean source state.
+# An optional fourth NOTICE field, branch=<name>, selects a vendor's differently
+# named Android branch during branch checks; pinned commit checks ignore it.
 #
 # Usage: .github/scripts/check-reference.sh [--branch <name>] [module-directory]
 #        default: the reference commits from NOTICE, module aptx-adaptive
@@ -33,19 +35,23 @@ mapfile -t ENTRIES < <(sed -n '/^PATCHES=(/,/^)/p' "${MOD}/apply-patches.sh" | g
 mapfile -t REPOS < <(printf '%s\n' "${ENTRIES[@]}" | cut -d: -f1 | awk '!seen[$0]++')
 
 if [[ -n "${BRANCH}" ]]; then
-    echo "== ${MODULE}: fetching the tip of branch ${BRANCH} of every target repository"
+    echo "== ${MODULE}: fetching branch ${BRANCH}, with per-repository NOTICE branch overrides"
 else
     echo "== ${MODULE}: fetching every target repository at its NOTICE reference commit"
 fi
 for repo in "${REPOS[@]}"; do
     sha=""
     url=""
-    read -r _ sha url _ < <(awk -v r="${repo}" '$1 == r { print; exit }' "${MOD}/NOTICE") || true
+    branch_hint=""
+    read -r _ sha url branch_hint _ < <(awk -v r="${repo}" '$1 == r { print; exit }' "${MOD}/NOTICE") || true
     if [[ -z "${sha}" || "${url}" != https://* ]]; then
         echo "ERROR: ${MODULE}/NOTICE has no '<repository> <commit> <https-url>' line for ${repo}" >&2
         exit 1
     fi
     target="${BRANCH:-${sha}}"
+    if [[ -n "${BRANCH}" && "${branch_hint}" == branch=* ]]; then
+        target="${branch_hint#branch=}"
+    fi
     dir="${TREE}/${repo}"
 
     git -c init.defaultBranch=check init -q "${dir}"

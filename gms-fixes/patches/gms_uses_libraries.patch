@@ -1,0 +1,50 @@
+# Target repository: vendor/gms
+# Limit uses-library exceptions to three prebuilts and correct one optional-library declaration.
+
+diff --git a/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk b/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
+--- a/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
++++ b/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
+@@ -19,6 +19,8 @@
+
+ include $(CLEAR_VARS)
+ LOCAL_MODULE := CustomizationBundlePrebuiltFullVersion
++LOCAL_ENFORCE_USES_LIBRARIES := false
++# The signed APK declares wear-sdk, which this crDroid tree does not provide.
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_SRC_FILES := CustomizationBundlePrebuiltFullVersion.apk
+ LOCAL_CERTIFICATE := PRESIGNED
+diff --git a/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk b/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk
+--- a/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk
++++ b/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk
+@@ -20,6 +20,8 @@
+
+ include $(CLEAR_VARS)
+ LOCAL_MODULE := SafetyHubPrebuilt
++LOCAL_ENFORCE_USES_LIBRARIES := false
++# The signed APK declares wear-sdk, which this crDroid tree does not provide.
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_SRC_FILES := SafetyHubPrebuilt.apk
+ LOCAL_CERTIFICATE := PRESIGNED
+diff --git a/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk b/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk
+--- a/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk
++++ b/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk
+@@ -19,6 +19,8 @@
+
+ include $(CLEAR_VARS)
+ LOCAL_MODULE := PersistentBackgroundServices
++LOCAL_ENFORCE_USES_LIBRARIES := false
++# The signed APK declares com.google.input.gia.giaservicemanager, which this crDroid tree does not provide.
+ LOCAL_MODULE_TAGS := optional
+ LOCAL_SRC_FILES := PersistentBackgroundServices.apk
+ LOCAL_CERTIFICATE := PRESIGNED
+diff --git a/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk b/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk
+--- a/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk
++++ b/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk
+@@ -24,6 +24,6 @@
+ LOCAL_CERTIFICATE := platform
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_SYSTEM_EXT_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar org.apache.http.legacy
++LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)

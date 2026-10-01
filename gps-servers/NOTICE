@@ -1,0 +1,24 @@
+Optional GPS server configuration for crDroid 16.0 (Android 16)
+Public edition prepared 2026-10-01.
+
+Reference repositories, commits and public sources:
+  device/oneplus/sm8750-common 30beb69ed08ff93111c6e4bfed0d1b8f12fc9dc2 https://github.com/crdroidandroid/android_device_oneplus_sm8750-common
+
+The patches only change GNSS configuration: SUPL_HOST/SUPL_PORT and NTP_SERVER.
+They contain no modem firmware, binary GNSS implementation or server software.
+Keep upstream file notices and terms. This module's changes and documentation
+are provided under Apache License, Version 2.0 (see LICENSE).
+
+The SUPL hostname refers to the independently operated GrapheneOS service.
+GrapheneOS documentation: https://grapheneos.org/faq#other-connections
+The NTP hostname refers to the German pool, not a guaranteed dedicated server.
+NTP Pool documentation: https://www.ntppool.org/en/zone/de
+These service references are not an endorsement or availability guarantee.
+
+Reference configuration: OnePlus SM8750 common tree; OnePlus 13 (dodge) context.
+Source apply/reverse checks do not establish effective modem server selection,
+SUPL privacy properties, fix time or GNSS accuracy on a running device.
+
+Patch inventory (independently selectable):
+  sm8750_grapheneos_supl.patch
+  sm8750_ntp_germany.patch

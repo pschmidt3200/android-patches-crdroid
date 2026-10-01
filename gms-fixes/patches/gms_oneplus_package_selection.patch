@@ -1,0 +1,172 @@
+# Target repository: vendor/gms
+# Exclude ten incompatible Pixel package prefixes from the OnePlus product lists.
+
+diff --git a/gms_full.mk b/gms_full.mk
+--- a/gms_full.mk
++++ b/gms_full.mk
+@@ -114,14 +114,12 @@
+     CustomizationBundlePrebuiltFullVersion \
+     DeviceIntelligenceNetworkPrebuiltAstrea \
+     DevicePersonalizationAiAiPrebuiltPixel2025 \
+-    FamilySpacePrebuilt-v484 \
+     FilesPrebuilt \
+     GeminiShell_227 \
+     GoogleDialer \
+     GoogleRestorePrebuilt-v908838 \
+     KidsSupervisionStub \
+     MaestroPrebuilt \
+-    OdadPrebuilt \
+     PartnerSetupPrebuilt \
+     Phonesky \
+     PrebuiltBugle \
+@@ -130,13 +128,10 @@
+     RelationshipsPrebuilt-301 \
+     SafetyHubPrebuilt \
+     ScribePrebuilt_v8.4.773573318 \
+-    SearchSelectorPrebuilt \
+     SettingsIntelligenceGooglePrebuilt \
+-    SetupWizardPrebuilt_versioned \
+     TurboPrebuilt \
+     Velvet \
+     WallpaperEffect \
+-    WeatherPixelPrebuilt_10006113 \
+     WellbeingPrebuilt
+
+ # system/app
+@@ -147,7 +142,6 @@
+ # system/priv-app
+ PRODUCT_PACKAGES += \
+     DocumentsUIGoogle \
+-    GooglePackageInstaller \
+     TagGoogle
+
+ # system_ext/app
+@@ -164,16 +158,12 @@
+
+ PRODUCT_PACKAGES += \
+     AvatarPickerGoogle \
+-    DeviceConnectivityServicePrebuilt_26.01.00 \
+     GoogleFeedback \
+     GoogleServicesFramework \
+     MoseyApp \
+-    NexusLauncherRelease \
+     PersistentBackgroundServices \
+-    SetupWizardPixelPrebuilt_versioned \
+     StorageManagerGoogle \
+-    TurboAdapter \
+-    WallpaperPickerGoogleRelease
++    TurboAdapter
+
+ # PrebuiltGmsCore
+ PRODUCT_PACKAGES += \
+diff --git a/gms_full_tablet_wifionly.mk b/gms_full_tablet_wifionly.mk
+--- a/gms_full_tablet_wifionly.mk
++++ b/gms_full_tablet_wifionly.mk
+@@ -84,7 +84,6 @@
+     GoogleRestorePrebuilt-v908838 \
+     KidsSupervisionStub \
+     MaestroPrebuilt \
+-    OdadPrebuilt \
+     PartnerSetupPrebuilt \
+     Phonesky \
+     PrebuiltBugle \
+@@ -92,13 +91,10 @@
+     PrebuiltPixelCoreServices \
+     RelationshipsPrebuilt-301 \
+     ScribePrebuilt_v8.4.773573318 \
+-    SearchSelectorPrebuilt \
+     SettingsIntelligenceGooglePrebuilt \
+-    SetupWizardPrebuilt_versioned \
+     TurboPrebuilt \
+     Velvet \
+     WallpaperEffect \
+-    WeatherPixelPrebuilt_10006113 \
+     WellbeingPrebuilt
+
+ TARGET_INCLUDE_LIVE_WALLPAPERS ?= true
+@@ -126,7 +122,6 @@
+ # system/priv-app
+ PRODUCT_PACKAGES += \
+     DocumentsUIGoogle \
+-    GooglePackageInstaller \
+     TagGoogle
+
+ # system_ext/app
+@@ -138,16 +133,12 @@
+ # system_ext/priv-app
+ PRODUCT_PACKAGES += \
+     AvatarPickerGoogle \
+-    DeviceConnectivityServicePrebuilt_26.01.00 \
+     GoogleFeedback \
+     GoogleServicesFramework \
+     MagicPortraitWallpapers \
+     MoseyApp \
+-    NexusLauncherRelease \
+-    SetupWizardPixelPrebuilt_versioned \
+     StorageManagerGoogle \
+-    TurboAdapter \
+-    WallpaperPickerGoogleRelease
++    TurboAdapter
+
+ # PrebuiltGmsCore
+ PRODUCT_PACKAGES += \
+diff --git a/gms_mini.mk b/gms_mini.mk
+--- a/gms_mini.mk
++++ b/gms_mini.mk
+@@ -75,14 +75,12 @@
+     GoogleRestorePrebuilt-v908838 \
+     KidsSupervisionStub \
+     MaestroPrebuilt \
+-    OdadPrebuilt \
+     PartnerSetupPrebuilt \
+     Phonesky \
+     PrebuiltBugle \
+     PrebuiltDeskClockGoogle_76008261 \
+     PrebuiltPixelCoreServices \
+     SettingsIntelligenceGooglePrebuilt \
+-    SetupWizardPrebuilt_versioned \
+     TurboPrebuilt \
+     Velvet \
+     WellbeingPrebuilt
+@@ -119,10 +117,7 @@
+     AvatarPickerGoogle \
+     GoogleFeedback \
+     GoogleServicesFramework \
+-    MoseyApp \
+-    NexusLauncherRelease \
+-    SetupWizardPixelPrebuilt_versioned \
+-    WallpaperPickerGoogleRelease
++    MoseyApp
+
+ # PrebuiltGmsCore
+ PRODUCT_PACKAGES += \
+diff --git a/gms_pico.mk b/gms_pico.mk
+--- a/gms_pico.mk
++++ b/gms_pico.mk
+@@ -52,14 +52,12 @@
+     GoogleRestorePrebuilt-v908838 \
+     KidsSupervisionStub \
+     MaestroPrebuilt \
+-    OdadPrebuilt \
+     PartnerSetupPrebuilt \
+     Phonesky \
+     PrebuiltBugle \
+     PrebuiltDeskClockGoogle_76008261 \
+     PrebuiltPixelCoreServices \
+     SettingsIntelligenceGooglePrebuilt \
+-    SetupWizardPrebuilt_versioned \
+     TurboPrebuilt \
+     WellbeingPrebuilt
+
+@@ -95,10 +93,7 @@
+     AvatarPickerGoogle \
+     GoogleFeedback \
+     GoogleServicesFramework \
+-    MoseyApp \
+-    NexusLauncherRelease \
+-    SetupWizardPixelPrebuilt_versioned \
+-    WallpaperPickerGoogleRelease
++    MoseyApp
+
+ # PrebuiltGmsCore
+ PRODUCT_PACKAGES += \

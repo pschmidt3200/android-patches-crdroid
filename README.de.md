@@ -28,7 +28,8 @@ android-patches-crdroid/
 │   ├── LICENSE                # Modul-Lizenz (Apache 2.0)
 │   └── patches/               # Git-Patches (Bluetooth, Frameworks, Settings, GameSpace, Device)
 │
-└── [weitere-module]/          # Künftige Patch-Kategorien (Kernel, System etc.)
+├── gms-fixes/                 # GMS-Sichtbarkeit und Vendor-Buildkompatibilität
+└── gps-servers/               # Optionale SUPL- und GNSS-NTP-Serverauswahl
 ```
 
 ---
@@ -62,7 +63,9 @@ und fehlende lokale Linkziele abgelehnt werden, auch mit Fragmenten. Der Workflo
 Anwendungsskripten, Referenznachweisen oder CI-Skripten und
 prüft dann die Commits aus der `NOTICE` jedes Moduls. Jeden Montag um 06:23 UTC prüft er den
 aktuellen crDroid-Branch `16.0`. Manuelle Läufe erlauben einen anderen Branch; ein leeres Branch-Feld
-wählt die NOTICE-Commits. Die echten Patches werden geprüft, angewendet und zurückgenommen.
+wählt die NOTICE-Commits. Ein viertes NOTICE-Feld `branch=<name>` ordnet während
+Branch-Prüfungen den abweichenden Android-Branch eines Vendors zu (GMS: `bka`).
+Die echten Patches werden geprüft, angewendet und zurückgenommen.
 Danach muss jedes Quellrepository wieder sauber sein. Geladen werden nur die betroffenen Dateien.
 Alle vier Skripte lassen sich lokal aus der Repository-Wurzel starten.
 
@@ -77,7 +80,7 @@ und Rücknahme der Patches, keinen ROM-Build oder Gerätetest.
 ## Richtlinien & Standards
 
 * **Modular & getrennt:** Jedes Feature liegt in einem eigenen Verzeichnis mit eigener Dokumentation und passenden Patchdateien.
-* **Reine Quellcode-Patches:** Alle Patches sind Standard-Diffs gegen die Open-Source-Repositories von crDroid. Es werden keine proprietären Binärdateien (`.so`), Firmware-Blobs oder Schlüssel gespeichert.
+* **Reine Quellcode-Patches:** Die Standard-Diffs betreffen Quellcode und Build-Konfigurationen, die crDroid verwendet. Es werden keine proprietären Binärdateien (`.so`), Firmware-Blobs oder Schlüssel gespeichert.
 * **Saubere Trennung:** Patches sind atomar aufgebaut und nach Android-Subsystemen getrennt (`packages/modules/*`, `frameworks/*` etc.).
 
 ---
@@ -101,6 +104,10 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 
 * **[aptX Adaptive Audio Integration](aptx-adaptive/):** Vollständige Sitzungsanmeldung und Framework-Offload-Anbindung für Qualcomm Hardware-DSP-Audio.
   Basis: crDroid-Branch `16.0` (Android 16). Referenzgerät: OnePlus 13 (`dodge`). Andere Geräte: ungetestet.
+* **[GMS-Kompatibilitätsfixes](gms-fixes/):** Paketsichtbarkeit, Google-Uhr-Berechtigung, gezielte uses-library-Ausnahmen und eine optionale OnePlus-Paketauswahl.
+  Basis: crDroid `16.0` mit Evolution X `vendor_gms`, Branch `bka`. Öffentliche Fassung: Quellprüfungen; ROM-/Geräteabnahme offen.
+* **[GPS-Serverauswahl](gps-servers/):** Unabhängig wählbare Konfiguration für GrapheneOS-SUPL und den deutschen NTP-Pool.
+  Basis: crDroid `16.0`, OnePlus `sm8750-common`. Öffentliche Fassung: Quellprüfungen; tatsächliche Servernutzung und GNSS-Messungen offen.
 
 ---
 
