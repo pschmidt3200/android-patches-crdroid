@@ -1,0 +1,35 @@
+name: reference-check
+
+# Applies the real patches to the real upstream sources (only the touched files are
+# downloaded). Manual on purpose: run it before a release, or with a branch name to
+# see whether the patches still apply to the current upstream state.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Upstream branch to test instead of the NOTICE reference commits (e.g. 16.0). Empty = reference commits."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  real-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Apply the real patches to the real upstream sources
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          for notice in */NOTICE; do
+            module="$(dirname "${notice}")"
+            [ -f "${module}/apply-patches.sh" ] || continue
+            if [ -n "${BRANCH}" ]; then
+              bash .github/scripts/check-reference.sh --branch "${BRANCH}" "${module}"
+            else
+              bash .github/scripts/check-reference.sh "${module}"
+            fi
+          done

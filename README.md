@@ -2,7 +2,7 @@
 
 A curated collection of modular patches, framework improvements, and hardware integrations for **crDroid** and AOSP-based custom ROMs.
 
-The goal of this repository is to maintain clean, vendor-neutral source patches that can be applied directly to a ROM build tree or integrated via local manifests.
+The goal of this repository is to maintain clean, modular source patches for AOSP/crDroid — including hardware-specific integrations where a module documents them — without bundled proprietary vendor binaries. The patches are applied directly to a compatible ROM source tree.
 
 ---
 
@@ -53,7 +53,10 @@ Rules for every module:
 These rules are checked automatically on every push: `.github/scripts/check-modules.sh` verifies the
 layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
 `.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
-Both can be run locally from the repository root.
+Before a release, the manual *reference-check* workflow (`.github/scripts/check-reference.sh`) applies
+the real patches to the real upstream sources at the commits listed in each module's `NOTICE` — or to
+the current tip of a branch. It downloads only the files the patches touch. All three scripts can be
+run locally from the repository root.
 
 ---
 

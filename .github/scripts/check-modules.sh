@@ -91,8 +91,8 @@ for module in "${MODULES[@]}"; do
 
     if [[ -f "${module}/NOTICE" ]]; then
         while IFS= read -r repo; do
-            awk -v r="${repo}" '$1 == r && length($2) == 40 && $2 ~ /^[0-9a-f]+$/ { found = 1 } END { exit !found }' \
-                "${module}/NOTICE" || err "${module}/NOTICE: no 40-digit reference commit for ${repo}"
+            awk -v r="${repo}" '$1 == r && length($2) == 40 && $2 ~ /^[0-9a-f]+$/ && $3 ~ /^https:\/\// { found = 1 } END { exit !found }' \
+                "${module}/NOTICE" || err "${module}/NOTICE: no '<repository> <40-digit commit> <https-url>' line for ${repo}"
         done < <(printf '%s\n' "${target[@]}" | sort -u)
     fi
     unset target

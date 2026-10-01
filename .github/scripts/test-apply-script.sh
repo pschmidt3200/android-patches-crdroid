@@ -144,7 +144,23 @@ rm -f "${TOOL}/NOTICE"
 run --check "${TREE}";   expect_rc 0 "missing NOTICE does not abort"
 write_notice
 
-# --- 5. Series inside one repository ---------------------------------------
+# --- 5. An untracked file where a patch creates one -------------------------
+# The dirty check ignores untracked files on purpose (build leftovers), so the
+# simulation has to catch this: it copies whatever exists at the patched paths.
+printf 'diff --git a/new/Created.java b/new/Created.java\nnew file mode 100644\n--- /dev/null\n+++ b/new/Created.java\n@@ -0,0 +1 @@\n+class Created {}\n' \
+    >> "${TOOL}/patches/${first_patch}"
+run --check "${TREE}";   expect_rc 0 "a patch that creates a file passes on a clean tree"
+mkdir -p "${TREE}/${first_repo}/new"
+echo "my own file" > "${TREE}/${first_repo}/new/Created.java"
+run "${TREE}";           expect_rc 2 "an untracked file in the way stops the run"
+expect_out "already exists" "the reason names the existing file"
+[[ "$(content "${first_repo}/new/Created.java")" == "my own file" ]] || fail "untracked file was overwritten"
+[[ "$(content "${first_repo}/${FILE_OF[${first_patch}]}")" == "base" ]] || fail "untracked conflict changed files"
+echo "ok   the untracked file and the tree stay untouched"
+rm -rf "${TREE:?}/${first_repo}/new"
+write_patch "${first_patch}" "${FILE_OF[${first_patch}]}" "base" "patched1"
+
+# --- 6. Series inside one repository ---------------------------------------
 series_repo="$(printf '%s\n' "${ENTRIES[@]}" | cut -d: -f1 | sort | uniq -d | head -n1)"
 if [[ -n "${series_repo}" ]]; then
     mapfile -t series < <(printf '%s\n' "${ENTRIES[@]}" | awk -F: -v r="${series_repo}" '$1 == r {print $2}')
