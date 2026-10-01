@@ -305,6 +305,13 @@ Betriebs. Persönliche Rohmitschnitte sind nicht Teil dieses Publikationspakets.
 - Das Paket schaltet keine fehlenden Codec-Lizenzen, Vendor-Funktionen oder
   Hardwarefähigkeiten frei und enthält keinen allgemeinen MMAP-/AudioPolicy-Fix.
 
+## Support-Hinweis & Haftungsausschluss
+
+> [!IMPORTANT]
+> * **Privates Projekt:** Dies ist ein privates Hobby-Projekt, entstanden für den eigenen Gebrauch auf konkreter Hardware. Es ist **keine** kommerziell gepflegte Software-Distribution.
+> * **Grenzen beim Geräte-Support:** Prüfen und Fehler beheben kann ich nur auf Hardware, die ich selbst besitze (das OnePlus 13 als Referenzgerät). Anfragen zur Portierung oder Fehlersuche auf anderen Geräten kann ich deshalb nicht aktiv bedienen.
+> * **Verantwortung beim Builder:** Patches einspielen und ROMs bauen setzt technisches Wissen voraus. Build, Tests und die Wiederherstellung des Geräts im Fehlerfall liegen in eigener Verantwortung.
+
 ## Lizenz, Risiken und Kurzcheckliste
 
 [NOTICE](NOTICE) beschreibt Upstream-Lizenzen, Referenzstände und Abgrenzung der

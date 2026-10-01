@@ -57,6 +57,17 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 
 ---
 
+## Haftungsausschluss & Support-Hinweis
+
+> [!IMPORTANT]
+> **Privates Hobby-Projekt — Nutzung auf eigene Gefahr:**
+> * **Privater Charakter:** Dieses Repository wird in meiner Freizeit als persönliches Hobby-Projekt gepflegt. Es handelt sich **nicht** um eine kommerzielle Distribution und nicht um eine Plattform mit Vollzeit-Support.
+> * **Kein Support für alle Geräte:** Anpassungen, Tests und Messungen können logischerweise nur auf Geräten stattfinden, die ich selbst besitze und im Alltag nutze (wie dem OnePlus 13 Referenzgerät). Ich kann keinen Support, keine Portierungs-Garantie und keine Fehlerbehebung für Geräte anbieten, die mir physisch nicht vorliegen.
+> * **Für erfahrene Anwender:** Die Patches richten sich an erfahrene ROM-Builder und Entwickler, die mit dem Android-Build-System vertraut sind, Compiler-Fehler interpretieren können und im Fehlerfall wissen, wie man ein Gerät debuggt oder wiederherstellt.
+> * **Keine Gewährleistung:** Alles wird „wie besehen“ (*as is*) ohne jegliche Gewährleistung bereitgestellt. Jegliche Modifikationen am eigenen Gerät oder ROM-Build geschehen auf eigene Verantwortung.
+
+---
+
 ## Lizenz
 
 Soweit nicht in den Unterordnern anders angegeben, stehen alle Patches und Dokumentationen in diesem Repository unter der **Apache License, Version 2.0** (siehe [LICENSE](LICENSE)).

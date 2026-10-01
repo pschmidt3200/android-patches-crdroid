@@ -266,6 +266,13 @@ A codec claim is only complete once the whole path has been looked at. In order:
    restores the previous configuration afterwards. Which apps count as games is the user's list,
    not this patch's business.
 
+## Support Policy & Disclaimer
+
+> [!IMPORTANT]
+> * **Personal Project:** This is a private hobby project developed for personal use on specific hardware. It is **not** a commercially maintained software distribution.
+> * **Device Support Limits:** Verification and fixes can only be performed on hardware I physically own (the OnePlus 13 reference device). Requests to port or troubleshoot other devices cannot be actively fulfilled.
+> * **Builder Responsibility:** Applying custom patches and compiling ROMs requires technical knowledge. You are responsible for your own build, testing, and device recovery.
+
 ## Licence and source baselines
 
 These files are diffs against AOSP / crDroid sources, which are licensed under the Apache License
