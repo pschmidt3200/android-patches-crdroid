@@ -53,11 +53,20 @@ Rules for every module:
 These rules are checked automatically on every push: `.github/scripts/check-modules.sh` verifies the
 layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
 `.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
-Before a release, the manual *reference-check* workflow (`.github/scripts/check-reference.sh`) checks,
-applies and reverses the real patches on the upstream sources at the commits listed in each module's
-`NOTICE` — or at the current tip of a branch. It verifies that every source repository is clean after
-reversal. It downloads only the files the patches touch. All three scripts can be run locally from
-the repository root.
+`.github/scripts/test-markdown-links.sh` verifies that external URLs are ignored and broken local
+links are rejected, including local links with fragments.
+The *reference-check* workflow (`.github/scripts/check-reference.sh`) also runs when patches,
+application scripts, reference notices or CI scripts change, checking the commits in each module's
+`NOTICE`. Every Monday at 06:23 UTC it checks the current crDroid `16.0` branch. Manual runs accept
+another branch; leaving the branch empty selects the NOTICE commits. It checks, applies and
+reverses the real patches, requiring every source repository to be clean afterwards. Only the
+touched files are downloaded. All four scripts can be run locally from the repository root.
+
+CI uses standard `ubuntu-latest` runners, which are [free for public repositories](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+Jobs skip private repositories, have time limits and use no cache or artifact uploads. GitHub may
+delay scheduled runs and [disables them after 60 days without repository activity](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule);
+check the Actions page before relying on the weekly test. These checks establish source
+applicability and rollback, not a ROM build or device acceptance.
 
 ---
 
@@ -114,6 +123,14 @@ git switch --detach aptx-adaptive-v1.0
 Follow the module's README to check and apply its patches to your source tree. Do not mix files
 from different tags or commits. A tag identifies the patch edition; source checks do not establish
 a successful ROM build or device test.
+
+The [release page](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
+provides notes and GitHub's source archives. To publish an aptX release, first create its immutable
+tag and add `.github/releases/<tag>.md`. Pushing new notes to `main` runs the *release* workflow;
+it can also be started manually with a tag. The tagged module must match the module being tested.
+All four checks below must pass before publication. Existing releases are left unchanged.
+Only the release job receives `contents: write` via GitHub's temporary job token; it runs only
+on `main` in this public repository, using the same free standard runner and no asset uploads.
 
 For maintainers, run these checks from the repository root before a new aptX release:
 

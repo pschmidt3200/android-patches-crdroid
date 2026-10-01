@@ -102,8 +102,13 @@ done
 while IFS= read -r markdown; do
     dir="$(dirname "${markdown}")"
     while IFS= read -r link; do
+        if [[ "${link}" =~ ^[A-Za-z][A-Za-z0-9+.-]*: ]] || [[ "${link}" == //* ]]; then
+            continue
+        fi
+        link="${link%%#*}"
+        [[ -n "${link}" ]] || continue
         [[ -e "${dir}/${link}" ]] || err "${markdown}: broken link '${link}'"
-    done < <(grep -oE '\]\([^)#:]+' "${markdown}" | sed 's/^](//' | sort -u)
+    done < <(grep -oE '\]\([^)]*\)' "${markdown}" | sed 's/^](//; s/)$//' | sort -u)
 done < <(find . -name '*.md' -not -path './.git/*' | sed 's|^\./||' | sort)
 
 if [[ ${ERRORS} -gt 0 ]]; then

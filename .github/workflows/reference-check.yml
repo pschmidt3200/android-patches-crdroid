@@ -1,9 +1,26 @@
 name: reference-check
 
 # Applies the real patches to the real upstream sources (only the touched files are
-# downloaded). Manual on purpose: run it before a release, or with a branch name to
-# see whether the patches still apply to the current upstream state.
+# downloaded). Patch changes test the NOTICE baselines; the weekly run tests 16.0.
+# Manual runs still accept a branch name or use the NOTICE reference commits.
 on:
+  push:
+    paths:
+      - '*/patches/**'
+      - '*/apply-patches.sh'
+      - '*/NOTICE'
+      - '.github/scripts/**'
+      - '.github/workflows/reference-check.yml'
+  pull_request:
+    paths:
+      - '*/patches/**'
+      - '*/apply-patches.sh'
+      - '*/NOTICE'
+      - '.github/scripts/**'
+      - '.github/workflows/reference-check.yml'
+  schedule:
+    # Monday 06:23 UTC, after the weekend source sync and away from the hour boundary.
+    - cron: '23 6 * * 1'
   workflow_dispatch:
     inputs:
       branch:
@@ -14,16 +31,28 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   real-sources:
+    # A missing or private repository flag also skips allocation of a runner.
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
       - name: Apply the real patches to the real upstream sources
         env:
           BRANCH: ${{ inputs.branch }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == "schedule" ]]; then
+            BRANCH="16.0"
+          fi
           for notice in */NOTICE; do
             module="$(dirname "${notice}")"
             [ -f "${module}/apply-patches.sh" ] || continue

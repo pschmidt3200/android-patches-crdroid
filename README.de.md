@@ -53,11 +53,21 @@ Regeln für jedes Modul:
 Diese Regeln werden bei jedem Push automatisch geprüft: `.github/scripts/check-modules.sh` prüft
 Aufbau, Patch-Kopfzeilen und -Format sowie, ob Skript, READMEs und `NOTICE` dieselben Patches nennen;
 `.github/scripts/test-apply-script.sh` lässt das `apply-patches.sh` jedes Moduls gegen einen
-Wegwerf-Baum laufen. Vor einem Release prüft der manuelle Workflow *reference-check*
-(`.github/scripts/check-reference.sh`) die echten Patches auf den Upstream-Quellen, wendet sie an und
-nimmt sie wieder zurück — an den Commits aus der `NOTICE` des Moduls oder an der aktuellen Spitze
-eines Branches. Danach muss jedes Quellrepository wieder sauber sein. Dabei werden nur die Dateien
-geladen, die die Patches anfassen. Alle drei Skripte lassen sich lokal aus der Repository-Wurzel starten.
+Wegwerf-Baum laufen. `.github/scripts/test-markdown-links.sh` prüft, dass externe URLs ignoriert
+und fehlende lokale Linkziele abgelehnt werden, auch mit Fragmenten. Der Workflow *reference-check*
+(`.github/scripts/check-reference.sh`) läuft zusätzlich bei Änderungen an Patches,
+Anwendungsskripten, Referenznachweisen oder CI-Skripten und
+prüft dann die Commits aus der `NOTICE` jedes Moduls. Jeden Montag um 06:23 UTC prüft er den
+aktuellen crDroid-Branch `16.0`. Manuelle Läufe erlauben einen anderen Branch; ein leeres Branch-Feld
+wählt die NOTICE-Commits. Die echten Patches werden geprüft, angewendet und zurückgenommen.
+Danach muss jedes Quellrepository wieder sauber sein. Geladen werden nur die betroffenen Dateien.
+Alle vier Skripte lassen sich lokal aus der Repository-Wurzel starten.
+
+Die CI verwendet Standard-Runner vom Typ `ubuntu-latest`, die [für öffentliche Repositories kostenlos sind](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+Jobs setzen bei privaten Repositories aus, haben Zeitlimits und laden keine Caches oder Artefakte
+hoch. GitHub kann geplante Läufe verzögern und [deaktiviert sie nach 60 Tagen ohne Repo-Aktivität](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule);
+vor dem Vertrauen auf die Wochenprüfung die Actions-Seite prüfen. Diese Tests belegen Anwendung
+und Rücknahme der Patches, keinen ROM-Build oder Gerätetest.
 
 ---
 
@@ -115,6 +125,15 @@ git switch --detach aptx-adaptive-v1.0
 Anschließend die Modul-README zum Prüfen und Anwenden im eigenen Quellbaum verwenden. Keine Dateien
 aus verschiedenen Tags oder Commits mischen. Ein Tag bezeichnet die Patchfassung; Quellprüfungen
 belegen noch keinen erfolgreichen ROM-Build oder Gerätetest.
+
+Die [Release-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
+enthält Hinweise und GitHubs Quellarchive. Für ein aptX-Release zuerst das unveränderliche Tag
+anlegen und `.github/releases/<tag>.md` ergänzen. Neue Notizen auf `main` starten den Workflow
+*release*; er lässt sich auch manuell mit einem Tag starten. Das getaggte Modul muss mit dem
+geprüften Modul übereinstimmen. Alle vier Prüfungen unten müssen vor der Veröffentlichung bestehen.
+Bestehende Releases bleiben unverändert. Nur der Release-Job erhält `contents: write` über
+GitHubs temporäres Job-Token. Er läuft ausschließlich auf `main` dieses öffentlichen Repos,
+mit demselben kostenlosen Standard-Runner und ohne Asset-Uploads.
 
 Vor einem neuen aptX-Release führen Maintainer diese Prüfungen in der Repository-Wurzel aus:
 

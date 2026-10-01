@@ -7,9 +7,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   modules:
+    # Standard hosted runners are free for public repositories; skip private copies.
+    if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
 
@@ -21,6 +28,9 @@ jobs:
 
       - name: Module structure and patch format
         run: bash .github/scripts/check-modules.sh
+
+      - name: Markdown link validation behaviour
+        run: bash .github/scripts/test-markdown-links.sh
 
       - name: apply-patches.sh behaviour
         run: |
