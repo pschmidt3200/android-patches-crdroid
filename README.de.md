@@ -144,40 +144,48 @@ Geräten sind als Information willkommen — bitte vorher den Haftungsausschluss
 
 ## Modul-Releases
 
-Jedes Modul verwendet eigene Tags nach `<modul>-v<version>`, beispielsweise:
+Das [Sammel-Release V1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
+hält die vollständige Quellpatch-Sammlung vom 01.10.2026 fest. Es enthält diese Modulstände:
 
-| Modul | Beispiel für das Tagformat |
+| Modul | Release-Tag |
 |---|---|
-| `aptx-adaptive` | `aptx-adaptive-v1.0` (bestehendes Release) |
+| `aptx-adaptive` | `aptx-adaptive-v1.1` |
 | `gms-fixes` | `gms-fixes-v1.0` |
 | `gps-servers` | `gps-servers-v1.0` |
 | `donation-disable` | `donation-disable-v1.0` |
 
-Die Beispiele zeigen das Namensschema; sie behaupten kein vorhandenes Release für jedes Modul.
-Versionen haben zwei oder drei Zahlenbestandteile und optional einen Zusatz wie `-rc.1`.
+Modul-Tags verwenden `<modul>-v<version>`, Sammel-Tags `v<version>`. Versionen haben zwei
+oder drei Zahlenbestandteile; Modulversionen erlauben einen Zusatz wie `-rc.1`.
+Das frühere [aptX v1.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
+bleibt als ursprüngliche Referenz erhalten. V1 bezeichnet eine Quellpatch-Fassung: aptX hat eine
+dokumentierte Geräteabnahme; für die öffentlichen GMS-, GPS- und Donation-Fassungen bleiben
+ROM-/Gerätetests offen.
 
-Für das bestehende aptX-Release den gesamten Modulstand über sein Tag auswählen:
+Für den vollständigen V1-Stand:
 
 ```bash
 git clone https://github.com/pschmidt3200/android-patches-crdroid.git
 cd android-patches-crdroid
-git switch --detach aptx-adaptive-v1.0
+git switch --detach v1.0
 ```
 
 Anschließend die Modul-README zum Prüfen und Anwenden im eigenen Quellbaum verwenden. Keine Dateien
 aus verschiedenen Tags oder Commits mischen. Ein Tag bezeichnet die Patchfassung; Quellprüfungen
 belegen noch keinen erfolgreichen ROM-Build oder Gerätetest.
 
-Die [Release-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
-enthält Hinweise und GitHubs Quellarchive. Für ein Modul-Release zuerst das unveränderliche Tag
-anlegen und pushen, danach `.github/releases/<tag>.md` ergänzen. Neue Notizen auf `main` starten
+Die [Release-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
+enthält Hinweise und GitHubs Quellarchive. `.github/releases/<tag>.md` committen, den Commit
+prüfen, danach unveränderliche Tags darauf setzen und `main` mit den Tags gemeinsam pushen.
+Neue Notizen auf `main` starten
 den Workflow *release*; er lässt sich auch manuell mit einem Tag starten. Das getaggte Modul muss
 mit dem geprüften Commit übereinstimmen und darf keine uncommitteten Änderungen enthalten.
 Der Helfer prüft **alle unveröffentlichten Kandidaten vor dem ersten Release**, einschließlich
 Installer-Konsistenz und der vier Prüfungen unten. Bestehende Releases bleiben unverändert.
 Bei einem Veröffentlichungsfehler nennt er bereits erzeugte Releases; ein erneuter Lauf prüft
 die verbleibenden Kandidaten. Neue Modul-Releases ersetzen nicht automatisch GitHubs globale
-*Latest*-Auswahl. Nur der Release-Job erhält `contents: write` über
+*Latest*-Auswahl. Sammel-Releases prüfen den vollständigen Repository-Stand und alle Module,
+werden nach den ausstehenden Modul-Releases veröffentlicht und als *Latest* markiert.
+Nur der Release-Job erhält `contents: write` über
 GitHubs temporäres Job-Token. Er läuft ausschließlich auf `main` dieses öffentlichen Repos,
 mit demselben kostenlosen Standard-Runner und ohne Asset-Uploads.
 

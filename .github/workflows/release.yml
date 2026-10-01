@@ -5,10 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/releases/*-v*.md'
+      - '.github/releases/v*.md'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing module tag with matching .github/releases/<tag>.md notes'
+        description: 'Existing module or collection tag with matching .github/releases/<tag>.md notes'
         required: true
 
 permissions:

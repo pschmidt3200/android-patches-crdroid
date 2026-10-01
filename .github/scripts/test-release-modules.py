@@ -88,6 +88,13 @@ class ReleaseTests(unittest.TestCase):
     def creations(self):
         return [json.loads(line[3:]) for line in self.calls() if line.startswith('gh ["release", "create"')]
 
+    def collection(self):
+        (self.root / ".github/releases/v1.0.md").write_text("# crDroid Patches v1.0\n")
+        (self.root / "README.md").write_text("Collection documentation\n")
+        self.git("add", ".github/releases/v1.0.md", "README.md")
+        self.git("commit", "-qm", "collection")
+        self.git("tag", "v1.0")
+
     def test_all_modules_preflight_before_first_publication(self):
         self.release()
         self.assertEqual([call[2] for call in self.creations()], [f"{mod}-v1.0" for mod in MODULES])
@@ -161,6 +168,44 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn("Already published; left unchanged: aptx-adaptive-v1.0", result.stderr)
         self.assertEqual([call[2] for call in self.creations()],
                          ["aptx-adaptive-v1.0", "donation-disable-v1.0"])
+
+    def test_collection_is_last_latest_and_reuses_module_checks(self):
+        self.collection()
+        self.release()
+        self.assertEqual([call[2] for call in self.creations()],
+                         [f"{mod}-v1.0" for mod in MODULES] + ["v1.0"])
+        self.assertIn("--latest=true", self.creations()[-1])
+        for call in self.creations()[:-1]:
+            self.assertIn("--latest=false", call)
+        for module in MODULES:
+            self.assertEqual(self.calls().count(f"test-apply-script.sh {module}"), 1)
+
+    def test_collection_only_preflight_covers_every_module(self):
+        self.collection()
+        self.release("--check", "v1.0")
+        self.assertEqual(self.creations(), [])
+        for module in MODULES:
+            self.assertIn(f"check-reference.sh --branch 16.0 {module}", self.calls())
+
+    def test_collection_gate_failure_or_changed_root_prevents_publication(self):
+        self.collection()
+        self.release("v1.0", success=False, FAIL_GATE="check-reference.sh --branch 16.0 gps-servers")
+        self.assertEqual(self.creations(), [])
+        (self.root / "README.md").write_text("uncommitted documentation\n")
+        result = self.release("v1.0", success=False)
+        self.assertIn("uncommitted changes", result.stderr)
+        self.git("add", "README.md")
+        self.git("commit", "-qm", "different root snapshot")
+        result = self.release("v1.0", success=False)
+        self.assertIn("differs from the payload", result.stderr)
+        self.assertEqual(self.creations(), [])
+
+    def test_existing_collection_is_immutable(self):
+        self.collection()
+        (self.root / "README.md").write_text("new documentation\n")
+        self.release("v1.0", PUBLISHED="v1.0")
+        self.assertEqual(self.creations(), [])
+        self.assertEqual(len(self.calls()), 1)
 
 
 if __name__ == "__main__":

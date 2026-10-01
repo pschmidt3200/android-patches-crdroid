@@ -142,39 +142,45 @@ please read the disclaimer below first.
 
 ## Module Releases
 
-Each module uses its own `<module>-v<version>` tags. For example:
+The [V1 collection release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
+freezes the complete 2026-10-01 source-patch collection. Its module editions are:
 
-| Module | Tag format example |
+| Module | Release tag |
 |---|---|
-| `aptx-adaptive` | `aptx-adaptive-v1.0` (existing release) |
+| `aptx-adaptive` | `aptx-adaptive-v1.1` |
 | `gms-fixes` | `gms-fixes-v1.0` |
 | `gps-servers` | `gps-servers-v1.0` |
 | `donation-disable` | `donation-disable-v1.0` |
 
-Examples describe the naming scheme; they do not mean a release exists for every module.
-Versions have two or three numeric components and may have a suffix such as `-rc.1`.
+Module tags use `<module>-v<version>`; collection tags use `v<version>`. Versions have
+two or three numeric components; module versions may have a suffix such as `-rc.1`.
+The earlier [aptX v1.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
+remains available as the original reference. V1 is a source-patch edition: aptX has documented
+device acceptance; GMS, GPS and donation-disable still require their public-edition ROM/device tests.
 
-To use the existing aptX release, keep the whole module at its release tag:
+To use the complete V1 snapshot:
 
 ```bash
 git clone https://github.com/pschmidt3200/android-patches-crdroid.git
 cd android-patches-crdroid
-git switch --detach aptx-adaptive-v1.0
+git switch --detach v1.0
 ```
 
 Follow the module's README to check and apply its patches to your source tree. Do not mix files
 from different tags or commits. A tag identifies the patch edition; source checks do not establish
 a successful ROM build or device test.
 
-The [release page](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
-provides notes and GitHub's source archives. To publish a module release, first create and push
-its immutable tag, then add `.github/releases/<tag>.md`. Pushing new notes to `main` runs the
+The [release page](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
+provides notes and GitHub's source archives. To publish, commit `.github/releases/<tag>.md`,
+review and verify that commit, then create immutable tags at it and push `main` and the tags together.
+Pushing new notes to `main` runs the
 *release* workflow; it can also be started manually with a tag. The tagged module must match
 the tested commit and have no uncommitted changes. The helper checks **all unpublished candidates
 before creating any release**, including generated installer consistency and the four checks below.
 Existing releases are left unchanged. A publication failure reports which releases were already
 created; rerunning checks the remaining candidates. New module releases do not automatically
-replace GitHub's global *Latest* selection.
+replace GitHub's global *Latest* selection. Collection releases check the complete repository
+snapshot and all modules, are published after pending module releases, and become *Latest*.
 Only the release job receives `contents: write` via GitHub's temporary job token; it runs only
 on `main` in this public repository, using the same free standard runner and no asset uploads.
 
