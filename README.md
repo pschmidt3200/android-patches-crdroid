@@ -19,6 +19,7 @@ android-patches-crdroid/
 ├── aptx-adaptive/             # Qualcomm aptX Adaptive DSP offload & BT integration
 │   ├── README.md              # Detailed module documentation & requirements
 │   ├── README.de.md           # German module documentation
+│   ├── apply-patches.sh       # Automated patch installation & verification script
 │   ├── NOTICE                 # Upstream attribution & component licensing
 │   └── patches/               # Target-specific .patch files (Bluetooth, Framework, HAL)
 │

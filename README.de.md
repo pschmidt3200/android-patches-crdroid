@@ -19,6 +19,7 @@ android-patches-crdroid/
 ├── aptx-adaptive/             # aptX Adaptive DSP-Offload & Bluetooth-Anbindung
 │   ├── README.md              # Modul-Dokumentation & Voraussetzungen (EN)
 │   ├── README.de.md           # Deutsche Modul-Dokumentation
+│   ├── apply-patches.sh       # Automatisches Installations- & Prüfskript
 │   ├── NOTICE                 # Herkunftsnachweise & Lizenzen
 │   └── patches/               # Git-Patches (Bluetooth, Frameworks, Settings)
 │

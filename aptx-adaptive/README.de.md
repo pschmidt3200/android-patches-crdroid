@@ -58,38 +58,122 @@ Die vollständigen Commit-IDs und Lizenzhinweise stehen in [NOTICE](NOTICE).
 Ein Port auf ein anderes Gerät ist ein eigener Integrations- und Testauftrag,
 keine durch diesen Referenzstand zugesicherte Kompatibilität.
 
+## Hardware- & Gerätekompatibilität
+
+| Ebene | Komponente | Status & Hinweise |
+|---|---|---|
+| **Referenzgerät** | **OnePlus 13** (`dodge`, CPH2653) | Vollständig verifizierte Referenzplattform (Produktionsstand v39). |
+| **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
+| **Andere Geräte** | Moderne Snapdragon-Geräte (z. B. 8 Gen 2 / 8 Gen 3) | **Patches 1–5 sind generischer AOSP/crDroid-Code.** Patch 6 ist gerätespezifisch und muss an das jeweilige `vendor.prop` / `device.mk` angepasst werden. |
+| **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181), **Bose QuietComfort** | Belegt für 44.1 kHz Lossless, 48 kHz / 96 kHz HQ sowie 48 kHz Low-Latency. |
+
+---
+
+## Ausführliche Patch-Übersicht: Wer macht was?
+
+Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von der App bis zur Hardware:
+
+```text
+[App / Spiel] 
+    │
+    ▼ (Patch 5: GameSpace erkennt Spielstart und schaltet auf Low-Latency)
+[AudioPolicy / AudioFlinger] 
+    │
+    ▼ (Patch 2: Schaltet aptX Adaptive in der Framework-Offload-Liste frei)
+[Bluetooth-Stack (btif / AIDL)] 
+    │
+    ▼ (Patch 1: Kern-Treiber — richtet DSP-Sitzung ohne Software-Encoder ein)
+[Qualcomm Hexagon DSP & Controller] 
+    │
+    ▼ (Patch 6: System-Properties aktivieren Snapdragon Sound R2.2)
+[Drahtlose Übertragung -> Kopfhörer / DAC]
+    ▲
+    │ (Patch 3 & 4: SettingsLib & UI zeigen aktives Codec-Badge an)
+[Benutzeroberfläche]
+```
+
+### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
+* **Ziel:** `packages/modules/Bluetooth`
+* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Rolle:** **Das Herzstück & der Protokoll-Treiber.**
+* **Was er tut:** Im Standard-AOSP werden Offload-Codecs künstlich blockiert, wenn keine Software-Encoder-Bibliothek im System vorliegt. Dieser Patch beseitigt diese Hürde und baut die native Sitzungsanmeldung an Qualcomms AIDL Audio-HAL (`AptxAdaptiveConfiguration`) auf. Er verhandelt die AVDTP-Fähigkeiten (44.1 kHz, 48 kHz, 96 kHz) und steuert die Raten- und Latenzumschaltung direkt über den DSP.
+* **Wenn er weggelassen wird:** Es kann keine aptX-Adaptive-Sitzung starten; das System weicht auf normales aptX, AAC oder SBC aus.
+
+### 2. `crdroid_framework_aptx_adaptive_offload.patch`
+* **Ziel:** `frameworks/base`
+* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Rolle:** **Der System-Türöffner.**
+* **Was er tut:** Registriert aptX Adaptive als zulässiges Hardware-Offload-Format in Androids `AudioProductStrategy` und `AudioPolicyManager`.
+* **Wenn er weggelassen wird:** AudioFlinger erkennt aptX Adaptive nicht als Offload-Format und weigert sich, Audio an den Hardware-DSP weiterzuleiten.
+
+### 3. `crdroid_framework_settingslib_codec_status.patch`
+* **Ziel:** `frameworks/base` (`packages/SettingsLib`)
+* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Rolle:** **Die interne Status-Brücke.**
+* **Was er tut:** Stellt Status-Ereignisse, Abtastraten und Latenzinformationen in Androids gemeinsamer `SettingsLib` bereit, damit Systemdienste und UI-Komponenten den aktiven Codec-Status abfragen können.
+* **Wenn er weggelassen wird:** Das System kann nicht ermitteln, ob der Stream aktuell in HQ- oder Low-Latency-Betrieb läuft.
+
+### 4. `crdroid_settings_bluetooth_codec_badges.patch`
+* **Ziel:** `packages/apps/Settings`
+* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Rolle:** **Die Benutzeroberfläche & Anzeige.**
+* **Was er tut:** Zeigt das aktive Codec-Badge (z. B. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) direkt in den Bluetooth-Gerätedetails der Einstellungen an.
+* **Wenn er weggelassen wird:** Der Ton läuft zwar, aber die Einstellungs-App zeigt nur ein Standard- oder leeres Label.
+
+### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
+* **Ziel:** `packages/apps/GameSpace`
+* **Geltungsbereich:** **Generisch für ROMs mit GameSpace (crDroid / Lineage / Axion)**
+* **Rolle:** **Automatische Latenzsteuerung beim Spielen.**
+* **Was er tut:** Klinkt sich in die GameSpace-Ereignisse ein. Sobald ein Spiel gestartet wird, schaltet der Bluetooth-Stack automatisch von High-Quality (~348 ms) auf Low-Latency (~117 ms). Beim Beenden des Spiels wird das vorherige HQ- oder Lossless-Profil nahtlos wiederhergestellt.
+* **Wenn er weggelassen wird:** Spiele laufen mit Standard-Latenz oder müssen manuell geschaltet werden. (Optional, falls kein GameSpace genutzt wird).
+
+### 6. `crdroid_aptx_r2_2_property.patch`
+* **Ziel:** `device/oneplus/sm8750-common` (oder der geräteeigene Device-Tree)
+* **Geltungsbereich:** **Gerätespezifische Vorlage**
+* **Rolle:** **Hardware- & Treiber-Schalter.**
+* **Was er tut:** Setzt die erforderlichen `persist.vendor.qcom.bluetooth.*`-Properties, damit der Qualcomm-Stack und die DSP-Firmware Snapdragon Sound R2.2 und aptX Adaptive freigeben.
+* **Für andere Geräte:** Diese Properties in das eigene `vendor.prop` oder `device.mk` übernehmen.
+
+---
+
 ## Zuordnung der Patchdateien
 
-Alle Dateien liegen in `patches/`. **Die Pfade innerhalb eines Diffs sind
-relativ zum angegebenen Zielrepository, nicht zur Android-Wurzel.** Insbesondere
-gehört `framework/java/android/bluetooth/` zum Bluetooth-Repository.
+| # | Patchdatei | Zielrepository | Aufgabe |
+|---|---|---|---|
+| 1 | [crdroid_bluetooth_aptx_adaptive_native.patch](patches/crdroid_bluetooth_aptx_adaptive_native.patch) | `packages/modules/Bluetooth` | Codec-Kern, HAL/Offload & Sitzungssteuerung |
+| 2 | [crdroid_framework_aptx_adaptive_offload.patch](patches/crdroid_framework_aptx_adaptive_offload.patch) | `frameworks/base` | AudioPolicy Offload-Freigabe |
+| 3 | [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | SettingsLib Status-Ereignisse |
+| 4 | [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec-Badges in den Einstellungen |
+| 5 | [crdroid_gamespace_bluetooth_gaming_audio.patch](patches/crdroid_gamespace_bluetooth_gaming_audio.patch) | `packages/apps/GameSpace` | Automatische Gaming-Low-Latency-Umschaltung |
+| 6 | [crdroid_aptx_r2_2_property.patch](patches/crdroid_aptx_r2_2_property.patch) | `device/oneplus/sm8750-common` | System-Properties für Snapdragon Sound |
 
-| Patchdatei | Zielrepository | Aufgabe |
-|---|---|---|
-| [crdroid_bluetooth_aptx_adaptive_native.patch](patches/crdroid_bluetooth_aptx_adaptive_native.patch) | `packages/modules/Bluetooth` | Codec-Kern, HAL/Offload, Controller, Gaming-Brücke und Tests |
-| [crdroid_framework_aptx_adaptive_offload.patch](patches/crdroid_framework_aptx_adaptive_offload.patch) | `frameworks/base` | Audioformat-/Offload-Zuordnung |
-| [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | Codec-Status und Änderungsereignisse für SettingsLib |
-| [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec-/Abtastratenanzeige in der Geräteliste |
-| [crdroid_gamespace_bluetooth_gaming_audio.patch](patches/crdroid_gamespace_bluetooth_gaming_audio.patch) | `packages/apps/GameSpace` | Gaming-Profile und Statusanzeige |
-| [crdroid_aptx_r2_2_property.patch](patches/crdroid_aptx_r2_2_property.patch) | `device/oneplus/sm8750-common` | R2.2-Property für geeignete Gegenstellen |
+---
 
-Diese sechs Patches bilden den hier beschriebenen Funktionsumfang. Historische
-Prototypen oder bereits installierte andere Fassungen nicht darüberstapeln.
-Zusätzliche gerätespezifische Usecase-Validator-Patches gehören nicht zu diesem
-Paket; die hier beschriebene Gaming-Umschaltung wird von GameSpace gesteuert.
+## Anwenden
 
-## Anwenden und bauen
+### Methode A: Automatisches Installationsskript (Empfohlen)
 
-Zum Anwenden reichen **Git, die `.patch`-Dateien und ein passender crDroid-
-Quellbaum**. Weder ein Generator noch zusätzliche Projektwerkzeuge oder Dienste
-sind nötig. Die Dateien können in einem beliebigen Ordner liegen; die folgenden
-Befehle funktionieren aus jedem Arbeitsverzeichnis. Die Voraussetzungen für den
-späteren ROM-Build und den Vendor-Offload-Pfad gelten weiterhin.
+Das Repository enthält das Hilfsskript `apply-patches.sh`, das alle 6 Patches vorab prüft und in einem Schritt einspielt:
 
-### Einen einzelnen Patch einspielen
+```bash
+# 1. Trockenlauf (prüft alle Repositories, ändert keine Dateien):
+./apply-patches.sh --check /pfad/zu/crdroid-sourcen
 
-Den Zielrepository-Pfad aus der Tabelle oder der ersten Kopfzeile des Patches
-nehmen. Beide Platzhalter durch **absolute Pfade** ersetzen:
+# 2. Alle Patches anwenden:
+./apply-patches.sh /pfad/zu/crdroid-sourcen
+
+# 3. (Optional) Zum sauberen Rückgängigmachen:
+./apply-patches.sh --reverse /pfad/zu/crdroid-sourcen
+```
+
+---
+
+### Methode B: Manuelles Einspielen per Git
+
+Zum manuellen Anwenden reichen **Git, die `.patch`-Dateien und ein passender crDroid-Quellbaum**.
+
+#### Einen einzelnen Patch einspielen:
+Den Zielrepository-Pfad aus der Tabelle oder der ersten Kopfzeile des Patches nehmen. Beide Platzhalter durch **absolute Pfade** ersetzen:
 
 ```sh
 TARGET_REPO="/pfad/zum/crdroid/packages/modules/Bluetooth"

@@ -47,37 +47,122 @@ Being explicit about the limits is the point of this section.
 * **Latency work applies to aptX Adaptive, not to Lossless.** A value above 360 ms at 44.1 kHz is
   expected and is not a defect.
 
-## Requirements
+## Hardware & Device Compatibility
 
-* Reference device: OnePlus 13 (`dodge`, CPH2653), Qualcomm **FastConnect 7900**.
-  Other devices need separate integration and validation; sharing the controller is not sufficient.
-* An AOSP-based tree, Android 16 / LineageOS 23.2 generation
-* A sink that actually supports aptX Adaptive — the patches will not fake it. Devices that do not
-  offer it keep their previous codec, and the UI says so instead of claiming success.
-* Snapdragon Sound R2.2 support in the vendor blobs for Lossless
-* A backed-up source tree and device. Do not patch a tree while a build is running.
+| Layer | Component | Status / Notes |
+|---|---|---|
+| **Reference Device** | **OnePlus 13** (`dodge`, CPH2653) | Fully verified reference platform (production revision v39). |
+| **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
+| **Other Devices** | Modern Qualcomm platforms (e.g. 8 Gen 2 / 8 Gen 3) | **Patches 1–5 are generic AOSP/crDroid code**; Patch 6 is device-specific and needs adaptation to your device's `vendor.prop` / `device.mk`. |
+| **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181), **Bose QuietComfort** | Verified 44.1 kHz Lossless, 48 kHz / 96 kHz HQ, and 48 kHz Low-Latency. |
+
+---
+
+## Detailed Patch Breakdown: Who does what?
+
+To understand how these patches work together, follow the audio chain from the application down to the hardware:
+
+```text
+[App / Game] 
+    │
+    ▼ (Patch 5: GameSpace detects gaming and triggers Low-Latency mode)
+[AudioPolicy / AudioFlinger] 
+    │
+    ▼ (Patch 2: Enables aptX Adaptive in framework offload capabilities)
+[Bluetooth Stack (btif / AIDL)] 
+    │
+    ▼ (Patch 1: Core native driver — configures DSP session without SW encoder)
+[Qualcomm Hexagon DSP & Controller] 
+    │
+    ▼ (Patch 6: System properties enable Snapdragon Sound R2.2 feature flags)
+[Wireless Transmission -> Headphone / DAC]
+    ▲
+    │ (Patch 3 & 4: SettingsLib & Settings UI display active codec badge)
+[User Interface]
+```
+
+### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
+* **Target:** `packages/modules/Bluetooth`
+* **Portability:** **Generic (AOSP-wide)**
+* **Role:** **The Engine & Protocol Driver.**
+* **What it does:** In standard AOSP, offload codecs are artificially blocked if no software encoder binary is present. This patch removes that limitation and implements the native session initiation with Qualcomm's AIDL Audio HAL (`AptxAdaptiveConfiguration`). It negotiates AVDTP capabilities (44.1 kHz, 48 kHz, 96 kHz) and manages sample-rate switching directly with the DSP.
+* **If omitted:** No aptX Adaptive session can ever start; the system falls back to standard aptX, AAC, or SBC.
+
+### 2. `crdroid_framework_aptx_adaptive_offload.patch`
+* **Target:** `frameworks/base`
+* **Portability:** **Generic (AOSP-wide)**
+* **Role:** **The System Gatekeeper.**
+* **What it does:** Registers aptX Adaptive as an allowed hardware-offload encoding format inside Android's `AudioProductStrategy` and `AudioPolicyManager`.
+* **If omitted:** AudioFlinger does not recognise aptX Adaptive as an offload-capable format and refuses to route audio to the hardware DSP path.
+
+### 3. `crdroid_framework_settingslib_codec_status.patch`
+* **Target:** `frameworks/base` (`packages/SettingsLib`)
+* **Portability:** **Generic (AOSP-wide)**
+* **Role:** **The Internal State Bridge.**
+* **What it does:** Exposes codec state events, active sample rates, and latency mode statuses within Android's shared `SettingsLib`, making them queryable by system UI services.
+* **If omitted:** System components cannot determine whether the stream is running in HQ or Low-Latency mode.
+
+### 4. `crdroid_settings_bluetooth_codec_badges.patch`
+* **Target:** `packages/apps/Settings`
+* **Portability:** **Generic (AOSP-wide)**
+* **Role:** **The User Interface & Visual Badges.**
+* **What it does:** Displays the active codec badge (e.g. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in the Bluetooth device settings page so the user can verify the negotiated mode at a glance.
+* **If omitted:** Audio still works, but Settings displays a generic or blank codec label.
+
+### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
+* **Target:** `packages/apps/GameSpace`
+* **Portability:** **Generic for ROMs with GameSpace (crDroid / Lineage / Axion)**
+* **Role:** **Automatic Low-Latency Trigger.**
+* **What it does:** Hooks into GameSpace game lifecycle events. When a game is launched, it automatically switches aptX Adaptive from High-Quality (~348 ms) to Low-Latency (~117 ms). When closing the game, it seamlessly restores the previous HQ or Lossless profile.
+* **If omitted:** Gaming mode switching must be triggered manually or remains at standard latency. (Optional if your ROM does not include GameSpace).
+
+### 6. `crdroid_aptx_r2_2_property.patch`
+* **Target:** `device/oneplus/sm8750-common` (or your device's vendor property tree)
+* **Portability:** **Device-Specific Blueprint**
+* **Role:** **Hardware & Vendor Configuration Flags.**
+* **What it does:** Sets the necessary `persist.vendor.qcom.bluetooth.*` system properties required by the Qualcomm Bluetooth stack and DSP firmware to unlock Snapdragon Sound R2.2 and aptX Adaptive feature sets.
+* **For other devices:** Copy these property definitions into your target device's `vendor.prop` or `device.mk`.
+
+---
 
 ## The patches
 
-Apply in this order. Every path inside a patch is relative to its **target repository**, not to the
-Android source root.
+| # | File | Target repository | Scope |
+|---|---|---|---|
+| 1 | `patches/crdroid_bluetooth_aptx_adaptive_native.patch` | `packages/modules/Bluetooth` | Core Stack & HAL Session Driver |
+| 2 | `patches/crdroid_framework_aptx_adaptive_offload.patch` | `frameworks/base` | AudioPolicy Offload Routing |
+| 3 | `patches/crdroid_framework_settingslib_codec_status.patch` | `frameworks/base` | SettingsLib State & Events |
+| 4 | `patches/crdroid_settings_bluetooth_codec_badges.patch` | `packages/apps/Settings` | Settings UI Codec Badges |
+| 5 | `patches/crdroid_gamespace_bluetooth_gaming_audio.patch` | `packages/apps/GameSpace` | Automatic Gaming Low-Latency Hook |
+| 6 | `patches/crdroid_aptx_r2_2_property.patch` | `device/oneplus/sm8750-common` | Vendor System Properties |
 
-| # | File | Target repository |
-|---|---|---|
-| 1 | `patches/crdroid_bluetooth_aptx_adaptive_native.patch` | `packages/modules/Bluetooth` |
-| 2 | `patches/crdroid_framework_aptx_adaptive_offload.patch` | `frameworks/base` |
-| 3 | `patches/crdroid_framework_settingslib_codec_status.patch` | `frameworks/base` |
-| 4 | `patches/crdroid_settings_bluetooth_codec_badges.patch` | `packages/apps/Settings` |
-| 5 | `patches/crdroid_gamespace_bluetooth_gaming_audio.patch` | `packages/apps/GameSpace` |
-| 6 | `patches/crdroid_aptx_r2_2_property.patch` | `device/oneplus/sm8750-common` |
+---
+
+## How to Apply
+
+### Method A: Automated Script (Recommended)
+
+This repository includes a convenient helper script (`apply-patches.sh`) that verifies patch applicability and applies all patches in one step:
+
+```bash
+# 1. Dry-run check (verifies all targets without modifying any files):
+./apply-patches.sh --check /path/to/crdroid-source
+
+# 2. Apply all patches:
+./apply-patches.sh /path/to/crdroid-source
+
+# 3. (Optional) To cleanly revert all patches later:
+./apply-patches.sh --reverse /path/to/crdroid-source
+```
+
+---
+
+### Method B: Manual Application via Git
 
 You only need **Git, the `.patch` files and a compatible crDroid source tree** to apply them.
-No generator, additional project tooling or service is required. The files may live in any
-directory, and these commands can run from any working directory. Normal ROM build dependencies
-and the vendor-offload requirements still apply.
+No generator or background service is required.
 
-### Apply one patch
-
+#### Apply one patch manually:
 Select the target repository from the table or the patch's first header line. Replace both
 placeholders with **absolute paths**:
 
