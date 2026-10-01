@@ -1,0 +1,455 @@
+# Target repository: packages/apps/GameSpace
+#
+# GameSpace: switches the sink to 48 kHz low latency when a game starts and
+# restores the previous configuration when it exits.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/app/src/main/java/io/chaldeaprjkt/gamespace/data/AppSettings.kt b/app/src/main/java/io/chaldeaprjkt/gamespace/data/AppSettings.kt
+index 9b832d9..4b04941 100644
+--- a/app/src/main/java/io/chaldeaprjkt/gamespace/data/AppSettings.kt
++++ b/app/src/main/java/io/chaldeaprjkt/gamespace/data/AppSettings.kt
+@@ -107,13 +107,23 @@ class AppSettings @Inject constructor(private val context: Context) {
+         get() = db.getBoolean(KEY_PULSE_BASS_DISABLE, true)
+         set(it) = db.edit().putBoolean(KEY_PULSE_BASS_DISABLE, it).apply()
+ 
++    var audioControlEnabled: Boolean
++        get() = db.getBoolean(KEY_AUDIO_CONTROL_ENABLED, true)
++        set(value) = db.edit().putBoolean(KEY_AUDIO_CONTROL_ENABLED, value).apply()
++
++    var bluetoothAudioMode: Int
++        get() = db.getString(KEY_BLUETOOTH_AUDIO_MODE, "1")?.toIntOrNull() ?: 1
++        set(value) = db.edit().putString(KEY_BLUETOOTH_AUDIO_MODE, value.toString()).apply()
++
+     companion object {
++        const val KEY_AUDIO_CONTROL_ENABLED = "gamespace_audio_control_enabled"
+         const val KEY_AUTO_BRIGHTNESS_DISABLE = "gamespace_auto_brightness_disabled"
+         const val KEY_3SCREENSHOT_DISABLE = "gamespace_tfgesture_disabled"
+         const val KEY_STAY_AWAKE = "gamespace_stay_awake"
+         const val KEY_DANMAKU_NOTIFICATION_MODE = "gamespace_danmaku_notification_mode"
+         const val KEY_CALLS_MODE = "gamespace_calls_mode"
+         const val KEY_RINGER_MODE = "gamespace_ringer_mode"
++        const val KEY_BLUETOOTH_AUDIO_MODE = "gamespace_bluetooth_audio_mode"
+         const val KEY_LOCK_GESTURE = "gamespace_lock_gesture"
+         const val KEY_MENU_OPACITY = "gamespace_menu_opacity"
+         const val KEY_TILE_ORDER = "tile_order"
+diff --git a/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/SessionService.kt b/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/SessionService.kt
+index 35ba42f..0d03255 100644
+--- a/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/SessionService.kt
++++ b/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/SessionService.kt
+@@ -140,7 +140,7 @@ class SessionService : Hilt_SessionService() {
+         }
+         
+         if (currentPackage != null) {
+-            stopGameSession()
++            stopGameSession(switchingGames = true)
+         }
+         
+         Log.i(TAG, "Starting game session for $packageName")
+@@ -153,14 +153,19 @@ class SessionService : Hilt_SessionService() {
+         
+         applyAutoDnd()
+ 
++        applyBluetoothGamingAudio(packageName)
++
+         sidebar.onGameStart(packageName)
+ 
+         callListener.init()
+     }
+ 
+-    private fun stopGameSession() {
+-        Log.i(TAG, "Stopping game session")
++    private fun stopGameSession(switchingGames: Boolean = false) {
++        Log.i(TAG, "Stopping game session (switchingGames=$switchingGames)")
+ 
++        if (!switchingGames) {
++            restoreBluetoothGamingAudio()
++        }
+         sidebar.onGameLeave()
+         session.unregister()
+         callListener.destroy()
+@@ -169,6 +174,73 @@ class SessionService : Hilt_SessionService() {
+         currentPackage = null
+     }
+ 
++    private fun applyBluetoothGamingAudio(packageName: String) {
++        if (!appSettings.audioControlEnabled) {
++            Log.d(TAG, "Bluetooth audio control disabled (System A active) for $packageName")
++            try {
++                val currentSetting = android.provider.Settings.Secure.getInt(
++                    contentResolver,
++                    SETTING_BLUETOOTH_GAMING_AUDIO,
++                    0
++                )
++                if (currentSetting != 0) {
++                    android.provider.Settings.Secure.putInt(
++                        contentResolver,
++                        SETTING_BLUETOOTH_GAMING_AUDIO,
++                        0
++                    )
++                }
++            } catch (e: Exception) {
++                Log.e(TAG, "Failed to reset bluetooth gaming audio setting", e)
++            }
++            return
++        }
++
++        val mode = appSettings.bluetoothAudioMode // 0: Auto (Game decides), 1: Force LL, 2: Force HQ
++        val targetValue = when (mode) {
++            1 -> 1 // Force Low Latency (All games in LL mode)
++            2 -> 2 // Force High Quality (All games in HQ mode)
++            // Auto: return latency ownership to AudioFlinger, which decides from the
++            // audio flags. EXPECTATION, NOT MEASURED: deep-buffer titles stay on HQ. The
++            // first live run never reached LL because of the follow_latency collision, so
++            // the distinction was not observable. Describe it as a property only after a
++            // measurement.
++            else -> 0
++        }
++        try {
++            val currentSetting = android.provider.Settings.Secure.getInt(
++                contentResolver,
++                SETTING_BLUETOOTH_GAMING_AUDIO,
++                0
++            )
++            if (currentSetting != targetValue) {
++                android.provider.Settings.Secure.putInt(
++                    contentResolver,
++                    SETTING_BLUETOOTH_GAMING_AUDIO,
++                    targetValue
++                )
++                Log.i(TAG, "Requested bluetooth gaming audio setting=$targetValue (pref=$mode) for $packageName")
++            } else {
++                Log.d(TAG, "Bluetooth gaming audio setting already at $targetValue for $packageName")
++            }
++        } catch (e: Exception) {
++            Log.e(TAG, "Failed to apply bluetooth gaming audio mode", e)
++        }
++    }
++
++    private fun restoreBluetoothGamingAudio() {
++        try {
++            android.provider.Settings.Secure.putInt(
++                contentResolver,
++                SETTING_BLUETOOTH_GAMING_AUDIO,
++                0 // Zurueck zu Standard / Hi-Res
++            )
++            Log.i(TAG, "Restored bluetooth gaming audio mode=0")
++        } catch (e: Exception) {
++            Log.e(TAG, "Failed to restore bluetooth gaming audio mode", e)
++        }
++    }
++
+     private fun applyAutoDnd() {
+         if (!appSettings.autoDnd) return
+         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+@@ -216,15 +288,14 @@ class SessionService : Hilt_SessionService() {
+         const val ACTION_START = "game_start"
+         const val ACTION_STOP = "game_stop"
+         const val EXTRA_PACKAGE_NAME = "package_name"
++        const val SETTING_BLUETOOTH_GAMING_AUDIO = "bluetooth_aptx_adaptive_gaming_mode"
+ 
+         fun start(context: Context, app: String) {
+-            if (!context.isServiceRunning(SessionService::class.java)) {
+-                Intent(context, SessionService::class.java).apply {
+-                    action = ACTION_START
+-                    putExtra(EXTRA_PACKAGE_NAME, app)
+-                }.let {
+-                    context.startServiceAsUser(it, UserHandle.CURRENT)
+-                }
++            Intent(context, SessionService::class.java).apply {
++                action = ACTION_START
++                putExtra(EXTRA_PACKAGE_NAME, app)
++            }.let {
++                context.startServiceAsUser(it, UserHandle.CURRENT)
+             }
+         }
+ 
+diff --git a/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/tiles/TileRepository.kt b/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/tiles/TileRepository.kt
+index 3931f48..70c79c4 100644
+--- a/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/tiles/TileRepository.kt
++++ b/app/src/main/java/io/chaldeaprjkt/gamespace/gamebar/tiles/TileRepository.kt
+@@ -21,6 +21,7 @@ import android.content.Intent
+ import android.os.Bundle
+ import android.os.SystemProperties
+ import android.provider.Settings
++import android.util.Log
+ import android.widget.Toast
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.MutableState
+@@ -33,6 +34,7 @@ import com.android.axion.platform.AxPlatformClient
+ import io.chaldeaprjkt.gamespace.R
+ import io.chaldeaprjkt.gamespace.data.AppSettings
+ import io.chaldeaprjkt.gamespace.data.SystemSettings
++import io.chaldeaprjkt.gamespace.gamebar.SessionService
+ import javax.inject.Inject
+ import javax.inject.Singleton
+ 
+@@ -118,6 +120,8 @@ class TileRepository @Inject constructor(
+ 
+     private val _tileOrder = mutableStateListOf<String>()
+ 
++    private var gamingAudioState: MutableState<Boolean>? = null
++
+     val allAvailableTiles: List<TileAction>
+         get() = defaultTiles
+ 
+@@ -151,10 +155,16 @@ class TileRepository @Inject constructor(
+             val state = platform.getState(tile.id)
+             if (!state.isEmpty) tile.updateFromState(state)
+         }
++        gamingAudioState?.value = Settings.Secure.getInt(
++            context.contentResolver,
++            SessionService.SETTING_BLUETOOTH_GAMING_AUDIO,
++            0
++        ) == 1
+     }
+ 
+     fun dispose() {
+         platform.removeListener(platformListener)
++        gamingAudioState = null
+     }
+ 
+     fun setBrightnessEnabled(enabled: Boolean) {
+@@ -431,6 +441,34 @@ class TileRepository @Inject constructor(
+             )
+         )
+ 
++        val isGamingAudioState = mutableStateOf(
++            Settings.Secure.getInt(
++                context.contentResolver,
++                SessionService.SETTING_BLUETOOTH_GAMING_AUDIO,
++                0
++            ) == 1
++        )
++        gamingAudioState = isGamingAudioState
++        add(
++            ToggleableTile(
++                id = "gaming_audio",
++                label = context.getString(R.string.tile_gaming_audio),
++                icon = R.drawable.materialsymbols_ic_bluetooth_rounded_filled,
++                state = isGamingAudioState,
++                setter = { enabled ->
++                    try {
++                        Settings.Secure.putInt(
++                            context.contentResolver,
++                            SessionService.SETTING_BLUETOOTH_GAMING_AUDIO,
++                            if (enabled) 1 else 0
++                        )
++                    } catch (e: Exception) {
++                        Log.e("TileRepository", "Failed to toggle gaming audio", e)
++                    }
++                }
++            )
++        )
++
+         add(
+             FixedActionTile(
+                 id = "boost_memory",
+diff --git a/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt b/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt
+index 2d52d14..1bfb4ab 100644
+--- a/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt
++++ b/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt
+@@ -20,6 +20,7 @@ import android.os.Build
+ import android.os.Bundle
+ import android.os.SystemProperties
+ import android.os.Vibrator
++import android.provider.Settings
+ import android.view.View
+ import androidx.activity.result.contract.ActivityResultContracts
+ import androidx.preference.Preference
+@@ -118,11 +119,71 @@ class SettingsFragment : Hilt_SettingsFragment(),
+             isChecked = gameOptimization.isCacheManagementEnabled
+             onPreferenceChangeListener = this@SettingsFragment
+         }
++
++        // Without this listener the summary refreshed only in onResume(): the new choice
++        // became visible only after leaving to the home screen and returning. The two
++        // switches above already have one.
++        findPreference<ListPreference>("gamespace_bluetooth_audio_mode")
++            ?.onPreferenceChangeListener = this@SettingsFragment
++
++        updateBluetoothAudioStatus()
++    }
++
++    /**
++     * Shows, next to the selected preference, what is actually active.
++     *
++     * Without this line the user sees "Low latency" even when the connected headset does
++     * not support aptX Adaptive and nothing changes on the radio link. The Bluetooth side
++     * writes the state to Settings.Secure (A2dpCodecConfig.SETTING_GAMING_AUDIO_STATUS).
++     */
++    private fun updateBluetoothAudioStatus(neueVorgabe: String? = null) {
++        val pref = findPreference<ListPreference>("gamespace_bluetooth_audio_mode") ?: return
++
++        // In the change listener pref.value still holds the OLD value; it is stored only
++        // after we return true. Without this parameter line 1 showed the previous choice.
++        val vorgabe = neueVorgabe ?: pref.value
++        val eintrag = neueVorgabe
++            ?.let { pref.entries?.getOrNull(pref.findIndexOfValue(it))?.toString() }
++            ?: pref.entry
++
++        val status = try {
++            Settings.Secure.getInt(
++                requireContext().contentResolver, SETTING_BT_GAMING_STATUS, -1)
++        } catch (e: Exception) {
++            -1
++        }
++        val statusText = when (status) {
++            0 -> getString(R.string.bt_gaming_status_system)
++            1 -> getString(R.string.bt_gaming_status_ll)
++            2 -> getString(R.string.bt_gaming_status_hq)
++            5 -> getString(R.string.bt_gaming_status_no_aptx)
++            // Transition pending, failed, or headset gone. Without active playback a
++            // transition stays pending until audio plays again (two of three switches in
++            // testing); the display must say so instead of staying silent.
++            STATUS_UNCONFIRMED -> getString(R.string.bt_gaming_status_unconfirmed)
++            // Never set: claim nothing, show only the preference.
++            else -> null
++        }
++
++        // The status describes the LAST session, the preference the NEXT one. Right after a
++        // change they disagree, and the Bluetooth side writes the new state only at the next
++        // game start. Showing line 2 anyway would contradict itself (for example "Low
++        // latency / High quality enforced"), so it stays hidden until the state matches.
++        //
++        // Exceptions: status 5 ("no aptX Adaptive") and STATUS_UNCONFIRMED describe the
++        // CONNECTION, not the preference. They are always shown; hiding them would remove
++        // the line exactly when it is needed.
++        val passtZurVorgabe =
++            status == 5 || status == STATUS_UNCONFIRMED || status == vorgabe?.toIntOrNull()
++
++        pref.summary =
++            if (statusText == null || !passtZurVorgabe) eintrag else "$eintrag\n$statusText"
+     }
+ 
+     override fun onResume() {
+         super.onResume()
+         apps?.updateAppList()
++        updateBluetoothAudioStatus()
+     }
+ 
+     override fun onDisplayPreferenceDialog(preference: Preference) {
+@@ -154,7 +215,19 @@ class SettingsFragment : Hilt_SettingsFragment(),
+                 gameOptimization.isCacheManagementEnabled = newValue as Boolean
+                 return true
+             }
++            "gamespace_bluetooth_audio_mode" -> {
++                // Use newValue, not pref.value: the latter still holds the old value here.
++                updateBluetoothAudioStatus(newValue as? String)
++                return true
++            }
+         }
+         return false
+     }
++
++    private companion object {
++        const val SETTING_BT_GAMING_STATUS =
++            "bluetooth_aptx_adaptive_gaming_status"
++        // Mirrors A2dpCodecConfig.STATUS_UNCONFIRMED: no confirmed state.
++        const val STATUS_UNCONFIRMED = -1
++    }
+ }
+diff --git a/app/src/main/res/values-de-rDE/strings.xml b/app/src/main/res/values-de-rDE/strings.xml
+index cf35e3e..b3628e8 100644
+--- a/app/src/main/res/values-de-rDE/strings.xml
++++ b/app/src/main/res/values-de-rDE/strings.xml
+@@ -151,4 +151,19 @@
+     <!-- Pulse bass haptics -->
+     <string name="pulse_bass_haptics_disabled_title">Disable pulse bass haptics</string>
+     <string name="pulse_bass_haptics_disabled_summary">Automatically disable pulse bass haptics if enabled</string>
++
++    <!-- Audiosteuerung -->
++    <string name="audio_control_category_title">Audiosteuerung</string>
++    <string name="audio_control_switch_title">Klangprofil beim Spielstart umschalten</string>
++    <string name="audio_control_switch_summary">Off: the Bluetooth setting stays as it is. On: the profile selected below is applied when a game starts and reverted when it exits. Only effective with headsets that support aptX Adaptive and 48 kHz - otherwise the switch has no effect.</string>
++    <string name="bluetooth_gaming_audio_title">Profil beim Spielen</string>
++    <string name="bluetooth_gaming_audio_auto">Dem System überlassen</string>
++    <string name="bluetooth_gaming_audio_ll">Geringe Verzögerung</string>
++    <string name="bluetooth_gaming_audio_hq">Hohe Klangqualität</string>
++    <string name="bt_gaming_status_system">Currently controlled by the system</string>
++    <string name="bt_gaming_status_ll">Geringe Verzögerung liegt an</string>
++    <string name="bt_gaming_status_hq">Hohe Klangqualität erzwungen</string>
++    <string name="bt_gaming_status_no_aptx">Unavailable - the connected headset does not run aptX Adaptive</string>
++    <string name="bt_gaming_status_unconfirmed">Not confirmed - takes effect with the next playback</string>
++    <string name="tile_gaming_audio">Gaming-Audio</string>
+ </resources>
+diff --git a/app/src/main/res/values/arrays.xml b/app/src/main/res/values/arrays.xml
+index d290b6f..a7a0563 100644
+--- a/app/src/main/res/values/arrays.xml
++++ b/app/src/main/res/values/arrays.xml
+@@ -56,4 +56,17 @@
+         <item>@string/game_mode_performance</item>
+         <item>@string/game_mode_battery</item>
+     </string-array>
++
++    <!-- Bluetooth Gaming Audio (Option B) -->
++    <string-array name="bluetooth_gaming_audio_entries" translatable="false">
++        <item>@string/bluetooth_gaming_audio_auto</item>
++        <item>@string/bluetooth_gaming_audio_ll</item>
++        <item>@string/bluetooth_gaming_audio_hq</item>
++    </string-array>
++
++    <string-array name="bluetooth_gaming_audio_values" translatable="false">
++        <item>0</item> <!-- Auto (Game decides) -->
++        <item>1</item> <!-- Force LL -->
++        <item>2</item> <!-- Force HQ -->
++    </string-array>
+ </resources>
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 7f1c84f..d767a26 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -176,4 +176,19 @@
+     <!-- Pulse bass haptics -->
+     <string name="pulse_bass_haptics_disabled_title">Disable pulse bass haptics</string>
+     <string name="pulse_bass_haptics_disabled_summary">Automatically disable pulse bass haptics if enabled</string>
++
++    <!-- Audio Control Category -->
++    <string name="audio_control_category_title">Audio control</string>
++    <string name="audio_control_switch_title">Switch audio profile when a game starts</string>
++    <string name="audio_control_switch_summary">Off: your Bluetooth setting is left untouched. On: the profile selected below is applied when a game starts and undone when you leave it. Only works with headsets that support aptX Adaptive at 48 kHz — otherwise the switch has no effect.</string>
++    <string name="bluetooth_gaming_audio_title">Profile while gaming</string>
++    <string name="bluetooth_gaming_audio_auto">Leave it to the system</string>
++    <string name="bluetooth_gaming_audio_ll">Low latency</string>
++    <string name="bluetooth_gaming_audio_hq">High quality</string>
++    <string name="bt_gaming_status_system">The system is in control</string>
++    <string name="bt_gaming_status_ll">Low latency is active</string>
++    <string name="bt_gaming_status_hq">High quality enforced</string>
++    <string name="bt_gaming_status_no_aptx">Not possible — the connected headset does not use aptX Adaptive</string>
++    <string name="bt_gaming_status_unconfirmed">Not confirmed — applies with the next playback</string>
++    <string name="tile_gaming_audio">Gaming Audio</string>
+  </resources>
+diff --git a/app/src/main/res/xml/root_preferences.xml b/app/src/main/res/xml/root_preferences.xml
+index c0e671d..4689970 100644
+--- a/app/src/main/res/xml/root_preferences.xml
++++ b/app/src/main/res/xml/root_preferences.xml
+@@ -126,6 +126,27 @@
+ 
+     </PreferenceCategory>
+ 
++    <PreferenceCategory
++        android:key="game_audio_control"
++        android:title="@string/audio_control_category_title">
++
++        <SwitchPreferenceCompat
++            android:key="gamespace_audio_control_enabled"
++            android:title="@string/audio_control_switch_title"
++            android:summary="@string/audio_control_switch_summary"
++            android:defaultValue="true" />
++
++        <ListPreference
++            android:key="gamespace_bluetooth_audio_mode"
++            android:dependency="gamespace_audio_control_enabled"
++            android:title="@string/bluetooth_gaming_audio_title"
++            android:summary="%s"
++            android:entries="@array/bluetooth_gaming_audio_entries"
++            android:entryValues="@array/bluetooth_gaming_audio_values"
++            android:defaultValue="1" />
++
++    </PreferenceCategory>
++
+     <PreferenceCategory
+         android:key="quick_start_apps_category">
+ 

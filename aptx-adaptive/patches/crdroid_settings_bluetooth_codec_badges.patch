@@ -1,0 +1,121 @@
+# Target repository: packages/apps/Settings
+#
+# Settings: codec badges in the list of paired devices.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/src/com/android/settings/bluetooth/BluetoothDevicePreference.java b/src/com/android/settings/bluetooth/BluetoothDevicePreference.java
+index cc1bba7999c..d558cd243a5 100644
+--- a/src/com/android/settings/bluetooth/BluetoothDevicePreference.java
++++ b/src/com/android/settings/bluetooth/BluetoothDevicePreference.java
+@@ -20,7 +20,11 @@ import static android.os.UserManager.DISALLOW_CONFIG_BLUETOOTH;
+ 
+ import android.app.settings.SettingsEnums;
+ import android.bluetooth.BluetoothAdapter;
++import android.bluetooth.BluetoothCodecConfig;
++import android.bluetooth.BluetoothCodecStatus;
++import android.bluetooth.BluetoothCodecType;
+ import android.bluetooth.BluetoothDevice;
++import android.bluetooth.BluetoothProfile;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.res.Resources;
+@@ -45,9 +49,12 @@ import androidx.preference.PreferenceViewHolder;
+ import com.android.settings.R;
+ import com.android.settings.overlay.FeatureFactory;
+ import com.android.settings.widget.GearPreference;
++import com.android.settingslib.bluetooth.A2dpProfile;
+ import com.android.settingslib.bluetooth.BluetoothUtils;
+ import com.android.settingslib.bluetooth.CachedBluetoothDevice;
++import com.android.settingslib.bluetooth.LeAudioProfile;
+ import com.android.settingslib.bluetooth.LocalBluetoothManager;
++import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
+ import com.android.settingslib.core.instrumentation.MetricsFeatureProvider;
+ import com.android.settingslib.utils.ThreadUtils;
+ 
+@@ -493,6 +500,83 @@ public final class BluetoothDevicePreference extends GearPreference {
+         if (mCachedDevice.getBondState() != BluetoothDevice.BOND_NONE) {
+             summary = mCachedDevice.getConnectionSummary();
+         }
++
++        String codecLabel = getActiveCodecLabel();
++        if (!TextUtils.isEmpty(codecLabel)) {
++            String badge = "[" + codecLabel + "]";
++            if (TextUtils.isEmpty(summary)) {
++                summary = badge;
++            } else {
++                summary = badge + " \u00b7 " + summary;
++            }
++        }
++
+         return summary;
+     }
++
++    @Nullable
++    private String getActiveCodecLabel() {
++        if (mCachedDevice == null || !mCachedDevice.isConnected()) {
++            return null;
++        }
++
++        LocalBluetoothProfileManager profileManager = mLocalBtManager != null
++                ? mLocalBtManager.getProfileManager() : null;
++        if (profileManager == null) {
++            return null;
++        }
++
++        // Check LE Audio first
++        LeAudioProfile leAudioProfile = profileManager.getLeAudioProfile();
++        if (leAudioProfile != null && leAudioProfile.isEnabled(mCachedDevice.getDevice())
++                && (mCachedDevice.isActiveDevice(BluetoothProfile.LE_AUDIO)
++                        || mCachedDevice.isConnectedLeAudioDevice())) {
++            return "LC3";
++        }
++
++        // Check A2DP
++        A2dpProfile a2dpProfile = profileManager.getA2dpProfile();
++        if (a2dpProfile != null && a2dpProfile.isEnabled(mCachedDevice.getDevice())) {
++            BluetoothCodecStatus status = a2dpProfile.getCodecStatus(mCachedDevice.getDevice());
++            if (status != null && status.getCodecConfig() != null) {
++                BluetoothCodecConfig config = status.getCodecConfig();
++                return formatCodecLabel(config);
++            }
++        }
++        return null;
++    }
++
++    @Nullable
++    private String formatCodecLabel(@NonNull BluetoothCodecConfig config) {
++        BluetoothCodecType codecType = config.getExtendedCodecType();
++        if (codecType == null) {
++            return null;
++        }
++
++        String codecName = codecType.getCodecName();
++        if (TextUtils.isEmpty(codecName) || "INVALID CODEC".equals(codecName)) {
++            return null;
++        }
++
++        String sampleRateStr = formatSampleRate(config.getSampleRate());
++        if (sampleRateStr != null && (codecType.getCodecId() == 0x00ad00d7ffL
++                || codecName.contains("aptX Adaptive"))) {
++            return codecName + " " + sampleRateStr;
++        }
++
++        return codecName;
++    }
++
++    @Nullable
++    private static String formatSampleRate(int sampleRate) {
++        return switch (sampleRate) {
++            case BluetoothCodecConfig.SAMPLE_RATE_44100 -> "44.1 kHz";
++            case BluetoothCodecConfig.SAMPLE_RATE_48000 -> "48 kHz";
++            case BluetoothCodecConfig.SAMPLE_RATE_88200 -> "88.2 kHz";
++            case BluetoothCodecConfig.SAMPLE_RATE_96000 -> "96 kHz";
++            case BluetoothCodecConfig.SAMPLE_RATE_176400 -> "176.4 kHz";
++            case BluetoothCodecConfig.SAMPLE_RATE_192000 -> "192 kHz";
++            default -> null;
++        };
++    }
+ }

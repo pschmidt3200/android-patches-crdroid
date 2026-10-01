@@ -1,0 +1,9 @@
+*.log
+*.pcap
+*.cfa
+*.so
+*.bin
+*.orig
+*.rej
+.DS_Store
+*~

@@ -1,0 +1,240 @@
+# aptX Adaptive für crDroid
+
+Stand: 2026-10-01. Quellpatch-Paket für AOSP-abgeleitete crDroid-Bäume;
+Referenzgerät: **OnePlus 13 (`dodge`, CPH2653, SM8750 / FastConnect 7900)**.
+
+**Die Gerätebelege gelten für den produktiven Patchstand v39.** Die englische
+Publikationsfassung übersetzt Bezeichner und Diagnosetexte, ohne die produktive
+Fassung zu ersetzen. Paritäts- und Anwendungstests ersetzen keinen eigenen
+Build und keinen Gerätetest dieser englischen Fassung.
+
+## Was enthalten ist
+
+- Native aptX-Adaptive-Registrierung und AIDL-Offload-Konfiguration im
+  Bluetooth-Stack, einschließlich Qualcomm-Controller-START/STOP/UPDATE_MODE.
+- Zuordnung des aptX-Adaptive-Audioformats zur Framework-Offload-Liste.
+- GameSpace-Steuerung: für Gaming auf bestätigte **48 kHz + Low Latency**
+  wechseln, anschließend zur vorherigen Qualitätskonfiguration zurückkehren.
+  Der Status wird erst nach dem Controller-ACK bestätigt; unbestätigte Zustände
+  bleiben sichtbar. Ein Controller-ACK ist kein Nachweis hörbaren Tons.
+- R2.2-Property und gegenstellenabhängige Aushandlung bei **44,1 kHz** für den
+  vorhandenen Lossless-Offload-Pfad. v39 bevorzugt bei passender R2.2-Gegenstelle
+  Lossless im Alltag; eine explizite Nutzerwahl bleibt vorrangig.
+- Codec-/Abtastratenanzeige in den Bluetooth-Einstellungen und aktualisierte
+  auswählbare Codecs nach einem Reconnect.
+
+**Es wird kein aptX-Encoder implementiert oder mitgeliefert.** Der Encoder
+liegt in der vorhandenen DSP-Firmware. Die Patches ergänzen Anmeldung,
+Konfiguration und Steuerung für einen bereits geeigneten Vendor-Offload-Pfad.
+Der 24-Bit-Offload-Container ist nicht mit einem Nachweis von 24-Bit-Lossless
+oder eines durchgehend bittransparenten Android-Audiopfads gleichzusetzen.
+
+## Voraussetzungen und Referenzstände
+
+- Vollständiger, baubarer crDroid-Quellbaum der Android-16-/LineageOS-23.2-
+  Generation mit passenden Gerätedateien und Vendor-Komponenten für das
+  Zielgerät; die Android-Repository-Pfade unten müssen vorhanden sein.
+- Kompatibler Qualcomm-AIDL-Audio-Provider, DSP-Firmware und Controller.
+  Vendor-Bibliotheken, Firmware, APKs und ROM-Abbilder sind nicht enthalten.
+- Eine Gegenstelle, die aptX Adaptive tatsächlich anbietet; für Lossless muss
+  sie auch die benötigten R2.2-Fähigkeiten anbieten. Eine Property allein
+  schafft keine fehlende Hardware- oder Firmware-Unterstützung.
+- Sicherung des Geräts und der lokalen Änderungen sowie ein stillstehender
+  Build-Baum. Nicht während eines laufenden Builds patchen oder zurückrollen.
+
+Die Patches wurden für folgende Quellstände vorbereitet. Andere Stände müssen
+neu auf Kontext und Verhalten geprüft werden; ein erfolgreicher `repo sync`
+garantiert keine konfliktfreie Anwendung lokaler Patches.
+
+| Android-Repository | Referenz-Commit |
+|---|---|
+| `packages/modules/Bluetooth` | `c575db642364` |
+| `frameworks/base` | `a7b0e5e188fb` |
+| `packages/apps/GameSpace` | `ca3a15a2cb77` |
+| `packages/apps/Settings` | `62faa7098530` |
+| `device/oneplus/sm8750-common` | `30beb69ed08f` |
+
+Die vollständigen Commit-IDs und Lizenzhinweise stehen in [NOTICE](NOTICE).
+Ein Port auf ein anderes Gerät ist ein eigener Integrations- und Testauftrag,
+keine durch diesen Referenzstand zugesicherte Kompatibilität.
+
+## Zuordnung der Patchdateien
+
+Alle Dateien liegen in `patches/`. **Die Pfade innerhalb eines Diffs sind
+relativ zum angegebenen Zielrepository, nicht zur Android-Wurzel.** Insbesondere
+gehört `framework/java/android/bluetooth/` zum Bluetooth-Repository.
+
+| Patchdatei | Zielrepository | Aufgabe |
+|---|---|---|
+| [crdroid_bluetooth_aptx_adaptive_native.patch](patches/crdroid_bluetooth_aptx_adaptive_native.patch) | `packages/modules/Bluetooth` | Codec-Kern, HAL/Offload, Controller, Gaming-Brücke und Tests |
+| [crdroid_framework_aptx_adaptive_offload.patch](patches/crdroid_framework_aptx_adaptive_offload.patch) | `frameworks/base` | Audioformat-/Offload-Zuordnung |
+| [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | Codec-Status und Änderungsereignisse für SettingsLib |
+| [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec-/Abtastratenanzeige in der Geräteliste |
+| [crdroid_gamespace_bluetooth_gaming_audio.patch](patches/crdroid_gamespace_bluetooth_gaming_audio.patch) | `packages/apps/GameSpace` | Gaming-Profile und Statusanzeige |
+| [crdroid_aptx_r2_2_property.patch](patches/crdroid_aptx_r2_2_property.patch) | `device/oneplus/sm8750-common` | R2.2-Property für geeignete Gegenstellen |
+
+Diese sechs Patches bilden den hier beschriebenen Funktionsumfang. Historische
+Prototypen oder bereits installierte andere Fassungen nicht darüberstapeln.
+Zusätzliche gerätespezifische Usecase-Validator-Patches gehören nicht zu diesem
+Paket; die hier beschriebene Gaming-Umschaltung wird von GameSpace gesteuert.
+
+## Anwenden und bauen
+
+Zum Anwenden reichen **Git, die `.patch`-Dateien und ein passender crDroid-
+Quellbaum**. Weder ein Generator noch zusätzliche Projektwerkzeuge oder Dienste
+sind nötig. Die Dateien können in einem beliebigen Ordner liegen; die folgenden
+Befehle funktionieren aus jedem Arbeitsverzeichnis. Die Voraussetzungen für den
+späteren ROM-Build und den Vendor-Offload-Pfad gelten weiterhin.
+
+### Einen einzelnen Patch einspielen
+
+Den Zielrepository-Pfad aus der Tabelle oder der ersten Kopfzeile des Patches
+nehmen. Beide Platzhalter durch **absolute Pfade** ersetzen:
+
+```sh
+TARGET_REPO="/pfad/zum/crdroid/packages/modules/Bluetooth"
+PATCH_FILE="/pfad/zu/aptx-patches/crdroid_bluetooth_aptx_adaptive_native.patch"
+git -C "$TARGET_REPO" status --short
+git -C "$TARGET_REPO" apply --check "$PATCH_FILE"
+```
+
+Eigene Änderungen vorher sichern. Nur wenn die Prüfung erfolgreich endet:
+
+```sh
+git -C "$TARGET_REPO" apply "$PATCH_FILE"
+git -C "$TARGET_REPO" diff --check
+git -C "$TARGET_REPO" diff --stat
+```
+
+`git apply --check` ändert nichts. `git apply` verändert die Quelldateien, erstellt
+aber keinen Commit und installiert nichts auf dem Telefon. Die Bluetooth-Datei
+allein ist nicht das vollständige Funktionspaket; die Zuordnung der übrigen fünf
+Patches steht in der Tabelle. Diese Dateien mit `git apply`, nicht mit `git am`,
+anwenden. Bei einem Fehler nicht mit dem nächsten Befehl weitermachen.
+
+### Alle sechs Patches einspielen
+
+`ANDROID_ROOT` ist die Wurzel des crDroid-Quellbaums, `PATCH_DIR` der Ordner,
+der die sechs `.patch`-Dateien **direkt** enthält. Beide Platzhalter ersetzen.
+Zuerst alle Zielrepositories mit `git status --short` auf fremde Änderungen
+prüfen und den gewünschten Quellstand sichern. Das Beispiel prüft alle sechs
+Diffs, bevor es den ersten anwendet; es ist keine atomare Transaktion.
+
+```sh
+(
+set -eu
+ANDROID_ROOT="/pfad/zum/android-quellbaum"
+PATCH_DIR="/pfad/zu/aptx-patches"
+patches="packages/modules/Bluetooth:crdroid_bluetooth_aptx_adaptive_native.patch
+frameworks/base:crdroid_framework_aptx_adaptive_offload.patch
+frameworks/base:crdroid_framework_settingslib_codec_status.patch
+packages/apps/Settings:crdroid_settings_bluetooth_codec_badges.patch
+packages/apps/GameSpace:crdroid_gamespace_bluetooth_gaming_audio.patch
+device/oneplus/sm8750-common:crdroid_aptx_r2_2_property.patch"
+for item in $patches; do
+    repository="${item%%:*}"
+    patch="${item#*:}"
+    git -C "$ANDROID_ROOT/$repository" apply --check "$PATCH_DIR/$patch"
+done
+for item in $patches; do
+    repository="${item%%:*}"
+    patch="${item#*:}"
+    git -C "$ANDROID_ROOT/$repository" apply "$PATCH_DIR/$patch"
+done
+)
+```
+
+Bei Konflikten stoppen und den betroffenen Hunk gegen Upstream prüfen. Kein
+erzwungenes Apply und kein destruktiver Reset zum Ausprobieren. Mit
+`git apply --reverse --check` lässt sich die Rücknehmbarkeit einer bereits
+angewendeten Fassung prüfen; eine tatsächliche Rücknahme muss in umgekehrter
+Reihenfolge und nach Sicherung eigener Änderungen erfolgen.
+
+### Rücknahme, erneuter Sync und Build
+
+Eine erfolgreiche Vorwärtsprüfung bedeutet: der Patch ist im aktuellen Baum
+anwendbar. Schlägt sie fehl, aber `git -C "$TARGET_REPO" apply --reverse --check "$PATCH_FILE"`
+gelingt, entspricht der Baum den Änderungen bereits; nicht noch
+einmal anwenden. Scheitern beide Prüfungen, sind etwa ein anderer Quellstand,
+Teiländerungen oder ein falsches Zielrepository möglich: Hunk und Diffs prüfen,
+nichts erzwingen. `--reverse --check` prüft nur die Rücknehmbarkeit.
+
+Eine gewollte Rücknahme erfolgt nach Sicherung eigener Änderungen mit
+`git -C "$TARGET_REPO" apply --reverse "$PATCH_FILE"`. Beim gesamten Paket die
+Reihenfolge der Tabelle umkehren. Nicht während eines laufenden Builds arbeiten.
+
+Anschließend `git diff --check` und die Diffs in jedem Zielrepository prüfen und
+den regulären, gerätespezifischen crDroid-Build durchführen. Build, Tests,
+Signierung und Installation liegen beim Anwender. `repo sync` selbst wendet
+dieses Paket nicht automatisch an; nach einem erneuten Sync Vorwärts-/Rückwärts-
+prüfung und Inhalt wieder prüfen. Für die Installation auf dem Gerät muss ein
+neues ROM gebaut und nach dem üblichen gerätespezifischen Verfahren installiert
+werden; eine `.patch`-Datei wird nicht direkt geflasht.
+
+## Am Gerät gegenprüfen
+
+1. Mit einer geeigneten Senke koppeln, aptX Adaptive auswählen und Ton prüfen.
+   Codec, Rate und Container anhand der Geräteanzeige und Bluetooth-/Audio-Logs
+   kontrollieren; „Codec auswählbar“ allein genügt nicht.
+2. Mit der FiiO-Referenz bei 44,1 kHz auch die **LS-Anzeige mit Ton** prüfen.
+   Telefonseitige Aushandlung allein beweist keinen Lossless-Modus der Senke.
+3. Das Bluetooth-Gaming-Audio-Profil in GameSpace aktivieren: bestätigte 48 kHz
+   müssen vor bestätigtem LL stehen. Beim Verlassen des Spiels die vorherige
+   Qualitätskonfiguration kontrollieren, auch bei schnellem Start/Ende/Start.
+4. Pause/Resume sowie Disconnect/Reconnect prüfen, einschließlich Codec-Menü
+   und Gaming-Status. Fremde Codecs dürfen keine aptX-Moduskommandos erhalten.
+5. Erst nach diesen Prüfungen einen längeren Alltagstest bewerten. Unbestätigte
+   Controller-Zustände, Audioaussetzer oder Neustarts nicht als Erfolg werten.
+
+## Belege und Grenzen
+
+Die dokumentierten Referenzläufe umfassen GameSpace-Umschaltungen aus 44,1-kHz-
+Lossless und HQ nach 48-kHz-LL und zurück. Eine Vergleichsmessung des
+dokumentierten Nutzerpfads ergab **117,55 ms gegenüber 348,47 ms**; diese Werte
+sind keine universelle Latenzgarantie für andere Anwendungen oder Senken.
+
+Für den produktiven v39-Stand wurden vom 20.09. bis 01.10.2026 **181 Logstunden
+in einem 249-Stunden-Fenster** ausgewertet, einschließlich eines Neustarts:
+
+- Keine Bluetooth-/Audio-/system_server-Abstürze in den erfassten Stunden.
+- Keine FiiO-Linkverluste im Fenster; **234/234 UPDATE_MODE akzeptiert**.
+- **203 START und 204 STOP**; der einzelne Überhang gehört zu einer fehlenden
+  Logstunde. Die Folge war ansonsten START/STOP, nicht ein ungeklärter STOP-Sturm.
+
+Das ist keine lückenlose 249-Stunden-Messung und kein Nachweis für beliebige
+Hardware. Bei der Bose wurden im selben Fenster elf Link-/Aufbauereignisse
+erfasst, zwei davon bei laufendem Strom; daraus folgt keine Zusage aussetzerfreien
+Betriebs. Persönliche Rohmitschnitte sind nicht Teil dieses Publikationspakets.
+
+**Bekannte Grenzen:**
+
+- FiiO BTR17 ist die Referenz für 44,1/48/96 kHz. Die getestete Bose QC Ultra 2
+  bietet nur 44,1/48 kHz an; Fosi Audio K7 bietet kein aptX Adaptive an. Eine
+  zweite vollständig vermessene 48/96-kHz-Gegenstelle fehlt.
+- Der Low-Latency-Gewinn wurde mit LL am Controller und HQ am DSP beobachtet.
+  Das Paket verspricht keinen eigenständigen DSP-LL-Umbau und ist nicht der
+  separate ältere Codec „aptX Low Latency“.
+- Lossless-Aushandlung, LS-Anzeige und Ton beweisen keine Ende-zu-Ende-
+  Bittransparenz. Der dokumentierte Android-Musikpfad arbeitet weiterhin mit
+  48 kHz und kann vor dem Codec umrechnen. Ein eigener bittransparenter
+  A2DP-Ausgabepfad ist nicht enthalten.
+- Das Paket schaltet keine fehlenden Codec-Lizenzen, Vendor-Funktionen oder
+  Hardwarefähigkeiten frei und enthält keinen allgemeinen MMAP-/AudioPolicy-Fix.
+
+## Lizenz, Risiken und Kurzcheckliste
+
+[NOTICE](NOTICE) beschreibt Upstream-Lizenzen, Referenzstände und Abgrenzung der
+Vendor-Komponenten. Die vollständige Apache-2.0-Lizenz liegt als [LICENSE](LICENSE)
+bei; sie muss mitgeliefert werden und anwendbare Upstream-Hinweise müssen erhalten bleiben.
+Das Paket ist keine offizielle Freigabe der genannten Projekte oder Hersteller.
+Es gibt keine Kompatibilitäts-, Qualitäts- oder Supportzusage. Eigene Builds
+und Flash-Vorgänge können Datenverlust, Boot- oder Audiofehler verursachen und
+Hersteller-Garantie-/Supportbedingungen berühren; gesetzlich nicht abdingbare
+Rechte werden damit nicht pauschal ausgeschlossen.
+
+1. **Voraussetzungen prüfen:** Hardware, Senke, Vendor-Offload, Quellstand,
+   Lizenzen und Backups; laufende Builds stoppen.
+2. **Anwenden:** je Zielrepository zuerst `git apply --check`, dann `git apply`;
+   Diffs und Parität prüfen, Fassungen nicht mischen.
+3. **Bauen:** regulären gerätespezifischen ROM-Build und Tests ausführen.
+4. **Gegenprüfen:** Ton, Codec/Rate, ACK, Gaming-Wechsel und Reconnect am Gerät.

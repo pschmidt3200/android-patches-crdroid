@@ -1,0 +1,65 @@
+aptX Adaptive integration patches for crDroid
+Source snapshot: 2026-10-01; production reference: v39.
+
+UPSTREAM SOURCES AND COMPATIBILITY
+
+This distribution contains source-code diffs against AOSP-derived crDroid
+repositories. It is not a ROM image or an implementation of the proprietary
+aptX encoder. Encoding uses the compatible device's existing Qualcomm audio
+provider and DSP firmware; no vendor firmware, proprietary libraries, vendor
+APKs or SDK binaries are included here.
+
+The affected AOSP-derived Bluetooth, framework and Settings files retain
+their upstream Apache License, Version 2.0, terms and attribution notices.
+Upstream file notices include The Android Open Source Project and Broadcom
+Corporation. GameSpace also carries Apache License, Version 2.0; its affected
+sources include crDroid Android Project and AxionOS notices. Retain the actual
+copyright and attribution notices of each affected source file. This overview
+does not replace the upstream per-file notices or license an entire ROM tree.
+
+Reference repositories and commits:
+  packages/modules/Bluetooth       c575db642364a8e3e2f9878d2fdd55dc4451230e
+  frameworks/base                  a7b0e5e188fb72a566328bfed0e0412ddb7850e2
+  packages/apps/GameSpace           ca3a15a2cb779339a4faff22f1ab5f59e59f7d85
+  packages/apps/Settings            62faa70985307e4e5fca0c7c838f11dba0b2c4ab
+  device/oneplus/sm8750-common       30beb69ed08ff93111c6e4bfed0d1b8f12fc9dc2
+
+The reference device is the OnePlus 13 (dodge, CPH2653), based on SM8750 and
+Qualcomm FastConnect 7900, with the device's existing Snapdragon Sound/R2.2
+offload components. Support on other hardware is not established by this
+reference. The English patch edition changes identifiers and diagnostic text;
+the recorded production-device results do not constitute a device test of
+that translated edition.
+
+LICENSE AND REDISTRIBUTION
+
+Apache License, Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
+The complete license is included as LICENSE. Keep it alongside any release, preserve
+applicable upstream notices and identify source modifications. This NOTICE is
+informational: it neither replaces the license nor overrides other licenses
+or vendor-component terms in the target ROM. It grants no rights to distribute
+proprietary codecs, firmware or SDKs. No patent clearance or Snapdragon Sound
+certification is asserted by these compatibility patches.
+
+aptX, Snapdragon Sound and other product names remain the names or marks of
+their respective owners. This is an independent community integration, not an
+official release or endorsement by the named upstream or hardware vendors.
+
+RISK AND SUPPORT
+
+Provided as-is, without a compatibility, audio-quality or support guarantee.
+You are responsible for your own source review, backups, build and device
+validation. Flashing or modifying a device can cause data loss, loss of audio,
+boot failure or affect manufacturer warranty/support conditions. This notice
+does not purport to exclude statutory rights that cannot legally be excluded.
+
+APPLICATION CHECKLIST
+
+1. Check hardware, receiver capabilities, vendor offload components, source
+   revisions, licenses and backups; stop any build using the target tree.
+2. Run git apply --check, then git apply in each specified target repository;
+   patch paths are relative to that repository, not the Android root.
+3. Review the resulting source changes and build through the ROM's normal
+   device-specific workflow. Do not mix different patch editions.
+4. Validate negotiated codec/rate, controller acknowledgements, audible output,
+   gaming-mode transitions and reconnect behavior on the actual device.

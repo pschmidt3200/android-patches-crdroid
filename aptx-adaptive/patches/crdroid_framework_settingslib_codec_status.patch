@@ -1,0 +1,70 @@
+# Target repository: frameworks/base
+#
+# SettingsLib: reports the active codec so the UI can show it.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java b/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java
+index d7951ebf5dca..6c313bfc5a53 100644
+--- a/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java
++++ b/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java
+@@ -24,6 +24,7 @@ import android.bluetooth.BluetoothA2dp;
+ import android.bluetooth.BluetoothAdapter;
+ import android.bluetooth.BluetoothClass;
+ import android.bluetooth.BluetoothCodecConfig;
++import android.bluetooth.BluetoothCodecStatus;
+ import android.bluetooth.BluetoothDevice;
+ import android.bluetooth.BluetoothProfile;
+ import android.bluetooth.BluetoothUuid;
+@@ -361,6 +362,16 @@ public class A2dpProfile implements LocalBluetoothProfile {
+                 mContext.getResources().getStringArray(R.array.bluetooth_a2dp_codec_titles)[index]);
+     }
+ 
++    /**
++     * Returns the {@link BluetoothCodecStatus} for the specified device.
++     */
++    public BluetoothCodecStatus getCodecStatus(BluetoothDevice device) {
++        if (mService == null) {
++            return null;
++        }
++        return mService.getCodecStatus(device);
++    }
++
+     public String toString() {
+         return NAME;
+     }
+diff --git a/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java b/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java
+index d2881e9ee78b..7f89c8094b7b 100644
+--- a/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java
++++ b/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java
+@@ -130,6 +130,7 @@ public class BluetoothEventManager {
+                 new ActiveDeviceChangedHandler());
+         addHandler(BluetoothLeAudio.ACTION_LE_AUDIO_ACTIVE_DEVICE_CHANGED,
+                    new ActiveDeviceChangedHandler());
++        addHandler(BluetoothA2dp.ACTION_CODEC_CONFIG_CHANGED, new CodecConfigChangedHandler());
+ 
+         // Headset state changed broadcasts
+         addHandler(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED,
+@@ -540,6 +541,20 @@ public class BluetoothEventManager {
+         }
+     }
+ 
++    private class CodecConfigChangedHandler implements Handler {
++        @Override
++        public void onReceive(Context context, Intent intent, BluetoothDevice device) {
++            if (device == null) {
++                Log.w(TAG, "CodecConfigChangedHandler: device is null");
++                return;
++            }
++            CachedBluetoothDevice cachedDevice = mDeviceManager.findDevice(device);
++            if (cachedDevice != null) {
++                cachedDevice.dispatchAttributesChanged();
++            }
++        }
++    }
++
+     private class AclStateChangedHandler implements Handler {
+         @Override
+         public void onReceive(Context context, Intent intent, BluetoothDevice device) {
