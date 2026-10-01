@@ -1,0 +1,29 @@
+Donation disabling source patches for crDroid 16.0 (Android 16)
+Public edition prepared 2026-10-01.
+
+Reference repositories, commits and public sources:
+  packages/apps/crDroidSettings e43ad3d1c83290d25f2b721d8979a7095e53eecb https://github.com/crdroidandroid/android_packages_apps_crDroidSettings
+  packages/apps/Settings 62faa70985307e4e5fca0c7c838f11dba0b2c4ab https://github.com/crdroidandroid/android_packages_apps_Settings
+
+The affected sources carry Apache 2.0 notices from the crDroid Android
+Project and The LineageOS Project. Retain their per-file copyright and
+license notices. The changes and documentation in this module are provided
+under Apache License, Version 2.0 (see LICENSE). No binaries are included.
+
+Purpose: a personal preference against this form of donation solicitation
+inside the ROM, not an objection to donations in general. Maintainer names,
+project credits, telemetry and branding are outside the removal scope.
+
+The reminder receiver remains only to cancel alarms, notifications and the
+notification channel from earlier builds. It creates no reminders. Unused
+translation strings, layouts and icons are retained as upstream resources;
+the donation activity and all identified UI entry points are removed.
+
+Validation: source apply/reverse and local Java/Kotlin behaviour probes with
+Android API stubs. No ROM build or device acceptance for this public edition.
+Branch and device variants require their own source and runtime validation.
+
+Patch inventory:
+  donation_components.patch
+  donation_about.patch
+  donation_settings.patch

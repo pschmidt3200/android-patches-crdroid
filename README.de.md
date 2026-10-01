@@ -29,7 +29,8 @@ android-patches-crdroid/
 │   └── patches/               # Git-Patches (Bluetooth, Frameworks, Settings, GameSpace, Device)
 │
 ├── gms-fixes/                 # GMS-Sichtbarkeit und Vendor-Buildkompatibilität
-└── gps-servers/               # Optionale SUPL- und GNSS-NTP-Serverauswahl
+├── gps-servers/               # Optionale SUPL- und GNSS-NTP-Serverauswahl
+└── donation-disable/          # Spendenhinweise und -links im ROM abschalten
 ```
 
 ---
@@ -108,6 +109,8 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
   Basis: crDroid `16.0` mit Evolution X `vendor_gms`, Branch `bka`. Öffentliche Fassung: Quellprüfungen; ROM-/Geräteabnahme offen.
 * **[GPS-Serverauswahl](gps-servers/):** Unabhängig wählbare Konfiguration für GrapheneOS-SUPL und den deutschen NTP-Pool.
   Basis: crDroid `16.0`, OnePlus `sm8750-common`. Öffentliche Fassung: Quellprüfungen; tatsächliche Servernutzung und GNSS-Messungen offen.
+* **[Spendenanfragen abschalten](donation-disable/):** Entfernt Spendenoberfläche und -links, bereinigt alte Erinnerungen und erhält Maintainer-Namen.
+  Basis: crDroid `16.0`. Persönliche UI-Präferenz; öffentliche Fassung: Quell-/Host-Prüfungen, ROM-/Geräteabnahme offen.
 
 ---
 

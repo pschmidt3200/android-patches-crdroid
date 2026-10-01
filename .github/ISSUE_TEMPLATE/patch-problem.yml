@@ -37,6 +37,7 @@ body:
         - aptx-adaptive
         - gms-fixes
         - gps-servers
+        - donation-disable
     validations:
       required: true
   - type: dropdown

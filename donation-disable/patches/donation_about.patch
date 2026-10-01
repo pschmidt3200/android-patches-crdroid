@@ -1,0 +1,30 @@
+# Target repository: packages/apps/crDroidSettings
+# Subject: Remove donation entry and default maintainer donation URL
+# Reference commit: e43ad3d1c83290d25f2b721d8979a7095e53eecb
+
+diff --git a/res/xml/crdroid_settings_about.xml b/res/xml/crdroid_settings_about.xml
+--- a/res/xml/crdroid_settings_about.xml
++++ b/res/xml/crdroid_settings_about.xml
+@@ -52,13 +52,2 @@
+
+-    <!-- crDroid Donate -->
+-    <Preference
+-        android:key="crdroid_donate"
+-        android:icon="@drawable/ic_donate"
+-        android:title="@string/crdroid_donate_preference_title"
+-        android:summary="@string/crdroid_donate_preference_summary">
+-        <intent android:action="android.intent.action.MAIN"
+-             android:targetPackage="com.android.settings"
+-             android:targetClass="com.crdroid.settings.fragments.about.DonateActivity"/>
+-    </Preference>
+-
+     <!-- crDroid Source -->
+diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
+--- a/res/values/cr_strings.xml
++++ b/res/values/cr_strings.xml
+@@ -1636,4 +1636,4 @@
+     <string name="build_maintainer_summary">Unofficial</string>
+-    <string name="build_maintainer_donate_url" translatable="false">https://crdroid.net/donate</string>
++    <string name="build_maintainer_donate_url" translatable="false"></string>
+
+     <!-- Settings UI -->

@@ -29,7 +29,8 @@ android-patches-crdroid/
 │   └── patches/               # .patch files (Bluetooth, frameworks, Settings, GameSpace, device)
 │
 ├── gms-fixes/                 # GMS visibility and vendor build compatibility
-└── gps-servers/               # Optional SUPL and GNSS NTP server choices
+├── gps-servers/               # Optional SUPL and GNSS NTP server choices
+└── donation-disable/          # Remove in-ROM donation prompts and links
 ```
 
 ---
@@ -107,6 +108,8 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
   Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks; ROM/device validation pending.
 * **[GPS Server Choices](gps-servers/):** Independently selectable GrapheneOS SUPL and German NTP pool configuration.
   Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks; effective server use and GNSS measurements pending.
+* **[Disable Donation Requests](donation-disable/):** Removes donation UI and links, clears old reminders and preserves maintainer names.
+  Base: crDroid `16.0`. Personal UI preference; public edition: source/host checks, ROM/device validation pending.
 
 ---
 
