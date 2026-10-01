@@ -19,8 +19,16 @@ body:
       options:
         - label: I have read the disclaimer and understand that there is no support guarantee.
           required: true
-        - label: I applied all patches of the module from the same commit of this repository (no older editions mixed in).
+        - label: The module files I used came from the same commit of this repository (no older editions mixed in).
           required: true
+  - type: input
+    id: patch_revision
+    attributes:
+      label: Patch release tag or commit SHA
+      description: Run git rev-parse HEAD in this patch repository, or name the release tag you downloaded.
+      placeholder: e.g. aptx-adaptive-v1.0 or the full commit SHA
+    validations:
+      required: true
   - type: dropdown
     id: module
     attributes:

@@ -53,10 +53,11 @@ Rules for every module:
 These rules are checked automatically on every push: `.github/scripts/check-modules.sh` verifies the
 layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
 `.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
-Before a release, the manual *reference-check* workflow (`.github/scripts/check-reference.sh`) applies
-the real patches to the real upstream sources at the commits listed in each module's `NOTICE` — or to
-the current tip of a branch. It downloads only the files the patches touch. All three scripts can be
-run locally from the repository root.
+Before a release, the manual *reference-check* workflow (`.github/scripts/check-reference.sh`) checks,
+applies and reverses the real patches on the upstream sources at the commits listed in each module's
+`NOTICE` — or at the current tip of a branch. It verifies that every source repository is clean after
+reversal. It downloads only the files the patches touch. All three scripts can be run locally from
+the repository root.
 
 ---
 
@@ -93,9 +94,44 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 ## Reporting Problems
 
 If a patch does not apply, does not build or misbehaves on the reference setup, please open an issue
-with the **Patch problem** form and paste the exact error output. Remove Bluetooth MAC addresses and
+with the **Patch problem** form and include the patch release tag or commit SHA and exact error output.
+Find the patch commit with `git rev-parse HEAD` in this repository. Remove Bluetooth MAC addresses and
 serial numbers from logs before posting. Reports from other devices are welcome as information —
 please read the disclaimer below first.
+
+---
+
+## Reproducible Releases
+
+To use the existing aptX release, keep the whole module at its release tag:
+
+```bash
+git clone https://github.com/pschmidt3200/android-patches-crdroid.git
+cd android-patches-crdroid
+git switch --detach aptx-adaptive-v1.0
+```
+
+Follow the module's README to check and apply its patches to your source tree. Do not mix files
+from different tags or commits. A tag identifies the patch edition; source checks do not establish
+a successful ROM build or device test.
+
+For maintainers, run these checks from the repository root before a new aptX release:
+
+```bash
+bash .github/scripts/check-modules.sh
+bash .github/scripts/test-apply-script.sh aptx-adaptive
+bash .github/scripts/check-reference.sh aptx-adaptive
+bash .github/scripts/check-reference.sh --branch 16.0 aptx-adaptive
+```
+
+The reference checks use temporary source trees. Any failure stops the release: record the target
+repository, source revision and exact error, then correct the patch or its documented baseline.
+Commit the reviewed changes and attach the release tag to that verified commit.
+
+**Existing tags are immutable.** When published patches change, use a new module tag, for example
+`aptx-adaptive-v1.1`; never move, delete or reuse `aptx-adaptive-v1.0`. Release notes must identify
+the patch commit, source baselines, changed behaviour and known limits. Report source checks,
+ROM builds and device tests separately, including any checks that remain unperformed.
 
 ---
 

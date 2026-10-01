@@ -5,7 +5,8 @@
 # the public repository URL. This script fetches exactly that commit — or the tip
 # of a branch given with --branch — but only the files the patches touch (partial
 # clone plus sparse checkout: frameworks/base costs about 13 MB instead of several
-# GB). It then runs the module's own apply-patches.sh: check, apply, reverse check.
+# GB). It then runs the module's own apply-patches.sh: check, apply, reverse check,
+# reverse. Every repository must be back at its original, clean source state.
 #
 # Usage: .github/scripts/check-reference.sh [--branch <name>] [module-directory]
 #        default: the reference commits from NOTICE, module aptx-adaptive
@@ -68,6 +69,17 @@ run() {
 run --check
 run
 run --check --reverse
+run --reverse
+
+for repo in "${REPOS[@]}"; do
+    changes="$(git -C "${TREE}/${repo}" status --porcelain --untracked-files=all)"
+    if [[ -n "${changes}" ]]; then
+        echo "ERROR: ${repo} was not restored after reversing the patches:" >&2
+        printf '%s\n' "${changes}" >&2
+        exit 1
+    fi
+    echo "   restored cleanly: ${repo}"
+done
 
 echo ""
-echo "real patches apply to ${BRANCH:+branch }${BRANCH:-the reference commits} (${MODULE})"
+echo "real patches apply and revert cleanly on ${BRANCH:+branch }${BRANCH:-the reference commits} (${MODULE})"

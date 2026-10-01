@@ -53,11 +53,11 @@ Regeln für jedes Modul:
 Diese Regeln werden bei jedem Push automatisch geprüft: `.github/scripts/check-modules.sh` prüft
 Aufbau, Patch-Kopfzeilen und -Format sowie, ob Skript, READMEs und `NOTICE` dieselben Patches nennen;
 `.github/scripts/test-apply-script.sh` lässt das `apply-patches.sh` jedes Moduls gegen einen
-Wegwerf-Baum laufen. Vor einem Release wendet der manuelle Workflow *reference-check*
-(`.github/scripts/check-reference.sh`) die echten Patches auf die echten Upstream-Quellen an — an den
-Commits aus der `NOTICE` des Moduls oder an der aktuellen Spitze eines Branches. Dabei werden nur die
-Dateien geladen, die die Patches anfassen. Alle drei Skripte lassen sich lokal aus der
-Repository-Wurzel starten.
+Wegwerf-Baum laufen. Vor einem Release prüft der manuelle Workflow *reference-check*
+(`.github/scripts/check-reference.sh`) die echten Patches auf den Upstream-Quellen, wendet sie an und
+nimmt sie wieder zurück — an den Commits aus der `NOTICE` des Moduls oder an der aktuellen Spitze
+eines Branches. Danach muss jedes Quellrepository wieder sauber sein. Dabei werden nur die Dateien
+geladen, die die Patches anfassen. Alle drei Skripte lassen sich lokal aus der Repository-Wurzel starten.
 
 ---
 
@@ -94,9 +94,47 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 ## Probleme melden
 
 Wenn ein Patch nicht anwendbar ist, nicht baut oder sich auf dem Referenz-Setup falsch verhält,
-bitte ein Issue über das Formular **Patch problem** anlegen und die genaue Fehlermeldung einfügen.
+bitte ein Issue über das Formular **Patch problem** anlegen und Release-Tag oder Commit-SHA der
+Patchfassung sowie die genaue Fehlermeldung einfügen. Den Patch-Commit zeigt `git rev-parse HEAD`
+in diesem Repository an.
 Bluetooth-MAC-Adressen und Seriennummern vorher aus den Logs entfernen. Meldungen von anderen
 Geräten sind als Information willkommen — bitte vorher den Haftungsausschluss unten lesen.
+
+---
+
+## Reproduzierbare Releases
+
+Für das bestehende aptX-Release den gesamten Modulstand über sein Tag auswählen:
+
+```bash
+git clone https://github.com/pschmidt3200/android-patches-crdroid.git
+cd android-patches-crdroid
+git switch --detach aptx-adaptive-v1.0
+```
+
+Anschließend die Modul-README zum Prüfen und Anwenden im eigenen Quellbaum verwenden. Keine Dateien
+aus verschiedenen Tags oder Commits mischen. Ein Tag bezeichnet die Patchfassung; Quellprüfungen
+belegen noch keinen erfolgreichen ROM-Build oder Gerätetest.
+
+Vor einem neuen aptX-Release führen Maintainer diese Prüfungen in der Repository-Wurzel aus:
+
+```bash
+bash .github/scripts/check-modules.sh
+bash .github/scripts/test-apply-script.sh aptx-adaptive
+bash .github/scripts/check-reference.sh aptx-adaptive
+bash .github/scripts/check-reference.sh --branch 16.0 aptx-adaptive
+```
+
+Die Referenzprüfungen verwenden temporäre Quellbäume. Bei einem Fehler den Release-Vorgang stoppen:
+Zielrepository, Quellstand und genaue Fehlermeldung festhalten, dann Patch oder dokumentierte
+Referenz korrigieren. Die geprüften Änderungen committen und das Release-Tag auf diesen geprüften
+Commit setzen.
+
+**Bestehende Tags bleiben unverändert.** Ändern sich veröffentlichte Patches, ein neues Modul-Tag
+verwenden, etwa `aptx-adaptive-v1.1`; `aptx-adaptive-v1.0` niemals verschieben, löschen oder erneut
+verwenden. Release-Notizen nennen Patch-Commit, Quellreferenzen, geändertes Verhalten und bekannte
+Grenzen. Quellprüfungen, ROM-Builds und Gerätetests getrennt ausweisen, einschließlich noch nicht
+durchgeführter Prüfungen.
 
 ---
 
