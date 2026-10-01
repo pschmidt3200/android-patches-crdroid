@@ -1,8 +1,11 @@
 # android-patches-crdroid
 
-Eine strukturierte Sammlung modularer Patches, Framework-Verbesserungen und Hardware-Integrationen für **crDroid** und AOSP-basierte Custom ROMs.
+Eine strukturierte Sammlung modularer Patches, Framework-Verbesserungen und Hardware-Integrationen für **crDroid**.
 
-Ziel dieses Repositories ist die Pflege sauberer, modularer Quellcode-Patches für AOSP/crDroid — einschließlich hardwarespezifischer Anbindungen, wo ein Modul sie dokumentiert — ohne mitgelieferte proprietäre Hersteller-Binärdateien. Die Patches werden direkt in einen passenden ROM-Quellbaum eingespielt.
+Ziel dieses Repositories ist die Pflege sauberer, modularer Quellcode-Patches für crDroid — einschließlich hardwarespezifischer Anbindungen, wo ein Modul sie dokumentiert — ohne mitgelieferte proprietäre Hersteller-Binärdateien. Die Patches werden direkt in einen passenden crDroid-Quellbaum eingespielt.
+
+**Derzeitiger ROM-Umfang: nur crDroid.** Jedes Modul nennt seinen crDroid-Branch und seine Referenzhardware.
+Unterstützung für andere ROMs ist nicht belegt.
 
 ---
 
@@ -74,7 +77,7 @@ und Rücknahme der Patches, keinen ROM-Build oder Gerätetest.
 ## Richtlinien & Standards
 
 * **Modular & getrennt:** Jedes Feature liegt in einem eigenen Verzeichnis mit eigener Dokumentation und passenden Patchdateien.
-* **Reine Quellcode-Patches:** Alle Patches sind Standard-Diffs gegen Open-Source-Code (AOSP / crDroid). Es werden keine proprietären Binärdateien (`.so`), Firmware-Blobs oder Schlüssel gespeichert.
+* **Reine Quellcode-Patches:** Alle Patches sind Standard-Diffs gegen die Open-Source-Repositories von crDroid. Es werden keine proprietären Binärdateien (`.so`), Firmware-Blobs oder Schlüssel gespeichert.
 * **Saubere Trennung:** Patches sind atomar aufgebaut und nach Android-Subsystemen getrennt (`packages/modules/*`, `frameworks/*` etc.).
 
 ---
@@ -85,8 +88,8 @@ Jeder Unterordner enthält eine eigene `README.md` mit spezifischen Voraussetzun
 
 Grundsätzlich können Patches mit Standard-Git-Befehlen angewendet werden:
 ```bash
-# In das jeweilige Quellcode-Verzeichnis innerhalb des ROM-Trees wechseln
-cd /pfad/zu/android/source/<ziel-subrepo>
+# In das jeweilige Quellcode-Verzeichnis innerhalb des crDroid-Trees wechseln
+cd /pfad/zu/crdroid/source/<ziel-subrepo>
 
 # Den entsprechenden Patch anwenden
 git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch

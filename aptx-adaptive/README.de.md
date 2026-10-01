@@ -1,11 +1,14 @@
 # aptX Adaptive für crDroid
 
-Stand: 2026-10-01. Quellpatch-Paket für AOSP-abgeleitete crDroid-Bäume;
+Stand: 2026-10-01. Quellpatch-Paket für **crDroid 16.0 (Android 16)**;
 Referenzgerät: **OnePlus 13 (`dodge`, CPH2653, SM8750 / FastConnect 7900)**.
 
+**ROM-Umfang:** Das Paket ist derzeit ausschließlich für **crDroid 16.0** ausgelegt.
+Unterstützung für andere ROMs ist nicht belegt.
+
 **Die Gerätebelege gelten für den produktiven Patchstand v39.** Die englische
-Publikationsfassung übersetzt Bezeichner und Diagnosetexte, ohne die produktive
-Fassung zu ersetzen. Paritäts- und Anwendungstests ersetzen keinen eigenen
+Publikationsfassung übersetzt Bezeichner und Diagnosetexte.
+Paritäts- und Anwendungstests ersetzen keinen eigenen
 Build und keinen Gerätetest dieser englischen Fassung.
 
 ## Was enthalten ist
@@ -31,8 +34,8 @@ oder eines durchgehend bittransparenten Android-Audiopfads gleichzusetzen.
 
 ## Voraussetzungen und Referenzstände
 
-- Vollständiger, baubarer crDroid-Quellbaum auf Branch **`16.0`** (Android-16-/
-  LineageOS-23.2-Generation) mit passenden Gerätedateien und Vendor-Komponenten
+- Vollständiger, baubarer crDroid-Quellbaum auf Branch **`16.0`** (Android 16)
+  mit passenden Gerätedateien und Vendor-Komponenten
   für das Zielgerät; die Android-Repository-Pfade unten müssen vorhanden sein.
 - Kompatibler Qualcomm-AIDL-Audio-Provider, DSP-Firmware und Controller.
   Vendor-Bibliotheken, Firmware, APKs und ROM-Abbilder sind nicht enthalten.
@@ -64,7 +67,7 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 |---|---|---|
 | **Referenzgerät** | **OnePlus 13** (`dodge`, CPH2653) | Vollständig verifizierte Referenzplattform (Produktionsstand v39). |
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
-| **Andere Geräte** | — | **Ungetestet.** Patches 2–5 ändern generischen AOSP/crDroid-Code, Patch 1 sendet aber FastConnect-7900-Herstellerbefehle und Patch 6 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
+| **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 16.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 6 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
 | **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |
 | | **Bose QuietComfort Ultra 2** | Bietet nur 44,1 / 48 kHz an (kein 96 kHz); Link-/Aufbauereignisse erfasst, siehe „Belege und Grenzen“. |
 
@@ -95,15 +98,15 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 
 ### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
 * **Ziel:** `packages/modules/Bluetooth`
-* **Quellumfang:** das AOSP-Bluetooth-Modul
+* **Quellumfang:** das Bluetooth-Modul von crDroid
 * **Hardware-Portabilität:** **Qualcomm-FastConnect-spezifisch** (Herstellerbefehle an den Controller); nur auf dem OnePlus 13 getestet
 * **Rolle:** **Das Herzstück & der Protokoll-Treiber.**
-* **Was er tut:** Im Standard-AOSP werden Offload-Codecs künstlich blockiert, wenn keine Software-Encoder-Bibliothek im System vorliegt. Dieser Patch beseitigt diese Hürde und baut die native Sitzungsanmeldung an Qualcomms AIDL Audio-HAL (`AptxAdaptiveConfiguration`) auf. Er verhandelt die AVDTP-Fähigkeiten (44.1 kHz, 48 kHz, 96 kHz) und steuert die Raten- und Latenzumschaltung direkt über den DSP.
+* **Was er tut:** Ermöglicht die aptX-Adaptive-Offload-Sitzung in crDroid ohne Software-Encoder-Bibliothek und baut die native Sitzungsanmeldung an Qualcomms AIDL Audio-HAL (`AptxAdaptiveConfiguration`) auf. Er verhandelt die AVDTP-Fähigkeiten (44.1 kHz, 48 kHz, 96 kHz) und steuert die Raten- und Latenzumschaltung direkt über den DSP.
 * **Wenn er weggelassen wird:** Es kann keine aptX-Adaptive-Sitzung starten; das System weicht auf normales aptX, AAC oder SBC aus.
 
 ### 2. `crdroid_framework_aptx_adaptive_offload.patch`
 * **Ziel:** `frameworks/base`
-* **Quellumfang:** generischer AOSP-Framework-Code (`android.media.AudioSystem`); braucht Patch 1
+* **Quellumfang:** crDroid-Framework-Code (`android.media.AudioSystem`); braucht Patch 1
 * **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
 * **Rolle:** **Der System-Türöffner.**
 * **Was er tut:** Ergänzt das Audioformat `AUDIO_FORMAT_APTX_ADAPTIVE` in `AudioSystem`, führt es bei den übrigen Bluetooth-Formaten und ordnet es dem aptX-Adaptive-Bluetooth-Codectyp zu.
@@ -111,7 +114,7 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 
 ### 3. `crdroid_framework_settingslib_codec_status.patch`
 * **Ziel:** `frameworks/base` (`packages/SettingsLib`)
-* **Quellumfang:** generischer AOSP-SettingsLib-Code
+* **Quellumfang:** crDroid-SettingsLib-Code
 * **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
 * **Rolle:** **Die interne Status-Brücke.**
 * **Was er tut:** Ergänzt `A2dpProfile.getCodecStatus()` und aktualisiert einen Geräteeintrag, wenn sich die Codec-Konfiguration ändert (`ACTION_CODEC_CONFIG_CHANGED`).
@@ -119,7 +122,7 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 
 ### 4. `crdroid_settings_bluetooth_codec_badges.patch`
 * **Ziel:** `packages/apps/Settings`
-* **Quellumfang:** generischer AOSP-Settings-Code; **braucht Patch 3**
+* **Quellumfang:** crDroid-Settings-Code; **braucht Patch 3**
 * **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
 * **Rolle:** **Die Benutzeroberfläche & Anzeige.**
 * **Was er tut:** Zeigt das aktive Codec-Badge (z. B. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in der Zusammenfassung eines verbundenen Geräts in der Bluetooth-Geräteliste an.
@@ -127,11 +130,11 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 
 ### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Ziel:** `packages/apps/GameSpace`
-* **Quellumfang:** ROMs, die diese GameSpace-App mitliefern (z. B. crDroid); braucht Patch 1
+* **Quellumfang:** die GameSpace-App von crDroid; braucht Patch 1
 * **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf crDroid `16.0` / OnePlus 13 getestet
 * **Rolle:** **Automatische Latenzsteuerung beim Spielen.**
 * **Was er tut:** Klinkt sich in die GameSpace-Ereignisse ein. Sobald ein Spiel gestartet wird, schaltet der Bluetooth-Stack automatisch von High-Quality (~348 ms) auf Low-Latency (~117 ms). Beim Beenden des Spiels wird das vorherige HQ- oder Lossless-Profil nahtlos wiederhergestellt.
-* **Wenn er weggelassen wird:** Spiele laufen mit Standard-Latenz oder müssen manuell geschaltet werden. (Optional, falls kein GameSpace genutzt wird).
+* **Wenn er weggelassen wird:** Spiele laufen mit Standard-Latenz oder müssen manuell geschaltet werden.
 
 ### 6. `crdroid_aptx_r2_2_property.patch`
 * **Ziel:** `device/oneplus/sm8750-common` (oder der geräteeigene Device-Tree)

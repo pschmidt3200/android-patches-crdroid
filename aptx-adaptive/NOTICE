@@ -3,13 +3,14 @@ Source snapshot: 2026-10-01; production reference: v39.
 
 UPSTREAM SOURCES AND COMPATIBILITY
 
-This distribution contains source-code diffs against AOSP-derived crDroid
-repositories. It is not a ROM image or an implementation of the proprietary
+This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+Other ROMs are outside the current scope.
+It is not a ROM image or an implementation of the proprietary
 aptX encoder. Encoding uses the compatible device's existing Qualcomm audio
 provider and DSP firmware; no vendor firmware, proprietary libraries, vendor
 APKs or SDK binaries are included here.
 
-The affected AOSP-derived Bluetooth, framework and Settings files retain
+The affected Bluetooth, framework and Settings files in crDroid retain
 their upstream Apache License, Version 2.0, terms and attribution notices.
 Upstream file notices include The Android Open Source Project and Broadcom
 Corporation. GameSpace also carries Apache License, Version 2.0; its affected

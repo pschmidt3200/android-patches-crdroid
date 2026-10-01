@@ -1,12 +1,15 @@
-# aptX Adaptive & aptX Lossless for crDroid / LineageOS on the OnePlus 13
+# aptX Adaptive & aptX Lossless for crDroid 16.0 on the OnePlus 13
 
 Patches that bring working **aptX Adaptive** — including **aptX Lossless** at 44.1 kHz and a
-**low-latency mode for games** — to an AOSP-based ROM on the OnePlus 13 (`dodge`, CPH2653) with a
+**low-latency mode for games** — to crDroid 16.0 (Android 16) on the OnePlus 13 (`dodge`, CPH2653) with a
 Qualcomm FastConnect 7900 controller.
 
 The Android Bluetooth stack can negotiate aptX Adaptive, but on this platform the parts that
 actually make it *work* — the vendor-specific controller commands, the DSP mode, and the
-sample-rate switch — are not wired up in AOSP. These patches wire them up.
+sample-rate switch — need this integration in the reference crDroid source tree.
+
+**ROM scope:** This package is currently intended only for **crDroid 16.0**.
+Support for other ROMs has not been established.
 
 > 🇩🇪 Diese Datei auf Deutsch: [README.de.md](README.de.md)
 
@@ -51,7 +54,7 @@ Being explicit about the limits is the point of this section.
 
 * Reference device: OnePlus 13 (`dodge`, CPH2653), Qualcomm **FastConnect 7900**.
   Other devices need separate integration and validation; sharing the controller is not sufficient.
-* A crDroid tree on branch **`16.0`** (Android 16 / LineageOS 23.2 generation). The exact
+* A crDroid tree on branch **`16.0`** (Android 16). The exact
   reference commits are listed in [`NOTICE`](NOTICE).
 * A sink that actually supports aptX Adaptive — the patches will not fake it. Devices that do not
   offer it keep their previous codec, and the UI says so instead of claiming success.
@@ -68,7 +71,7 @@ and the vendor-offload requirements still apply.
 |---|---|---|
 | **Reference Device** | **OnePlus 13** (`dodge`, CPH2653) | Fully verified reference platform (production revision v39). |
 | **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
-| **Other Devices** | — | **Untested.** Patches 2–5 change generic AOSP/crDroid code, but patch 1 sends FastConnect 7900 vendor commands and patch 6 is device-specific. A port is your own integration and validation work. |
+| **Other Devices** | — | **Untested.** The patches target crDroid 16.0; patch 1 sends FastConnect 7900 vendor commands and patch 6 is device-specific. A port is your own integration and validation work. |
 | **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181) | Reference sink: 44.1 kHz Lossless, 48 / 96 kHz, 48 kHz low latency. |
 | | **Bose QuietComfort Ultra 2** | Offers 44.1 / 48 kHz only (no 96 kHz); link/setup events were logged, see above. |
 
@@ -99,15 +102,15 @@ To understand how these patches work together, follow the audio chain from the a
 
 ### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
 * **Target:** `packages/modules/Bluetooth`
-* **Source scope:** the AOSP Bluetooth module
+* **Source scope:** crDroid's Bluetooth module
 * **Hardware portability:** **Qualcomm FastConnect-specific** (vendor controller commands); tested only on the OnePlus 13
 * **Role:** **The Engine & Protocol Driver.**
-* **What it does:** In standard AOSP, offload codecs are artificially blocked if no software encoder binary is present. This patch removes that limitation and implements the native session initiation with Qualcomm's AIDL Audio HAL (`AptxAdaptiveConfiguration`). It negotiates AVDTP capabilities (44.1 kHz, 48 kHz, 96 kHz) and manages sample-rate switching directly with the DSP.
+* **What it does:** Allows aptX Adaptive offload session setup in crDroid without a software encoder binary and implements the native session initiation with Qualcomm's AIDL Audio HAL (`AptxAdaptiveConfiguration`). It negotiates AVDTP capabilities (44.1 kHz, 48 kHz, 96 kHz) and manages sample-rate switching directly with the DSP.
 * **If omitted:** No aptX Adaptive session can ever start; the system falls back to standard aptX, AAC, or SBC.
 
 ### 2. `crdroid_framework_aptx_adaptive_offload.patch`
 * **Target:** `frameworks/base`
-* **Source scope:** generic AOSP framework code (`android.media.AudioSystem`); needs patch 1
+* **Source scope:** crDroid framework code (`android.media.AudioSystem`); needs patch 1
 * **Hardware portability:** no device-specific code; tested only on the OnePlus 13
 * **Role:** **The System Gatekeeper.**
 * **What it does:** Adds the audio format `AUDIO_FORMAT_APTX_ADAPTIVE` to `AudioSystem`, lists it with the other Bluetooth formats and maps it to the aptX Adaptive Bluetooth codec type.
@@ -115,7 +118,7 @@ To understand how these patches work together, follow the audio chain from the a
 
 ### 3. `crdroid_framework_settingslib_codec_status.patch`
 * **Target:** `frameworks/base` (`packages/SettingsLib`)
-* **Source scope:** generic AOSP SettingsLib code
+* **Source scope:** crDroid SettingsLib code
 * **Hardware portability:** no device-specific code; tested only on the OnePlus 13
 * **Role:** **The Internal State Bridge.**
 * **What it does:** Adds `A2dpProfile.getCodecStatus()` and refreshes a device entry when the codec configuration changes (`ACTION_CODEC_CONFIG_CHANGED`).
@@ -123,7 +126,7 @@ To understand how these patches work together, follow the audio chain from the a
 
 ### 4. `crdroid_settings_bluetooth_codec_badges.patch`
 * **Target:** `packages/apps/Settings`
-* **Source scope:** generic AOSP Settings code; **needs patch 3**
+* **Source scope:** crDroid Settings code; **needs patch 3**
 * **Hardware portability:** no device-specific code; tested only on the OnePlus 13
 * **Role:** **The User Interface & Visual Badges.**
 * **What it does:** Displays the active codec badge (e.g. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in the summary of a connected device in the Bluetooth device list, so the negotiated mode is visible at a glance.
@@ -131,11 +134,11 @@ To understand how these patches work together, follow the audio chain from the a
 
 ### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Target:** `packages/apps/GameSpace`
-* **Source scope:** ROMs that ship this GameSpace app (e.g. crDroid); needs patch 1
+* **Source scope:** crDroid's GameSpace app; needs patch 1
 * **Hardware portability:** no device-specific code; tested only on crDroid `16.0` / OnePlus 13
 * **Role:** **Automatic Low-Latency Trigger.**
 * **What it does:** Hooks into GameSpace game lifecycle events. When a game is launched, it automatically switches aptX Adaptive from High-Quality (~348 ms) to Low-Latency (~117 ms). When closing the game, it seamlessly restores the previous HQ or Lossless profile.
-* **If omitted:** Gaming mode switching must be triggered manually or remains at standard latency. (Optional if your ROM does not include GameSpace).
+* **If omitted:** Gaming mode switching must be triggered manually or remains at standard latency.
 
 ### 6. `crdroid_aptx_r2_2_property.patch`
 * **Target:** `device/oneplus/sm8750-common` (or your device's vendor property tree)
@@ -261,9 +264,8 @@ Stop on conflicts or an already-applied edition; do not force application or dis
 Build through the ROM's normal device-specific workflow, then validate codec/rate negotiation,
 controller acknowledgements, audible output, gaming transitions and reconnect behavior.
 
-Patch 5 depends on crDroid's GameSpace. On a ROM without it, omit that entry from both check and
-apply passes. Patches 1–4 and 6 cover the codec/offload integration, without automatic game-start
-switching; compatibility with that ROM still needs separate validation.
+Patch 5 depends on GameSpace as shipped by crDroid 16.0. Apply the complete six-patch series
+to the documented crDroid target. Other ROMs are outside this package's current scope.
 
 ### Undo, sync again and build
 
@@ -315,7 +317,7 @@ A codec claim is only complete once the whole path has been looked at. In order:
 
 ## Licence and source baselines
 
-These files are diffs against AOSP / crDroid sources, which are licensed under the Apache License
+These files are diffs against crDroid sources, which are licensed under the Apache License
 2.0. The full licence is included as [`LICENSE`](LICENSE). Preserve applicable upstream copyright
 and attribution notices. See [`NOTICE`](NOTICE) for reference tree revisions and the disclaimer
 that comes with flashing your own build. No proprietary encoder, firmware or vendor library is

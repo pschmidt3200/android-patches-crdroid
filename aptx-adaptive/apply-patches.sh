@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# apply-patches.sh — Automated Patch Installer for aptX Adaptive on crDroid/AOSP
+# apply-patches.sh — Automated Patch Installer for aptX Adaptive on crDroid 16.0
 # ==============================================================================
 
 set -euo pipefail
@@ -17,7 +17,7 @@ usage() {
     cat <<EOF
 Usage: $(basename "$0") [OPTIONS] <ANDROID_BUILD_ROOT>
 
-Applies or reverts the aptX Adaptive patch series to your ROM source tree.
+Applies or reverts the aptX Adaptive patch series to your crDroid 16.0 source tree.
 Before anything is changed, the whole series is simulated on a temporary copy
 of the affected files, so a patch is checked on top of the ones before it.
 
@@ -28,7 +28,7 @@ Options:
     -h, --help         Show this help message.
 
 Arguments:
-    <ANDROID_BUILD_ROOT>   Path to the root of your crDroid / AOSP source tree.
+    <ANDROID_BUILD_ROOT>   Path to the root of your crDroid 16.0 source tree.
 
 Exit codes:
     0  success                      3  aborted mid-way, tree partially changed

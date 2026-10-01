@@ -1,8 +1,11 @@
 # android-patches-crdroid
 
-A curated collection of modular patches, framework improvements, and hardware integrations for **crDroid** and AOSP-based custom ROMs.
+A curated collection of modular patches, framework improvements, and hardware integrations for **crDroid**.
 
-The goal of this repository is to maintain clean, modular source patches for AOSP/crDroid — including hardware-specific integrations where a module documents them — without bundled proprietary vendor binaries. The patches are applied directly to a compatible ROM source tree.
+The goal of this repository is to maintain clean, modular source patches for crDroid — including hardware-specific integrations where a module documents them — without bundled proprietary vendor binaries. The patches are applied directly to a compatible crDroid source tree.
+
+**Current ROM scope: crDroid only.** Each module documents its crDroid branch and reference hardware.
+Support for other ROMs has not been established.
 
 ---
 
@@ -73,7 +76,7 @@ applicability and rollback, not a ROM build or device acceptance.
 ## Design Principles & Standards
 
 * **Modular & Independent:** Each topic or feature resides in its own directory with dedicated documentation, requirements, and patch files.
-* **Pure Source Diffs:** All patches are standard git diffs against upstream open-source code (AOSP / crDroid). No proprietary blobs, compiled firmware binaries, or device secrets are hosted here.
+* **Pure Source Diffs:** All patches are standard git diffs against crDroid's open-source repositories. No proprietary blobs, compiled firmware binaries, or device secrets are hosted here.
 * **Upstream Hygiene:** Changes are kept atomic and cleanly separated by Android subsystem (`packages/modules/*`, `frameworks/*`, `hardware/*`).
 
 ---
@@ -84,8 +87,8 @@ Each subfolder contains its own detailed `README.md` with prerequisites, target 
 
 In general, patches can be applied using standard git tooling:
 ```bash
-# Navigate to the target repository inside your ROM source tree
-cd /path/to/android/source/<target-subrepo>
+# Navigate to the target repository inside your crDroid source tree
+cd /path/to/crdroid/source/<target-subrepo>
 
 # Apply the respective patch
 git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
