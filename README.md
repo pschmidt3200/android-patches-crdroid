@@ -15,7 +15,7 @@ android-patches-crdroid/
 ├── README.md                  # General documentation & overview
 ├── README.de.md               # German documentation
 ├── LICENSE                    # Repository license (Apache 2.0)
-├── .github/ISSUE_TEMPLATE/    # Issue form for patch problems
+├── .github/                   # Issue form and CI checks (workflows/, scripts/)
 │
 ├── aptx-adaptive/             # Qualcomm aptX Adaptive DSP offload & BT integration
 │   ├── README.md              # Detailed module documentation & requirements
@@ -49,6 +49,11 @@ Rules for every module:
 * **Scripts stay inside their module** and only touch that module's own `patches/` directory.
 * **Editions are not mixed:** apply all patches of a module from the same commit of this repository.
 * **The *Available Modules* list below is the only place where modules are linked together.**
+
+These rules are checked automatically on every push: `.github/scripts/check-modules.sh` verifies the
+layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
+`.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
+Both can be run locally from the repository root.
 
 ---
 

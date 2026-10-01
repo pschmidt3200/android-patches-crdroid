@@ -15,7 +15,7 @@ android-patches-crdroid/
 ├── README.md                  # Allgemeine Übersicht und Anleitung (EN)
 ├── README.de.md               # Deutsche Dokumentation
 ├── LICENSE                    # Lizenz (Apache 2.0)
-├── .github/ISSUE_TEMPLATE/    # Formular für Patch-Probleme
+├── .github/                   # Issue-Formular und CI-Prüfungen (workflows/, scripts/)
 │
 ├── aptx-adaptive/             # aptX Adaptive DSP-Offload & Bluetooth-Anbindung
 │   ├── README.md              # Modul-Dokumentation & Voraussetzungen (EN)
@@ -49,6 +49,11 @@ Regeln für jedes Modul:
 * **Skripte bleiben im eigenen Modul** und fassen nur dessen `patches/`-Ordner an.
 * **Fassungen werden nicht gemischt:** alle Patches eines Moduls aus demselben Commit dieses Repositories anwenden.
 * **Die Liste *Verfügbare Module* unten ist die einzige Stelle, an der Module miteinander verlinkt werden.**
+
+Diese Regeln werden bei jedem Push automatisch geprüft: `.github/scripts/check-modules.sh` prüft
+Aufbau, Patch-Kopfzeilen und -Format sowie, ob Skript, READMEs und `NOTICE` dieselben Patches nennen;
+`.github/scripts/test-apply-script.sh` lässt das `apply-patches.sh` jedes Moduls gegen einen
+Wegwerf-Baum laufen. Beide lassen sich lokal aus der Repository-Wurzel starten.
 
 ---
 

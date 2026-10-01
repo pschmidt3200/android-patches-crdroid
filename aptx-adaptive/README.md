@@ -99,42 +99,47 @@ To understand how these patches work together, follow the audio chain from the a
 
 ### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
 * **Target:** `packages/modules/Bluetooth`
-* **Portability:** **Generic (AOSP-wide)**
+* **Source scope:** the AOSP Bluetooth module
+* **Hardware portability:** **Qualcomm FastConnect-specific** (vendor controller commands); tested only on the OnePlus 13
 * **Role:** **The Engine & Protocol Driver.**
 * **What it does:** In standard AOSP, offload codecs are artificially blocked if no software encoder binary is present. This patch removes that limitation and implements the native session initiation with Qualcomm's AIDL Audio HAL (`AptxAdaptiveConfiguration`). It negotiates AVDTP capabilities (44.1 kHz, 48 kHz, 96 kHz) and manages sample-rate switching directly with the DSP.
 * **If omitted:** No aptX Adaptive session can ever start; the system falls back to standard aptX, AAC, or SBC.
 
 ### 2. `crdroid_framework_aptx_adaptive_offload.patch`
 * **Target:** `frameworks/base`
-* **Portability:** **Generic (AOSP-wide)**
+* **Source scope:** generic AOSP framework code (`android.media.AudioSystem`); needs patch 1
+* **Hardware portability:** no device-specific code; tested only on the OnePlus 13
 * **Role:** **The System Gatekeeper.**
-* **What it does:** Registers aptX Adaptive as an allowed hardware-offload encoding format inside Android's `AudioProductStrategy` and `AudioPolicyManager`.
-* **If omitted:** AudioFlinger does not recognise aptX Adaptive as an offload-capable format and refuses to route audio to the hardware DSP path.
+* **What it does:** Adds the audio format `AUDIO_FORMAT_APTX_ADAPTIVE` to `AudioSystem`, lists it with the other Bluetooth formats and maps it to the aptX Adaptive Bluetooth codec type.
+* **If omitted:** The framework has no audio format for aptX Adaptive and cannot match the negotiated Bluetooth codec to an offload format.
 
 ### 3. `crdroid_framework_settingslib_codec_status.patch`
 * **Target:** `frameworks/base` (`packages/SettingsLib`)
-* **Portability:** **Generic (AOSP-wide)**
+* **Source scope:** generic AOSP SettingsLib code
+* **Hardware portability:** no device-specific code; tested only on the OnePlus 13
 * **Role:** **The Internal State Bridge.**
-* **What it does:** Exposes codec state events, active sample rates, and latency mode statuses within Android's shared `SettingsLib`, making them queryable by system UI services.
-* **If omitted:** System components cannot determine whether the stream is running in HQ or Low-Latency mode.
+* **What it does:** Adds `A2dpProfile.getCodecStatus()` and refreshes a device entry when the codec configuration changes (`ACTION_CODEC_CONFIG_CHANGED`).
+* **If omitted:** Patch 4 does not build (it calls `getCodecStatus()`), and the device list does not update after a codec change.
 
 ### 4. `crdroid_settings_bluetooth_codec_badges.patch`
 * **Target:** `packages/apps/Settings`
-* **Portability:** **Generic (AOSP-wide)**
+* **Source scope:** generic AOSP Settings code; **needs patch 3**
+* **Hardware portability:** no device-specific code; tested only on the OnePlus 13
 * **Role:** **The User Interface & Visual Badges.**
-* **What it does:** Displays the active codec badge (e.g. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in the Bluetooth device settings page so the user can verify the negotiated mode at a glance.
+* **What it does:** Displays the active codec badge (e.g. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in the summary of a connected device in the Bluetooth device list, so the negotiated mode is visible at a glance.
 * **If omitted:** Audio still works, but Settings displays a generic or blank codec label.
 
 ### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Target:** `packages/apps/GameSpace`
-* **Portability:** **Generic for ROMs with GameSpace (crDroid / Lineage / Axion)**
+* **Source scope:** ROMs that ship this GameSpace app (e.g. crDroid); needs patch 1
+* **Hardware portability:** no device-specific code; tested only on crDroid `16.0` / OnePlus 13
 * **Role:** **Automatic Low-Latency Trigger.**
 * **What it does:** Hooks into GameSpace game lifecycle events. When a game is launched, it automatically switches aptX Adaptive from High-Quality (~348 ms) to Low-Latency (~117 ms). When closing the game, it seamlessly restores the previous HQ or Lossless profile.
 * **If omitted:** Gaming mode switching must be triggered manually or remains at standard latency. (Optional if your ROM does not include GameSpace).
 
 ### 6. `crdroid_aptx_r2_2_property.patch`
 * **Target:** `device/oneplus/sm8750-common` (or your device's vendor property tree)
-* **Portability:** **Device-Specific Blueprint**
+* **Source scope:** **device-specific template**
 * **Role:** **Hardware & Vendor Configuration Flags.**
 * **What it does:** Sets the necessary `persist.vendor.qcom.bluetooth.*` system properties required by the Qualcomm Bluetooth stack and DSP firmware to unlock Snapdragon Sound R2.2 and aptX Adaptive feature sets.
 * **For other devices:** Copy these property definitions into your target device's `vendor.prop` or `device.mk`.
@@ -165,7 +170,7 @@ repository. Do not stack these patches on top of an older edition or prototype.
 This repository includes a convenient helper script (`apply-patches.sh`) that verifies patch applicability and applies all patches in one step:
 
 ```bash
-# 1. Dry-run check (verifies all targets without modifying any files):
+# 1. Dry-run check (simulates the whole series without modifying any files):
 ./apply-patches.sh --check /path/to/crdroid-source
 
 # 2. Apply all patches:
@@ -174,6 +179,21 @@ This repository includes a convenient helper script (`apply-patches.sh`) that ve
 # 3. (Optional) To cleanly revert all patches later:
 ./apply-patches.sh --reverse /path/to/crdroid-source
 ```
+
+What the script does before it changes anything:
+
+* **It simulates the whole series** on a temporary copy of the affected files. The two
+  `frameworks/base` patches are checked one on top of the other, not each against the untouched
+  tree. If anything does not fit, nothing is changed (exit code 2).
+* **It refuses target repositories with uncommitted changes** (exit code 4), so your own edits do
+  not get mixed into the series. `--allow-dirty` overrides this on purpose. Reverting is exempt,
+  because an applied series is itself an uncommitted change.
+* **It shows how each repository relates to the reference commit** in [`NOTICE`](NOTICE):
+  `matches reference`, `newer than reference` or `not in local history`. This is information
+  only — a newer tree is not refused — but it is the first thing to look at when a patch fails.
+
+Should it still abort mid-way (exit code 3, only possible if the tree changes during the run), it
+lists the patches already processed and how to undo them.
 
 ---
 

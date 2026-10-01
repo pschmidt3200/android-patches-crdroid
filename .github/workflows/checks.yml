@@ -1,0 +1,29 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ShellCheck
+        run: |
+          command -v shellcheck >/dev/null || { sudo apt-get update && sudo apt-get install -y shellcheck; }
+          shellcheck --version
+          git ls-files -z '*.sh' | xargs -0 shellcheck
+
+      - name: Module structure and patch format
+        run: bash .github/scripts/check-modules.sh
+
+      - name: apply-patches.sh behaviour
+        run: |
+          for script in */apply-patches.sh; do
+            bash .github/scripts/test-apply-script.sh "$(dirname "${script}")"
+          done

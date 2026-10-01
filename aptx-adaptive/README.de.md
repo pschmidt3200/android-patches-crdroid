@@ -95,42 +95,47 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 
 ### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
 * **Ziel:** `packages/modules/Bluetooth`
-* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Quellumfang:** das AOSP-Bluetooth-Modul
+* **Hardware-Portabilität:** **Qualcomm-FastConnect-spezifisch** (Herstellerbefehle an den Controller); nur auf dem OnePlus 13 getestet
 * **Rolle:** **Das Herzstück & der Protokoll-Treiber.**
 * **Was er tut:** Im Standard-AOSP werden Offload-Codecs künstlich blockiert, wenn keine Software-Encoder-Bibliothek im System vorliegt. Dieser Patch beseitigt diese Hürde und baut die native Sitzungsanmeldung an Qualcomms AIDL Audio-HAL (`AptxAdaptiveConfiguration`) auf. Er verhandelt die AVDTP-Fähigkeiten (44.1 kHz, 48 kHz, 96 kHz) und steuert die Raten- und Latenzumschaltung direkt über den DSP.
 * **Wenn er weggelassen wird:** Es kann keine aptX-Adaptive-Sitzung starten; das System weicht auf normales aptX, AAC oder SBC aus.
 
 ### 2. `crdroid_framework_aptx_adaptive_offload.patch`
 * **Ziel:** `frameworks/base`
-* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Quellumfang:** generischer AOSP-Framework-Code (`android.media.AudioSystem`); braucht Patch 1
+* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
 * **Rolle:** **Der System-Türöffner.**
-* **Was er tut:** Registriert aptX Adaptive als zulässiges Hardware-Offload-Format in Androids `AudioProductStrategy` und `AudioPolicyManager`.
-* **Wenn er weggelassen wird:** AudioFlinger erkennt aptX Adaptive nicht als Offload-Format und weigert sich, Audio an den Hardware-DSP weiterzuleiten.
+* **Was er tut:** Ergänzt das Audioformat `AUDIO_FORMAT_APTX_ADAPTIVE` in `AudioSystem`, führt es bei den übrigen Bluetooth-Formaten und ordnet es dem aptX-Adaptive-Bluetooth-Codectyp zu.
+* **Wenn er weggelassen wird:** Das Framework kennt kein Audioformat für aptX Adaptive und kann den ausgehandelten Bluetooth-Codec keinem Offload-Format zuordnen.
 
 ### 3. `crdroid_framework_settingslib_codec_status.patch`
 * **Ziel:** `frameworks/base` (`packages/SettingsLib`)
-* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Quellumfang:** generischer AOSP-SettingsLib-Code
+* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
 * **Rolle:** **Die interne Status-Brücke.**
-* **Was er tut:** Stellt Status-Ereignisse, Abtastraten und Latenzinformationen in Androids gemeinsamer `SettingsLib` bereit, damit Systemdienste und UI-Komponenten den aktiven Codec-Status abfragen können.
-* **Wenn er weggelassen wird:** Das System kann nicht ermitteln, ob der Stream aktuell in HQ- oder Low-Latency-Betrieb läuft.
+* **Was er tut:** Ergänzt `A2dpProfile.getCodecStatus()` und aktualisiert einen Geräteeintrag, wenn sich die Codec-Konfiguration ändert (`ACTION_CODEC_CONFIG_CHANGED`).
+* **Wenn er weggelassen wird:** Patch 4 baut nicht (er ruft `getCodecStatus()` auf), und die Geräteliste aktualisiert sich nach einem Codec-Wechsel nicht.
 
 ### 4. `crdroid_settings_bluetooth_codec_badges.patch`
 * **Ziel:** `packages/apps/Settings`
-* **Geltungsbereich:** **Generisch (AOSP-weit)**
+* **Quellumfang:** generischer AOSP-Settings-Code; **braucht Patch 3**
+* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
 * **Rolle:** **Die Benutzeroberfläche & Anzeige.**
-* **Was er tut:** Zeigt das aktive Codec-Badge (z. B. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) direkt in den Bluetooth-Gerätedetails der Einstellungen an.
+* **Was er tut:** Zeigt das aktive Codec-Badge (z. B. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in der Zusammenfassung eines verbundenen Geräts in der Bluetooth-Geräteliste an.
 * **Wenn er weggelassen wird:** Der Ton läuft zwar, aber die Einstellungs-App zeigt nur ein Standard- oder leeres Label.
 
 ### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Ziel:** `packages/apps/GameSpace`
-* **Geltungsbereich:** **Generisch für ROMs mit GameSpace (crDroid / Lineage / Axion)**
+* **Quellumfang:** ROMs, die diese GameSpace-App mitliefern (z. B. crDroid); braucht Patch 1
+* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf crDroid `16.0` / OnePlus 13 getestet
 * **Rolle:** **Automatische Latenzsteuerung beim Spielen.**
 * **Was er tut:** Klinkt sich in die GameSpace-Ereignisse ein. Sobald ein Spiel gestartet wird, schaltet der Bluetooth-Stack automatisch von High-Quality (~348 ms) auf Low-Latency (~117 ms). Beim Beenden des Spiels wird das vorherige HQ- oder Lossless-Profil nahtlos wiederhergestellt.
 * **Wenn er weggelassen wird:** Spiele laufen mit Standard-Latenz oder müssen manuell geschaltet werden. (Optional, falls kein GameSpace genutzt wird).
 
 ### 6. `crdroid_aptx_r2_2_property.patch`
 * **Ziel:** `device/oneplus/sm8750-common` (oder der geräteeigene Device-Tree)
-* **Geltungsbereich:** **Gerätespezifische Vorlage**
+* **Quellumfang:** **gerätespezifische Vorlage**
 * **Rolle:** **Hardware- & Treiber-Schalter.**
 * **Was er tut:** Setzt die erforderlichen `persist.vendor.qcom.bluetooth.*`-Properties, damit der Qualcomm-Stack und die DSP-Firmware Snapdragon Sound R2.2 und aptX Adaptive freigeben.
 * **Für andere Geräte:** Diese Properties in das eigene `vendor.prop` oder `device.mk` übernehmen.
@@ -171,6 +176,22 @@ Das Repository enthält das Hilfsskript `apply-patches.sh`, das alle 6 Patches v
 # 3. (Optional) Zum sauberen Rückgängigmachen:
 ./apply-patches.sh --reverse /pfad/zu/crdroid-sourcen
 ```
+
+Was das Skript tut, bevor es etwas ändert:
+
+* **Es simuliert die ganze Serie** an einer temporären Kopie der betroffenen Dateien. Die beiden
+  `frameworks/base`-Patches werden übereinander geprüft, nicht jeder einzeln gegen den
+  unveränderten Baum. Passt etwas nicht, wird nichts geändert (Exit-Code 2).
+* **Es verweigert Zielrepositories mit nicht committeten Änderungen** (Exit-Code 4), damit eigene
+  Änderungen nicht mit der Serie vermischt werden. `--allow-dirty` hebt das bewusst auf. Beim
+  Rückgängigmachen gilt das nicht, denn eine angewendete Serie ist selbst eine offene Änderung.
+* **Es zeigt je Repository den Bezug zum Referenz-Commit** aus der [`NOTICE`](NOTICE):
+  `matches reference`, `newer than reference` oder `not in local history`. Das ist nur eine
+  Auskunft — ein neuerer Baum wird nicht abgewiesen —, aber die erste Stelle zum Nachsehen,
+  wenn ein Patch scheitert.
+
+Bricht es trotzdem mittendrin ab (Exit-Code 3, nur möglich, wenn sich der Baum während des Laufs
+ändert), listet es die schon bearbeiteten Patches und den Weg zum Rückgängigmachen auf.
 
 ---
 
