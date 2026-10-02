@@ -9,8 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing module or collection tag with matching .github/releases/<tag>.md notes'
-        required: true
+        description: 'Existing module or collection tag with matching .github/releases/<tag>.md notes. Empty = all notes; existing module releases only get a missing <tag>.zip attached.'
+        required: false
+        default: ''
 
 permissions:
   contents: read

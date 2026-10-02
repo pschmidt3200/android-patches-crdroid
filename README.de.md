@@ -173,21 +173,30 @@ Anschließend die Modul-README zum Prüfen und Anwenden im eigenen Quellbaum ver
 aus verschiedenen Tags oder Commits mischen. Ein Tag bezeichnet die Patchfassung; Quellprüfungen
 belegen noch keinen erfolgreichen ROM-Build oder Gerätetest.
 
-Die [Release-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
-enthält Hinweise und GitHubs Quellarchive. `.github/releases/<tag>.md` committen, den Commit
+Für ein einzelnes Modul `<tag>.zip` von der Release-Seite dieses Moduls herunterladen, zum Beispiel
+`aptx-adaptive-v1.1.zip` beim [Release aptX v1.1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.1).
+Es enthält nur den Modulordner genau im Stand des Tags, mit eigenem `apply-patches.sh`, `NOTICE`
+und `LICENSE`. GitHubs automatische *Source code*-Archive enthalten bei jedem Release immer das
+ganze Repository im Stand dieses Tags.
+
+Modul-Release-Seiten enthalten die Hinweise, das Modularchiv `<tag>.zip` und GitHubs Quellarchive;
+das Sammel-Release hat kein zusätzliches Archiv. `.github/releases/<tag>.md` committen, den Commit
 prüfen, danach unveränderliche Tags darauf setzen und `main` mit den Tags gemeinsam pushen.
 Neue Notizen auf `main` starten
 den Workflow *release*; er lässt sich auch manuell mit einem Tag starten. Das getaggte Modul muss
 mit dem geprüften Commit übereinstimmen und darf keine uncommitteten Änderungen enthalten.
 Der Helfer prüft **alle unveröffentlichten Kandidaten vor dem ersten Release**, einschließlich
-Installer-Konsistenz und der vier Prüfungen unten. Bestehende Releases bleiben unverändert.
-Bei einem Veröffentlichungsfehler nennt er bereits erzeugte Releases; ein erneuter Lauf prüft
-die verbleibenden Kandidaten. Neue Modul-Releases ersetzen nicht automatisch GitHubs globale
+Installer-Konsistenz und der vier Prüfungen unten. Bestehende Releases behalten Tag, Titel und
+Hinweise; der Helfer hängt nur ein fehlendes Modularchiv einmalig an und ersetzt ein vorhandenes
+nie. Ein manueller Workflow-Start ohne Tag erledigt das für alle Modul-Releases. Bei einem
+Veröffentlichungsfehler nennt er bereits erzeugte Releases und bereits angehängte Archive; ein
+erneuter Lauf prüft die verbleibenden Kandidaten. Neue Modul-Releases ersetzen nicht automatisch GitHubs globale
 *Latest*-Auswahl. Sammel-Releases prüfen den vollständigen Repository-Stand und alle Module,
 werden nach den ausstehenden Modul-Releases veröffentlicht und als *Latest* markiert.
 Nur der Release-Job erhält `contents: write` über
 GitHubs temporäres Job-Token. Er läuft ausschließlich auf `main` dieses öffentlichen Repos,
-mit demselben kostenlosen Standard-Runner und ohne Asset-Uploads.
+mit demselben kostenlosen Standard-Runner. Hochgeladen werden nur die Modularchive als
+Release-Anhänge — keine Workflow-Artefakte und keine Caches.
 
 Für das ausgewählte Modul führen Maintainer diese Prüfungen in der Repository-Wurzel aus:
 

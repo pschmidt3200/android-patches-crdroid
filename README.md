@@ -170,19 +170,28 @@ Follow the module's README to check and apply its patches to your source tree. D
 from different tags or commits. A tag identifies the patch edition; source checks do not establish
 a successful ROM build or device test.
 
-The [release page](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
-provides notes and GitHub's source archives. To publish, commit `.github/releases/<tag>.md`,
+To use a single module, download `<tag>.zip` from that module's release page, for example
+`aptx-adaptive-v1.1.zip` on the [aptX v1.1 release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.1).
+It contains only the module's directory exactly as tagged, with its own `apply-patches.sh`,
+`NOTICE` and `LICENSE`. GitHub's automatic *Source code* archives on every release always contain
+the whole repository at that tag.
+
+Module release pages provide the notes, the module archive `<tag>.zip` and GitHub's source
+archives; the collection release has no extra archive. To publish, commit `.github/releases/<tag>.md`,
 review and verify that commit, then create immutable tags at it and push `main` and the tags together.
 Pushing new notes to `main` runs the
 *release* workflow; it can also be started manually with a tag. The tagged module must match
 the tested commit and have no uncommitted changes. The helper checks **all unpublished candidates
 before creating any release**, including generated installer consistency and the four checks below.
-Existing releases are left unchanged. A publication failure reports which releases were already
-created; rerunning checks the remaining candidates. New module releases do not automatically
+Existing releases keep their tag, title and notes; the helper only attaches a missing module
+archive once and never replaces an attached one. Starting the workflow manually without a tag does
+this for every module release. A publication failure reports which releases were already created
+and which archives were already attached; rerunning checks the remaining candidates. New module releases do not automatically
 replace GitHub's global *Latest* selection. Collection releases check the complete repository
 snapshot and all modules, are published after pending module releases, and become *Latest*.
 Only the release job receives `contents: write` via GitHub's temporary job token; it runs only
-on `main` in this public repository, using the same free standard runner and no asset uploads.
+on `main` in this public repository, using the same free standard runner. Its only uploads are
+the module archives as release assets — no workflow artifacts or caches.
 
 For maintainers, run these checks from the repository root for the selected module:
 
