@@ -24,7 +24,7 @@ android-patches-crdroid/
 ├── LICENSE                    # Default license (module-specific terms below)
 ├── .github/                   # Issue form, installer template, CI and release tooling
 │
-├── aptx-adaptive/             # Qualcomm aptX Adaptive DSP offload & BT integration
+├── aptx-adaptive/             # Bluetooth audio integration
 │   ├── README.md              # Detailed module documentation & requirements
 │   ├── README.de.md           # German module documentation
 │   ├── apply-patches.sh       # Automated patch installation & verification script
@@ -33,11 +33,12 @@ android-patches-crdroid/
 │   ├── LICENSE                # Module license (Apache 2.0)
 │   └── patches/               # .patch files (Bluetooth, frameworks, Settings, GameSpace, device)
 │
-├── gms-fixes/                 # GMS visibility and vendor build compatibility
-├── gps-servers/               # Optional SUPL and GNSS NTP server choices
-├── donation-disable/          # Remove in-ROM donation prompts and links
-├── bbrv3/                     # Maintained TCP BBRv3 for the sm8750 kernel
-└── susfs-core/                # Our context delta to an external SUSFS patch file
+├── gms-fixes/                 # GMS compatibility adjustments
+├── gps-servers/               # SUPL and NTP server configuration
+├── donation-disable/          # Removal of donation prompts
+├── bbrv3/                     # TCP congestion-control patch
+└── susfs-core/                # Kernel patch corrections
+
 ```
 
 ---
@@ -125,18 +126,13 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 
 ## Available Modules
 
-* **[aptX Adaptive Audio Integration](aptx-adaptive/):** Complete session setup and framework offload integration for Qualcomm hardware DSP audio.
-  Base: crDroid branch `16.0` (Android 16). Reference devices: OnePlus 13 (`dodge`), OnePlus Pad 3 / Pad 2 Pro (`erhai`). Other devices: untested.
-* **[GMS Compatibility Fixes](gms-fixes/):** Package visibility, Google Clock permission, targeted uses-library workarounds and an optional OnePlus package selection.
-  Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653).
-* **[GPS Server Choices](gps-servers/):** Independently selectable GrapheneOS SUPL and German NTP pool configuration.
-  Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653; `/odm/etc/gps.conf` with SUPL/NTP active).
-* **[Disable Donation Requests](donation-disable/):** Removes donation UI and links, clears old reminders and preserves maintainer names.
-  Base: crDroid `16.0`. Personal UI preference; source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653; `DonateActivity` completely removed).
-* **[BBRv3](bbrv3/):** Maintained TCP BBRv3 backport for crDroid `16.0` and its Android15/Linux6.6 OnePlus `sm8750` kernel.
-  Source checks and documented kernel/device acceptance on OnePlus 13 (`dodge`, CPH2653; `bbr3` active as default and used by live sockets).
-* **[SUSFS Core Context Corrections](susfs-core/):** Our context/index/position delta to the original upstream patch file.
-  Source checks and documented kernel/device acceptance on OnePlus 13 (`dodge`, CPH2653; SUSFS v2.3.0 GKI active in kernel).
+* **[aptx-adaptive](aptx-adaptive/):** Bluetooth audio integration. See the module directory for technical details and prerequisites.
+* **[gms-fixes](gms-fixes/):** Compatibility adjustments for Google services. See the module directory for technical details.
+* **[gps-servers](gps-servers/):** Alternative SUPL and NTP server configuration. See the module directory for technical details.
+* **[donation-disable](donation-disable/):** Removal of donation prompts in Settings. See the module directory for technical details.
+* **[bbrv3](bbrv3/):** TCP congestion-control patch. See the module directory for technical details.
+* **[susfs-core](susfs-core/):** Kernel patch corrections. See the module directory for technical details.
+
 
 
 ---
@@ -165,7 +161,8 @@ freezes the complete 2026-10-01 source-patch collection. Its module editions are
 
 Module tags use `<module>-v<version>`; collection tags use `v<version>`. Versions have
 two or three numeric components; module versions may have a suffix such as `-rc.1`.
-All 6 modules have documented live ROM/kernel and device acceptance on the OnePlus 13 (`dodge`, CPH2653).
+Details on device acceptance and test status for individual modules are documented in their respective module READMEs.
+
 
 
 Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.
