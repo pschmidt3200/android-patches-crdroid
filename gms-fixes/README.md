@@ -68,8 +68,9 @@ bash .github/scripts/check-reference.sh gms-fixes
 bash .github/scripts/check-reference.sh --branch 16.0 gms-fixes
 ```
 
-**No new ROM build or device acceptance is claimed for this public edition.**
-After building, test boot, Net Analyzer, Google Clock alarms, launcher/recents,
-setup and package installation on the target device. Recheck the vendor's APK
-manifests and package lists on updates; these changes are specific to the baseline.
+**Documented ROM and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+running crDroid 16.0 (build `v12.12-20261003`): clean boot without bootloops, Google Play Services (26.37)
+and Play Store (53.3) running stable without crashes, `com.google.android.gms` globally queryable (`forceQueryable`),
+Google Clock alarms working with privileged `SCHEDULE_EXACT_ALARM`, and Launcher/PackageInstaller stable.
+Recheck vendor APK manifests and product lists on upstream vendor updates.
 License and upstream attribution: [LICENSE](LICENSE), [NOTICE](NOTICE).

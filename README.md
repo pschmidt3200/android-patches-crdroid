@@ -128,7 +128,7 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 * **[aptX Adaptive Audio Integration](aptx-adaptive/):** Complete session setup and framework offload integration for Qualcomm hardware DSP audio.
   Base: crDroid branch `16.0` (Android 16). Reference devices: OnePlus 13 (`dodge`), OnePlus Pad 3 / Pad 2 Pro (`erhai`). Other devices: untested.
 * **[GMS Compatibility Fixes](gms-fixes/):** Package visibility, Google Clock permission, targeted uses-library workarounds and an optional OnePlus package selection.
-  Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks; ROM/device validation pending.
+  Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653).
 * **[GPS Server Choices](gps-servers/):** Independently selectable GrapheneOS SUPL and German NTP pool configuration.
   Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks; effective server use and GNSS measurements pending.
 * **[Disable Donation Requests](donation-disable/):** Removes donation UI and links, clears old reminders and preserves maintainer names.
@@ -164,7 +164,7 @@ freezes the complete 2026-10-01 source-patch collection. Its module editions are
 
 Module tags use `<module>-v<version>`; collection tags use `v<version>`. Versions have
 two or three numeric components; module versions may have a suffix such as `-rc.1`.
-V1 is a source-patch edition: aptX has documented device acceptance; GMS, GPS and
+V1 is a source-patch edition: aptX and GMS have documented device acceptance on OnePlus 13; GPS and
 donation-disable still require their public-edition ROM/device tests.
 
 Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.

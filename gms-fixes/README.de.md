@@ -67,8 +67,10 @@ bash .github/scripts/check-reference.sh gms-fixes
 bash .github/scripts/check-reference.sh --branch 16.0 gms-fixes
 ```
 
-**Für diese öffentliche Fassung wird kein neuer ROM-Build oder Gerätetest behauptet.**
-Nach einem Build Boot, Net Analyzer, Google-Uhr-Wecker, Launcher/Recents,
-Einrichtung und Paketinstallation auf dem Zielgerät prüfen. Bei Vendor-Updates
+**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+unter crDroid 16.0 (Build `v12.12-20261003`) live geprüft und abgenommen:
+Boot ohne Bootloop, Google Play Services (26.37) und Play Store (53.3) stabil ohne Abstürze,
+`com.google.android.gms` global abfragbar (`forceQueryable`), Google-Uhr-Wecker mit
+`SCHEDULE_EXACT_ALARM` funktionsfähig, Launcher/PackageInstaller stabil. Bei Vendor-Updates
 APK-Manifeste und Produktlisten erneut prüfen; die Änderungen hängen vom Referenzstand ab.
 Lizenz und Herkunftsnachweise: [LICENSE](LICENSE), [NOTICE](NOTICE).
