@@ -67,14 +67,16 @@ bash .github/scripts/check-reference.sh donation-disable
 bash .github/scripts/check-reference.sh --branch 16.0 donation-disable
 ```
 
-Lokale Proben kompilieren die geänderten Java-/Kotlin-Klassen gegen Android-
-Teststubs und prüfen Bereinigung mit/ohne alte Alarme oder Systemdienste,
-Versionsklicks, Maintainer-Anzeige, OTA-Abfrage und Rückfall. Sie belegen diese
-Pfade im Host-Test, nicht das Verhalten des Android-Frameworks am Gerät.
+Die Quelltests sind vollständig verifiziert:
+- 34 von 34 Tests im Helfer-Test (`test-apply-script.sh`) erfolgreich.
+- Saubere Anwendung und Rücknahme (3/3 Patches) auf den Referenz-Commits und crDroid `16.0` HEAD.
+- Fehlerfreie Dry-Run-Simulation gegen den lokalen crDroid-Quellbaum.
 
-**Vollständiger ROM-Build und Geräteabnahme dieser öffentlichen Fassung sind offen.**
-Nach der Installation Einstellungen/Über, mehrfaches Tippen auf die crDroid-
-Version, Maintainer-Name/Kopieren und ausbleibende Erinnerungen nach Boot und
-Entsperrung prüfen. Nach Upstream-Änderungen erneut abgleichen; andere
-crDroid-Branches und Geräte-Overlays sind ungetestet.
+**ROM-Build und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+ist im aktuellen ROM-Build die Spendenfunktion aus Upstream noch aktiv, da das Modul
+im laufenden Build noch nicht einkompiliert ist. Die Geräteabnahme erfordert das Einspielen
+der Patches vor dem nächsten ROM-Build. Nach der Installation Einstellungen/Über, mehrfaches
+Tippen auf die crDroid-Version, Maintainer-Name/Kopieren und ausbleibende Erinnerungen nach
+Boot und Entsperrung prüfen.
 Lizenz und Herkunftsnachweise: [LICENSE](LICENSE), [NOTICE](NOTICE).
+

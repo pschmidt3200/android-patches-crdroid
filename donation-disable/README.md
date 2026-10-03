@@ -63,13 +63,15 @@ bash .github/scripts/check-reference.sh donation-disable
 bash .github/scripts/check-reference.sh --branch 16.0 donation-disable
 ```
 
-Local probes compile the changed Java/Kotlin classes against Android API
-stubs and exercise cleanup with/without old alarms or services, repeated
-version taps, maintainer display, OTA lookup and fallback. They validate
-these paths in a host test, not Android framework behaviour on a device.
+Source validation is complete:
+- 34 of 34 helper tests (`test-apply-script.sh`) passed cleanly.
+- Clean apply and reverse (3/3 patches) on reference commits and crDroid `16.0` HEAD.
+- Successful dry-run simulation against local crDroid source trees.
 
-**A full ROM build and device acceptance of this public edition remain open.**
-After installing, check Settings/About, repeated crDroid-version taps,
-maintainer name/copying and the absence of reminders after boot/unlock.
-Recheck after upstream changes; other crDroid branches and device overlays
-are untested. License and upstream attribution: [LICENSE](LICENSE), [NOTICE](NOTICE).
+**ROM build and device acceptance:** On the reference device **OnePlus 13 (`dodge`, CPH2653)**,
+upstream donation components are still active in the current ROM build because this module
+has not yet been compiled into the running image. Device acceptance requires applying the
+patches before the next ROM build. After installing, check Settings/About, repeated
+crDroid-version taps, maintainer name/copying, and the absence of reminders after boot/unlock.
+License and upstream attribution: [LICENSE](LICENSE), [NOTICE](NOTICE).
+
