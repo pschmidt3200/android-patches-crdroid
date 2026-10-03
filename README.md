@@ -7,8 +7,8 @@ The goal of this repository is to maintain clean, modular source patches for crD
 **Current ROM scope: crDroid only.** Each module documents its crDroid branch and reference hardware.
 Support for other ROMs has not been established.
 
-**Current repository status: private; GitHub Actions disabled.** Checks for the
-new module editions run locally. Kernel modules retain their upstream license
+**Current repository status: public; GitHub Actions enabled.** Module checks run
+on every push. Kernel modules retain their upstream license
 terms; read each module's NOTICE before building or redistributing.
 
 ---

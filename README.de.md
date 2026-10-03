@@ -7,8 +7,8 @@ Ziel dieses Repositories ist die Pflege sauberer, modularer Quellcode-Patches f�
 **Derzeitiger ROM-Umfang: nur crDroid.** Jedes Modul nennt seinen crDroid-Branch und seine Referenzhardware.
 Unterstützung für andere ROMs ist nicht belegt.
 
-**Aktueller Repo-Status: privat; GitHub Actions deaktiviert.** Neue Modulfassungen
-werden lokal geprüft. Kernelmodule behalten ihre Upstream-Lizenzbedingungen;
+**Aktueller Repo-Status: öffentlich; GitHub Actions aktiv.** Die Modulprüfungen
+laufen bei jedem Push. Kernelmodule behalten ihre Upstream-Lizenzbedingungen;
 vor Build oder Weitergabe die jeweilige NOTICE lesen.
 
 ---
