@@ -30,6 +30,15 @@ whitespace from five added lines (maintained input lines2438/2660/2948/2959/2988
 No semantic changes or binaries. Source checks are not kernel/ROM/device tests.
 Patch inventory:
   bbrv3-android15-6.6.patch
+  bbrv3-default-android15-6.6.patch
+
+Default selection companion, authored for this module on 2026-10-03:
+  Builds TCP_CONG_BBR3 into the kernel and selects DEFAULT_BBR3/bbr3 in
+  arch/arm64/configs/gki_defconfig. Other controllers remain available.
+  Maintained input SHA256: 866ac98d6d12e1ac7884921b8600f3215364026d65d788f170d6c77bc6bce0a3
+  Repository edition SHA256: e9c5477dc7f92db6da94a6e064360debdc510f75f378b81432288ab9e9f5b1f9
+  Only the target-header line is normalized for module tooling; the diff is
+  byte-identical to the maintained companion. The BBRv3 core is unchanged.
 
 Mail-preamble bullets/separator are comment-prefixed so the strict patch checker
 counts only real diff lines. Original mail authors and content are preserved.

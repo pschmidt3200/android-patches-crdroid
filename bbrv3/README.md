@@ -7,7 +7,10 @@ generation are different; this is not a general Android kernel port.
 `patches/bbrv3-android15-6.6.patch` adds the BBRv3 congestion controller and
 its TCP integration across 13 kernel files. It rebases the pinned WildKernels
 backport on the current kernel without changing its algorithm.
-It does not change the device defconfig or automatically select BBRv3.
+The separate companion `patches/bbrv3-default-android15-6.6.patch` builds BBRv3
+into the kernel and selects `bbr3` as its TCP congestion-control default in
+`gki_defconfig`. The installer applies the core first, then the companion.
+BBRv1 (`bbr`) and other congestion controllers remain available.
 
 ## Requirements and use
 
@@ -27,9 +30,16 @@ bash bbrv3/apply-patches.sh --reverse /path/to/crdroid
 ```
 
 The installer checks source applicability in a sandbox and refuses to modify
-a dirty target repository by default. A source change still needs a kernel/ROM
-build and installation. Enabling `CONFIG_TCP_CONG_BBR3`, selecting the default
-controller and any live networking tests are separate builder decisions.
+a dirty target repository by default. Apply the series before generating the
+kernel `.config`, then build and install the kernel/ROM. The companion sets
+`CONFIG_TCP_CONG_BBR3=y`, `CONFIG_DEFAULT_BBR3=y` and
+`CONFIG_DEFAULT_TCP_CONG="bbr3"`. It does not change a running device.
+
+The real kernel Kconfig tool resolved `gki_defconfig` with both
+`vendor/sun_perf.config` and `vendor/oplus/sun_perf.config`: the default changed
+from `cubic` to `bbr3`, with BBRv3 built in. After installing a new build, check
+`/proc/sys/net/ipv4/tcp_congestion_control`; runtime tuning can override the
+kernel default. Device verification remains pending.
 
 ## Algorithm status, checked 2026-10-03
 
@@ -62,7 +72,7 @@ This repository adds a target header and trims trailing whitespace in five
 added lines; the productive maintained patch remains unchanged.
 The editions therefore have different byte hashes, with no algorithm change.
 
-The release is checked locally for module structure, standalone installer
+This edition is checked locally for module structure, standalone installer
 behaviour and strict real-source application/reversal at the reference commit
 and current `16.0`. Shared use with the corrected SUSFS upstream patch is checked
 in an isolated kernel index. **A new kernel/ROM build and device acceptance

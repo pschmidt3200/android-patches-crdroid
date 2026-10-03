@@ -6,6 +6,11 @@
       "repository": "kernel/oneplus/sm8750",
       "file": "bbrv3-android15-6.6.patch",
       "description": "TCP BBRv3 Android15 Linux6.6"
+    },
+    {
+      "repository": "kernel/oneplus/sm8750",
+      "file": "bbrv3-default-android15-6.6.patch",
+      "description": "Build BBRv3 in and select bbr3 as the TCP default"
     }
   ]
 }

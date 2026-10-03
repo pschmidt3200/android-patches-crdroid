@@ -87,6 +87,7 @@ ANDROID_ROOT="$(cd "$1" && pwd)"
 # Module patches and their target repositories.
 PATCHES=(
     "kernel/oneplus/sm8750:bbrv3-android15-6.6.patch:TCP BBRv3 Android15 Linux6.6"
+    "kernel/oneplus/sm8750:bbrv3-default-android15-6.6.patch:Build BBRv3 in and select bbr3 as the TCP default"
 )
 
 # Empty requires every target; otherwise this one repository may be absent.

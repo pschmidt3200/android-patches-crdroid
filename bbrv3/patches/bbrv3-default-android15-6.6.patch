@@ -1,0 +1,18 @@
+# Target repository: kernel/oneplus/sm8750
+# Apply together with bbrv3-android15-6.6.patch, before generating .config.
+# Build BBRv3 in and select its registered name "bbr3" as the TCP default.
+# Existing BBRv1 and other congestion algorithms remain available.
+diff --git a/arch/arm64/configs/gki_defconfig b/arch/arm64/configs/gki_defconfig
+--- a/arch/arm64/configs/gki_defconfig
++++ b/arch/arm64/configs/gki_defconfig
+@@ -160,6 +160,10 @@
+ # CONFIG_TCP_CONG_WESTWOOD is not set
+ # CONFIG_TCP_CONG_HTCP is not set
+ CONFIG_TCP_CONG_BBR=y
++CONFIG_TCP_CONG_BBR3=y
++# CONFIG_DEFAULT_CUBIC is not set
++CONFIG_DEFAULT_BBR3=y
++CONFIG_DEFAULT_TCP_CONG="bbr3"
+ CONFIG_IPV6_ROUTER_PREF=y
+ CONFIG_IPV6_ROUTE_INFO=y
+ CONFIG_IPV6_OPTIMISTIC_DAD=y

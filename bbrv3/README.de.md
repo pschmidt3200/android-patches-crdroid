@@ -7,7 +7,10 @@ Android-Generation des Kernels unterscheiden sich; andere Kernel sind ungeprüft
 `patches/bbrv3-android15-6.6.patch` ergänzt den BBRv3-Congestion-Controller
 und seine TCP-Anbindung in 13 Kerneldateien. Der gepinnte WildKernels-Backport
 wurde auf den aktuellen Quellstand neu basiert, ohne Algorithmusänderung.
-Der Patch verändert keine Geräte-Defconfig und wählt BBRv3 nicht automatisch aus.
+Der separate Zusatzpatch `patches/bbrv3-default-android15-6.6.patch` baut BBRv3
+fest ein und wählt in `gki_defconfig` den TCP-Standard `bbr3`.
+Der Installer wendet zuerst den Core und danach den Zusatzpatch an.
+BBRv1 (`bbr`) und die anderen Algorithmen bleiben verfügbar.
 
 ## Voraussetzungen und Anwendung
 
@@ -28,8 +31,15 @@ bash bbrv3/apply-patches.sh --reverse /pfad/zu/crdroid
 
 Der Installer simuliert die Anwendung und lehnt Änderungen an einem unsauberen
 Zielrepository standardmäßig ab. Danach sind Kernel-/ROM-Build und Installation
-nötig. `CONFIG_TCP_CONG_BBR3`, Standard-Controller und Netzwerkmessungen werden
-gesondert vom Builder gewählt; dieser Installer aktiviert nichts am Gerät.
+nötig. Die Serie vor Erzeugung der Kernel-`.config` anwenden. Der Zusatzpatch
+setzt `CONFIG_TCP_CONG_BBR3=y`, `CONFIG_DEFAULT_BBR3=y` und
+`CONFIG_DEFAULT_TCP_CONG="bbr3"`. Er verändert kein laufendes Gerät.
+
+Das echte Kernel-Kconfig-Werkzeug hat `gki_defconfig` mit
+`vendor/sun_perf.config` und `vendor/oplus/sun_perf.config` aufgelöst:
+zuvor `cubic`, danach `bbr3`, BBRv3 fest eingebaut. Nach Installation eines
+neuen Builds `/proc/sys/net/ipv4/tcp_congestion_control` prüfen;
+Laufzeittuning kann den Kernelstandard überschreiben. Geräteabnahme bleibt offen.
 
 ## Algorithmusstand, geprüft am 03.10.2026
 
