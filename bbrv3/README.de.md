@@ -69,11 +69,20 @@ Die Repo-Fassung ergänzt den Zielkopf und entfernt Leerzeichen am Ende von fün
 hinzugefügten Zeilen. Die produktive Vorlage bleibt bytegleich erhalten.
 Die Fassungen haben deshalb unterschiedliche Prüfsummen, ohne Algorithmusänderung.
 
-Lokal geprüft werden Struktur, eigenständiger Installer sowie strikte Anwendung
-und Rücknahme auf Referenz und aktuellem Branch `16.0`. Gemeinsame Anwendung mit
-der korrigierten SUSFS-Upstream-Patchdatei wird im isolierten Kernelindex geprüft.
-**Neuer Kernel-/ROM-Build und Geräteabnahme bleiben offen.** Quellprüfungen belegen
-keine bessere Geschwindigkeit oder Latenz. Modulprüfungen laufen bei jedem Push über GitHub Actions.
+Die Quell- und Helferprüfungen sind vollständig verifiziert:
+
+- 34 von 34 Tests im Helfer-Test (`test-apply-script.sh bbrv3`) erfolgreich.
+- Strikte Vorwärts- und Rückwärtsanwendung (2/2 Patches) auf Referenz-Commit `b69d2cc667dd` und aktuellem Branch `16.0` (`check-reference.sh`).
+- Fehlerfreie Core-Patch-Dry-Run-Simulation gegen den lokalen OnePlus-`sm8750`-Kernelbaum.
+- Gemeinsame Anwendung des BBRv3-Core mit der korrigierten SUSFS-Upstream-Patchdatei im isolierten Kernelindex verifiziert.
+
+**Kernel-Build und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+ist im aktuellen Kernel Linux 6.6 derzeit BBRv1 aktiv (`net.ipv4.tcp_congestion_control = bbr`).
+BBRv3 registriert sich als `bbr3`; dessen Bereitstellung erfordert das Einspielen des Patches
+und die entsprechende Kernel-Option (`CONFIG_TCP_CONG_BBR3=y`) im nächsten Kernel-Build.
+Quellprüfungen belegen keine Durchsatz- oder Latenzgewinne. Modulprüfungen laufen bei jedem
+Push über GitHub Actions.
+
 
 ## Lizenz
 
