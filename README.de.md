@@ -173,6 +173,7 @@ Separate Kernelstände vom 03.10.2026: `bbrv3-v1.0` und `susfs-core-v1.0`.
 Sie gehören nicht zum unveränderlichen Sammelstand `v1.0`. Jeder erhält eigene
 Release-Notizen und ein Modul-ZIP; SUSFS enthält ausschließlich unser Patchdatei-
 Korrekturdelta. Erstprüfung und Upload erfolgten lokal; die Push-Prüfungen laufen jetzt über GitHub Actions.
+`bbrv3-v1.1` ergänzt einen separaten Zusatzpatch, der `bbr3` zum TCP-Standard des Kernels macht.
 
 Für den vollständigen V1-Stand:
 

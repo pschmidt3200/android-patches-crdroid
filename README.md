@@ -171,6 +171,7 @@ Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`
 They are not part of the immutable `v1.0` collection snapshot. Each has its own
 release notes and module ZIP; SUSFS contains only our patch-file correction delta.
 They were first tested and uploaded locally; push checks now run on GitHub Actions.
+`bbrv3-v1.1` adds a separate companion patch that makes `bbr3` the kernel TCP default.
 
 To use the complete V1 snapshot:
 
