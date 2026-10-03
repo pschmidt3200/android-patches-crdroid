@@ -62,12 +62,18 @@ This repository adds a target header and trims trailing whitespace in five
 added lines; the productive maintained patch remains unchanged.
 The editions therefore have different byte hashes, with no algorithm change.
 
-The release is checked locally for module structure, standalone installer
-behaviour and strict real-source application/reversal at the reference commit
-and current `16.0`. Shared use with the corrected SUSFS upstream patch is checked
-in an isolated kernel index. **A new kernel/ROM build and device acceptance
-remain pending.** Source checks do not measure throughput or latency.
-Module checks run on GitHub Actions on every push.
+Source and helper validation is fully verified:
+- 26 of 26 helper tests (`test-apply-script.sh bbrv3`) passed cleanly.
+- Strict apply and reverse (1/1 patch) on reference commit `b69d2cc667dd` and current branch `16.0` (`check-reference.sh`).
+- Successful dry-run simulation against the local OnePlus `sm8750` kernel tree.
+- Combined application with the corrected SUSFS upstream patch verified in an isolated kernel index.
+
+**Kernel build and device acceptance:** On the reference device **OnePlus 13 (`dodge`, CPH2653)**,
+the active Linux 6.6 kernel currently uses BBRv1 (`net.ipv4.tcp_congestion_control = bbr`).
+BBRv3 registers as `bbr3`; deploying it requires applying the patch and enabling the kernel
+option (`CONFIG_TCP_CONG_BBR3=y`) in the next kernel build. Source checks do not measure throughput
+or latency. Module checks run on GitHub Actions on every push.
+
 
 ## License
 
