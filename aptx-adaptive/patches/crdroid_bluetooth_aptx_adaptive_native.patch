@@ -2956,10 +2956,8 @@ new file mode 100644
 index 0000000000..1618b8bfaa
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_aptx_adaptive.cc
-@@ -0,0 +1,466 @@
+@@ -0,0 +1,464 @@
 +/*
-+ * Copyright (C) 2026 The Android Open Source Project
-+ *
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
 + * You may obtain a copy of the License at
@@ -3049,7 +3047,7 @@ index 0000000000..1618b8bfaa
 +}
 +
 +static btav_a2dp_codec_bits_per_sample_t A2dpAptxAdaptiveLocalBitsPerSample() {
-+  // Qualcomm's OnePlus offload path expects a 24-bit PCM container even when
++  // The Qualcomm platform offload path expects a 24-bit PCM container even when
 +  // the negotiated 44.1-kHz Lossless payload represents 16-bit CD audio.
 +  return BTAV_A2DP_CODEC_BITS_PER_SAMPLE_24;
 +}
@@ -3454,10 +3452,8 @@ new file mode 100644
 index 0000000000..083f34bc72
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_aptx_adaptive.h
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,71 @@
 +/*
-+ * Copyright (C) 2026 The Android Open Source Project
-+ *
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
 + * You may obtain a copy of the License at
@@ -3533,10 +3529,8 @@ new file mode 100644
 index 0000000000..648ee93391
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,84 @@
 +/*
-+ * Copyright (C) 2026 The Android Open Source Project
-+ *
 + * Licensed under the Apache License, Version 2.0 (the License);
 + * you may not use this file except in compliance with the License.
 + * You may obtain a copy of the License at

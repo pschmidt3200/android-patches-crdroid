@@ -14,9 +14,11 @@ The affected Bluetooth, framework and Settings files in crDroid retain
 their upstream Apache License, Version 2.0, terms and attribution notices.
 Upstream file notices include The Android Open Source Project and Broadcom
 Corporation. GameSpace also carries Apache License, Version 2.0; its affected
-sources include crDroid Android Project and AxionOS notices. Retain the actual
-copyright and attribution notices of each affected source file. This overview
-does not replace the upstream per-file notices or license an entire ROM tree.
+sources include crDroid Android Project and AxionOS notices. Newly created
+files in the Bluetooth stack (a2dp_vendor_aptx_adaptive.cc, .h, and constants.h)
+are licensed under the Apache License, Version 2.0.
+Retain the actual copyright and attribution notices of each affected source file.
+This overview does not replace the upstream per-file notices or license an entire ROM tree.
 
 Reference repositories, commits and public sources (crDroid branch 16.0):
   packages/modules/Bluetooth    c575db642364a8e3e2f9878d2fdd55dc4451230e  https://github.com/crdroidandroid/android_packages_modules_Bluetooth
@@ -28,7 +30,12 @@ Reference repositories, commits and public sources (crDroid branch 16.0):
 The reference platforms are the OnePlus 13 (dodge, CPH2653) and OnePlus Pad 3 / Pad 2 Pro
 (erhai, OPD2415), based on SM8750 and Qualcomm FastConnect 7900, with the devices' existing
 Snapdragon Sound/R2.2 offload components. Support on other hardware is not established by this
-reference. The English patch edition changes identifiers and diagnostic text;
+reference. Controller vendor command opcodes and session parameters (VSQC 0xFC0A) were
+identified through live HCI protocol observation and runtime testing on lawfully
+acquired reference hardware for the purpose of interoperability. Applicable
+interoperability exceptions may include § 69d/§ 69e UrhG and Article 6 of
+Directive 2009/24/EC.
+The English patch edition changes identifiers and diagnostic text;
 on 2026-10-01, it was built into crDroid 16.0 and validated on the reference
 hardware with hardware DSP offload and dynamic rate switching.
 

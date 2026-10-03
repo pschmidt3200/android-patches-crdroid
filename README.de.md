@@ -159,17 +159,15 @@ hält die vollständige Quellpatch-Sammlung vom 01.10.2026 fest. Es enthält die
 
 | Modul | Release-Tag |
 |---|---|
-| `aptx-adaptive` | `aptx-adaptive-v1.1` |
+| `aptx-adaptive` | `aptx-adaptive-v1.2` |
 | `gms-fixes` | `gms-fixes-v1.0` |
 | `gps-servers` | `gps-servers-v1.0` |
 | `donation-disable` | `donation-disable-v1.0` |
 
 Modul-Tags verwenden `<modul>-v<version>`, Sammel-Tags `v<version>`. Versionen haben zwei
 oder drei Zahlenbestandteile; Modulversionen erlauben einen Zusatz wie `-rc.1`.
-Das frühere [aptX v1.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
-bleibt als ursprüngliche Referenz erhalten. V1 bezeichnet eine Quellpatch-Fassung: aptX hat eine
-dokumentierte Geräteabnahme; für die öffentlichen GMS-, GPS- und Donation-Fassungen bleiben
-ROM-/Gerätetests offen.
+V1 bezeichnet eine Quellpatch-Fassung: aptX hat eine dokumentierte Geräteabnahme; für die
+öffentlichen GMS-, GPS- und Donation-Fassungen bleiben ROM-/Gerätetests offen.
 
 Separate Kernelstände vom 03.10.2026: `bbrv3-v1.0` und `susfs-core-v1.0`.
 Sie gehören nicht zum unveränderlichen Sammelstand `v1.0`. Jeder erhält eigene
@@ -189,7 +187,7 @@ aus verschiedenen Tags oder Commits mischen. Ein Tag bezeichnet die Patchfassung
 belegen noch keinen erfolgreichen ROM-Build oder Gerätetest.
 
 Für ein einzelnes Modul `<tag>.zip` von der Release-Seite dieses Moduls herunterladen, zum Beispiel
-`aptx-adaptive-v1.1.zip` beim [Release aptX v1.1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.1).
+`aptx-adaptive-v1.2.zip` beim [Release aptX v1.2](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.2).
 Es enthält nur den Modulordner genau im Stand des Tags, mit eigenem `apply-patches.sh`, `NOTICE`
 und `LICENSE`. GitHubs automatische *Source code*-Archive enthalten bei jedem Release immer das
 ganze Repository im Stand dieses Tags.
@@ -236,8 +234,7 @@ Referenz korrigieren. Die geprüften Änderungen committen und das Release-Tag a
 Commit setzen.
 
 **Bestehende Tags bleiben unverändert.** Ändern sich veröffentlichte Patches, ein neues Modul-Tag
-verwenden, etwa `aptx-adaptive-v1.1`; `aptx-adaptive-v1.0` niemals verschieben, löschen oder erneut
-verwenden. Release-Notizen nennen Patch-Commit, Quellreferenzen, geändertes Verhalten und bekannte
+verwenden, etwa `aptx-adaptive-v1.2`. Release-Notizen nennen Patch-Commit, Quellreferenzen, geändertes Verhalten und bekannte
 Grenzen. Quellprüfungen, ROM-Builds und Gerätetests getrennt ausweisen, einschließlich noch nicht
 durchgeführter Prüfungen.
 

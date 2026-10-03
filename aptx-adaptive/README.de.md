@@ -27,6 +27,12 @@ Eigene Tests auf abweichender Hardware oder geänderten Quellständen bleiben de
 - Codec-/Abtastratenanzeige in den Bluetooth-Einstellungen und aktualisierte
   auswählbare Codecs nach einem Reconnect.
 
+## Zweck und Interoperabilität
+
+Die Referenzgeräte wurden mit Hardware- und Vendor-Komponenten ausgeliefert, die für den Betrieb von aptX Adaptive und Snapdragon Sound ausgelegt sind. Beim Wechsel von der Hersteller-Firmware auf ein AOSP-basiertes Custom ROM entfällt die Host-seitige Anbindung, die für den Zugriff auf diese vorhandenen Komponenten erforderlich ist.
+
+Dieses Projekt stellt die Host-seitige Integration im offenen Android-Bluetooth-Stack wieder her. Es liefert weder einen proprietären aptX-Encoder noch Qualcomm-Firmware, Vendor-Bibliotheken, SDK-Dateien oder eine Vervielfältigung des proprietären Codec-Algorithmus mit. Die eigentliche Codec-Kodierung verbleibt in den vorhandenen Vendor-/DSP-Komponenten des Geräts.
+
 **Es wird kein aptX-Encoder implementiert oder mitgeliefert.** Der Encoder
 liegt in der vorhandenen DSP-Firmware. Die Patches ergänzen Anmeldung,
 Konfiguration und Steuerung für einen bereits geeigneten Vendor-Offload-Pfad.

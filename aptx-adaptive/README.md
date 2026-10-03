@@ -37,6 +37,12 @@ The observation window is incomplete; these results are not a universal reliabil
 The FiiO showed no link-loss events in the covered logs. The Bose had eleven link/setup events,
 two during playback, so this does not establish dropout-free operation on every receiver.
 
+## Purpose & Interoperability
+
+The reference devices were sold with hardware and vendor components capable of aptX Adaptive / Snapdragon Sound operation. Replacing the OEM operating system with an AOSP-based ROM can remove the host-side integration required to access those existing components.
+
+This project restores that host-side integration in the open Android Bluetooth stack. It does not distribute a proprietary aptX encoder, Qualcomm firmware, vendor libraries, SDK binaries, or a reproduction of the proprietary codec algorithm. The actual codec encoding remains in the device's existing vendor/DSP components.
+
 ## What this does not do
 
 Being explicit about the limits is the point of this section.

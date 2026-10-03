@@ -157,16 +157,15 @@ freezes the complete 2026-10-01 source-patch collection. Its module editions are
 
 | Module | Release tag |
 |---|---|
-| `aptx-adaptive` | `aptx-adaptive-v1.1` |
+| `aptx-adaptive` | `aptx-adaptive-v1.2` |
 | `gms-fixes` | `gms-fixes-v1.0` |
 | `gps-servers` | `gps-servers-v1.0` |
 | `donation-disable` | `donation-disable-v1.0` |
 
 Module tags use `<module>-v<version>`; collection tags use `v<version>`. Versions have
 two or three numeric components; module versions may have a suffix such as `-rc.1`.
-The earlier [aptX v1.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
-remains available as the original reference. V1 is a source-patch edition: aptX has documented
-device acceptance; GMS, GPS and donation-disable still require their public-edition ROM/device tests.
+V1 is a source-patch edition: aptX has documented device acceptance; GMS, GPS and
+donation-disable still require their public-edition ROM/device tests.
 
 Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.
 They are not part of the immutable `v1.0` collection snapshot. Each has its own
@@ -186,7 +185,7 @@ from different tags or commits. A tag identifies the patch edition; source check
 a successful ROM build or device test.
 
 To use a single module, download `<tag>.zip` from that module's release page, for example
-`aptx-adaptive-v1.1.zip` on the [aptX v1.1 release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.1).
+`aptx-adaptive-v1.2.zip` on the [aptX v1.2 release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.2).
 It contains only the module's directory exactly as tagged, with its own `apply-patches.sh`,
 `NOTICE` and `LICENSE`. GitHub's automatic *Source code* archives on every release always contain
 the whole repository at that tag.
@@ -230,7 +229,7 @@ repository, source revision and exact error, then correct the patch or its docum
 Commit the reviewed changes and attach the release tag to that verified commit.
 
 **Existing tags are immutable.** When published patches change, use a new module tag, for example
-`aptx-adaptive-v1.1`; never move, delete or reuse `aptx-adaptive-v1.0`. Release notes must identify
+`aptx-adaptive-v1.2`. Release notes must identify
 the patch commit, source baselines, changed behaviour and known limits. Report source checks,
 ROM builds and device tests separately, including any checks that remain unperformed.
 
