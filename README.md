@@ -7,6 +7,10 @@ The goal of this repository is to maintain clean, modular source patches for crD
 **Current ROM scope: crDroid only.** Each module documents its crDroid branch and reference hardware.
 Support for other ROMs has not been established.
 
+**Current repository status: private; GitHub Actions disabled.** Checks for the
+new module editions run locally. Kernel modules retain their upstream license
+terms; read each module's NOTICE before building or redistributing.
+
 ---
 
 ## Repository Structure
@@ -17,7 +21,7 @@ Patches and improvements are organized into topic-specific directories:
 android-patches-crdroid/
 ├── README.md                  # General documentation & overview
 ├── README.de.md               # German documentation
-├── LICENSE                    # Repository license (Apache 2.0)
+├── LICENSE                    # Default license (module-specific terms below)
 ├── .github/                   # Issue form, installer template, CI and release tooling
 │
 ├── aptx-adaptive/             # Qualcomm aptX Adaptive DSP offload & BT integration
@@ -31,7 +35,9 @@ android-patches-crdroid/
 │
 ├── gms-fixes/                 # GMS visibility and vendor build compatibility
 ├── gps-servers/               # Optional SUPL and GNSS NTP server choices
-└── donation-disable/          # Remove in-ROM donation prompts and links
+├── donation-disable/          # Remove in-ROM donation prompts and links
+├── bbrv3/                     # Maintained TCP BBRv3 for the sm8750 kernel
+└── susfs-core/                # Our context delta to an external SUSFS patch file
 ```
 
 ---
@@ -56,7 +62,7 @@ Rules for every module:
 * **Editions are not mixed:** apply all patches of a module from the same commit of this repository.
 * **The *Available Modules* list below is the only place where modules are linked together.**
 
-These rules are checked automatically on every push: `.github/scripts/check-modules.sh` verifies the
+In public copies these rules are checked automatically on every push; this private copy uses local checks. `.github/scripts/check-modules.sh` verifies the
 layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
 `.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
 `.github/scripts/test-markdown-links.sh` verifies that external URLs are ignored and broken local
@@ -127,6 +133,10 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
   Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks; effective server use and GNSS measurements pending.
 * **[Disable Donation Requests](donation-disable/):** Removes donation UI and links, clears old reminders and preserves maintainer names.
   Base: crDroid `16.0`. Personal UI preference; public edition: source/host checks, ROM/device validation pending.
+* **[BBRv3](bbrv3/):** Maintained TCP BBRv3 backport for crDroid `16.0` and its Android15/Linux6.6 OnePlus `sm8750` kernel.
+  Source application/reversal checked locally; newer Google algorithm changes and new kernel/ROM/device tests remain pending.
+* **[SUSFS Core Context Corrections](susfs-core/):** Only our context/index/position delta to the original upstream patch file.
+  Prepare the pinned external SUSFS checkout first; this does not bundle or install the full core, companion files or KernelSU hooks.
 
 ---
 
@@ -157,6 +167,11 @@ two or three numeric components; module versions may have a suffix such as `-rc.
 The earlier [aptX v1.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.0)
 remains available as the original reference. V1 is a source-patch edition: aptX has documented
 device acceptance; GMS, GPS and donation-disable still require their public-edition ROM/device tests.
+
+Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.
+They are not part of the immutable `v1.0` collection snapshot. Each has its own
+release notes and module ZIP; SUSFS contains only our patch-file correction delta.
+Actions remain off, so these private editions are tested and uploaded locally.
 
 To use the complete V1 snapshot:
 
@@ -196,7 +211,7 @@ the module archives as release assets — no workflow artifacts or caches.
 For maintainers, run these checks from the repository root for the selected module:
 
 ```bash
-MODULE=aptx-adaptive  # or gms-fixes, gps-servers, donation-disable
+MODULE=aptx-adaptive  # or gms-fixes, gps-servers, donation-disable, bbrv3, susfs-core
 python3 .github/scripts/generate-installers.py --check
 bash .github/scripts/check-modules.sh
 bash .github/scripts/test-apply-script.sh "$MODULE"
@@ -235,3 +250,9 @@ ROM builds and device tests separately, including any checks that remain unperfo
 ## License
 
 Unless otherwise stated within specific module subdirectories, patches and documentation in this repository are licensed under the **Apache License, Version 2.0**. See the [LICENSE](LICENSE) file for details.
+
+Kernel exceptions: `bbrv3` preserves kernel GPL terms, individual file notices
+and the BBR core's `Dual BSD/GPL` declaration. `susfs-core` preserves upstream
+GPL Version3 for its patch-file delta; the GPL3/GPL2 combined-kernel boundary
+remains unresolved. Their own docs/metadata/installers remain Apache2.0.
+The module LICENSE and NOTICE files define these distinctions.

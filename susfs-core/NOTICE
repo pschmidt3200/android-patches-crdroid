@@ -1,0 +1,30 @@
+SUSFS core patch-file context corrections for crDroid 16.0 / OnePlus sm8750.
+Prepared 2026-10-03. Only our rebase delta; full upstream core is not included.
+
+Reference checkout (place under the build root as external/susfs4ksu):
+  external/susfs4ksu a0f9c59e2243f8a5db955f4ad1686d5e0ad26e1a https://gitlab.com/simonpunk/susfs4ksu branch=gki-android15-6.6
+
+Corrected upstream path: kernel_patches/50_add_susfs_in_gki-android15-6.6.patch
+Original SHA256: 1425ac2d1e68d0049d0a62d034325a026d39a80a02135b4126c59e392e09cd6b
+Corrected SHA256: 17d0e86e625afab0bbe2a3e3a4f46d326aeec641930d8a922bd747e5955b9c4a
+Context delta SHA256: 0a24f002b842896f54fd3d3558c8c506a224593ae64c624c97da5d51a69ce832
+Target kernel for the corrected patch: https://github.com/crdroidandroid/android_kernel_oneplus_sm8750
+Branch16.0 commit b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35 (Android15 Linux6.6).
+
+Upstream commit author simonpunk; README credits KernelSU, 5ec1cff and Kartatz.
+No per-file author attribution is inferred. LICENSE is the exact GPL Version3
+text at the pinned upstream revision. Own documentation, installer and metadata
+use Apache2.0 (LICENSE-APACHE-2.0); upstream-derived patch material retains
+its upstream terms. The target Linux tree declares GPL-2.0-only. The boundary
+between upstream GPL3 material and a combined GPL2 kernel is unresolved;
+this source publication does not establish license compatibility or clearance.
+
+Only patch-file index metadata, hunk positions and context are corrected;
+vma_data_pages replaces obsolete vma_pages in context. Added/removed kernel
+lines remain exactly upstream. No SUSFS features, full core, companion source,
+KernelSU integration, userspace tool or binary is bundled or installed here.
+The resulting full patch and dependencies must come from upstream separately.
+SUSFS source version v2.3.0 is separate from WildKernels fix-package v2.2.0.
+No new kernel/ROM build or runtime acceptance for this edition.
+Patch inventory:
+  susfs-core-context.patch

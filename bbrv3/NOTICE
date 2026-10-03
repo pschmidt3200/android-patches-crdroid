@@ -1,0 +1,35 @@
+BBRv3 maintained source-patch edition for crDroid 16.0 / OnePlus sm8750.
+Prepared 2026-10-03; Android15 Linux6.6 kernel baseline.
+
+Reference repository, commit and source:
+  kernel/oneplus/sm8750 b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35 https://github.com/crdroidandroid/android_kernel_oneplus_sm8750 branch=16.0
+
+Upstream backport: https://github.com/WildKernels/kernel_patches
+Commit: 41ae18b35d20e0c6ac04116785a4a1089528ae94
+Path: common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch
+Original SHA256: b1d39b1469a7cfb4ce800cba6e21526b99985791e981d57c49c5db1b003008b6
+Maintained input SHA256: 0bd056dd15180eeac24c662780992469deeccb218e50c47fab3a6b2a7fe61146
+Repository edition SHA256: d6f0e7a5e2d6f53bc841b4afc2af8a5f2abe7945a39baf110d27aa74b4d15674
+Backport mail author: fatalcoder524; original patch commit 3bf381592fa3e5196bff1253505ce8265cbe1f3f.
+BBR core MODULE_AUTHOR entries: Van Jacobson, Neal Cardwell, Yuchung Cheng,
+Soheil Hassas Yeganeh, Priyaranjan Jha, Yousuk Seung, Kevin Yang, Arjun Roy,
+David Morley. Core MODULE_LICENSE declaration: Dual BSD/GPL (preserved).
+
+The kernel COPYING identifies GPL-2.0-only with Linux-syscall-note. Its exact
+COPYING and license/exception files are included as COPYING.kernel, LICENSE
+and LICENSE-Linux-syscall-note. Preserve individual GPL-2.0-or-later and UAPI
+exception notices in affected files; no uniform replacement is intended.
+The exact BSD variant is not established by the core module declaration.
+Own documentation, metadata and the generated installer retain Apache 2.0
+terms in LICENSE-APACHE-2.0. Patch/kernel notices are separate from that license.
+
+Maintenance rebases context/positions; tcp_in_ack_event is retained. No newer
+Google algorithm is backported. All 2670 added lines match the pinned backport
+before packaging. Packaging adds the target header and removes trailing
+whitespace from five added lines (maintained input lines2438/2660/2948/2959/2988).
+No semantic changes or binaries. Source checks are not kernel/ROM/device tests.
+Patch inventory:
+  bbrv3-android15-6.6.patch
+
+Mail-preamble bullets/separator are comment-prefixed so the strict patch checker
+counts only real diff lines. Original mail authors and content are preserved.

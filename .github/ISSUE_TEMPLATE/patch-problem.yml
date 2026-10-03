@@ -38,6 +38,8 @@ body:
         - gms-fixes
         - gps-servers
         - donation-disable
+        - bbrv3
+        - susfs-core
     validations:
       required: true
   - type: dropdown

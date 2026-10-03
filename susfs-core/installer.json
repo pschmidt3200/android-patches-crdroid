@@ -1,0 +1,11 @@
+{
+  "title": "SUSFS core context correction for crDroid sm8750",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "external/susfs4ksu",
+      "file": "susfs-core-context.patch",
+      "description": "Rebase upstream SUSFS patch context only"
+    }
+  ]
+}
