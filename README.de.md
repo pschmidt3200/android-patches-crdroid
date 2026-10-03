@@ -62,7 +62,7 @@ Regeln für jedes Modul:
 * **Fassungen werden nicht gemischt:** alle Patches eines Moduls aus demselben Commit dieses Repositories anwenden.
 * **Die Liste *Verfügbare Module* unten ist die einzige Stelle, an der Module miteinander verlinkt werden.**
 
-In öffentlichen Kopien werden diese Regeln bei jedem Push automatisch geprüft; diese private Kopie prüft lokal. `.github/scripts/check-modules.sh` prüft
+Diese Regeln werden bei jedem Push automatisch über GitHub Actions geprüft. `.github/scripts/check-modules.sh` prüft
 Aufbau, Patch-Kopfzeilen und -Format sowie, ob Skript, READMEs und `NOTICE` dieselben Patches nennen;
 `.github/scripts/test-apply-script.sh` lässt das `apply-patches.sh` jedes Moduls gegen einen
 Wegwerf-Baum laufen. `.github/scripts/test-markdown-links.sh` prüft, dass externe URLs ignoriert
@@ -172,7 +172,7 @@ V1 bezeichnet eine Quellpatch-Fassung: aptX hat eine dokumentierte Geräteabnahm
 Separate Kernelstände vom 03.10.2026: `bbrv3-v1.0` und `susfs-core-v1.0`.
 Sie gehören nicht zum unveränderlichen Sammelstand `v1.0`. Jeder erhält eigene
 Release-Notizen und ein Modul-ZIP; SUSFS enthält ausschließlich unser Patchdatei-
-Korrekturdelta. Actions bleiben aus; Prüfung und Upload dieser privaten Fassungen erfolgen lokal.
+Korrekturdelta. Erstprüfung und Upload erfolgten lokal; die Push-Prüfungen laufen jetzt über GitHub Actions.
 
 Für den vollständigen V1-Stand:
 

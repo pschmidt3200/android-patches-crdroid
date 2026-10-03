@@ -22,7 +22,7 @@ reconstruction and isolated combined kernel applicability checks establish sourc
 acceptance. **New kernel/ROM build and device acceptance remain pending.**
 GPL Version3 upstream terms are preserved; the target kernel's GPL2 boundary
 remains unresolved. Own docs/installer use Apache2.0. See LICENSE and NOTICE.
-The repository/release stay private and Actions remain off.
+The repository is public; module checks run on GitHub Actions on every push.
 
 Download `susfs-core-v1.0.zip` for only this module and read the
 [tagged instructions](https://github.com/pschmidt3200/android-patches-crdroid/tree/susfs-core-v1.0/susfs-core).

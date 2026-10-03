@@ -63,7 +63,7 @@ Lokal geprüft werden Struktur, eigenständiger Installer sowie strikte Anwendun
 und Rücknahme auf Referenz und aktuellem Branch `16.0`. Gemeinsame Anwendung mit
 der korrigierten SUSFS-Upstream-Patchdatei wird im isolierten Kernelindex geprüft.
 **Neuer Kernel-/ROM-Build und Geräteabnahme bleiben offen.** Quellprüfungen belegen
-keine bessere Geschwindigkeit oder Latenz. Actions bleiben im privaten Repo aus.
+keine bessere Geschwindigkeit oder Latenz. Modulprüfungen laufen bei jedem Push über GitHub Actions.
 
 ## Lizenz
 

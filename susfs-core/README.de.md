@@ -54,7 +54,7 @@ und Rücknahme auf dem Upstream-Referenzstand sowie aktuellem Branch
 Upstream-Patchdatei wird separat mit BBRv3 im isolierten Referenz-Kernelindex geprüft.
 **Neuer Kernel-/ROM-Build und Geräteabnahme bleiben offen.** Es ist kein
 vollständiger SUSFS-Installer und keine Zusage, dass Apps ein verändertes System
-akzeptieren. Actions bleiben aus. Produktive Patches bleiben unverändert;
+akzeptieren. Modulprüfungen laufen bei jedem Push über GitHub Actions. Produktive Patches bleiben unverändert;
 hier wird ausschließlich unser Korrekturdelta hochgeladen.
 
 ## Lizenzabgrenzung

@@ -19,7 +19,7 @@ Local structure/installer tests and real source application/reversal at the
 reference/current `16.0` branch are the source acceptance. Combined BBR/SUSFS
 application is checked in an isolated kernel index. **New kernel/ROM build,
 device acceptance and throughput/latency measurements remain pending.**
-GitHub Actions remain off; this repository and release remain private.
+The repository is public; module checks run on GitHub Actions on every push.
 
 Download `bbrv3-v1.0.zip` for just the tagged module, or use the
 [tagged instructions](https://github.com/pschmidt3200/android-patches-crdroid/tree/bbrv3-v1.0/bbrv3).

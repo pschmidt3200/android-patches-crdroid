@@ -62,7 +62,7 @@ Rules for every module:
 * **Editions are not mixed:** apply all patches of a module from the same commit of this repository.
 * **The *Available Modules* list below is the only place where modules are linked together.**
 
-In public copies these rules are checked automatically on every push; this private copy uses local checks. `.github/scripts/check-modules.sh` verifies the
+These rules are checked automatically on every push by GitHub Actions. `.github/scripts/check-modules.sh` verifies the
 layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
 `.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
 `.github/scripts/test-markdown-links.sh` verifies that external URLs are ignored and broken local
@@ -170,7 +170,7 @@ donation-disable still require their public-edition ROM/device tests.
 Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.
 They are not part of the immutable `v1.0` collection snapshot. Each has its own
 release notes and module ZIP; SUSFS contains only our patch-file correction delta.
-Actions remain off, so these private editions are tested and uploaded locally.
+They were first tested and uploaded locally; push checks now run on GitHub Actions.
 
 To use the complete V1 snapshot:
 

@@ -67,7 +67,7 @@ behaviour and strict real-source application/reversal at the reference commit
 and current `16.0`. Shared use with the corrected SUSFS upstream patch is checked
 in an isolated kernel index. **A new kernel/ROM build and device acceptance
 remain pending.** Source checks do not measure throughput or latency.
-GitHub Actions remain disabled for this private repository.
+Module checks run on GitHub Actions on every push.
 
 ## License
 

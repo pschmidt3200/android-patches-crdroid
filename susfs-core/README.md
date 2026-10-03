@@ -54,7 +54,7 @@ branch, plus reconstruction of the exact corrected SHA256. The resulting full
 patch is checked separately with BBRv3 in an isolated reference-kernel index.
 **No new kernel/ROM build or device acceptance is established.** This is not a
 complete SUSFS installer or a guarantee that apps accept a modified system.
-Actions remain disabled in this private repository. Productive patch files stay
+Module checks run on GitHub Actions on every push. Productive patch files stay
 unchanged; only the delta is uploaded here.
 
 ## License boundary
