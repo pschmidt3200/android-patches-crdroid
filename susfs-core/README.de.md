@@ -52,10 +52,13 @@ Lokal geprüft werden Modulstruktur, eigenständiger Installer, reale Anwendung
 und Rücknahme auf dem Upstream-Referenzstand sowie aktuellem Branch
 `gki-android15-6.6` und die exakte Ergebnisprüfsumme. Die entstandene vollständige
 Upstream-Patchdatei wird separat mit BBRv3 im isolierten Referenz-Kernelindex geprüft.
-**Neuer Kernel-/ROM-Build und Geräteabnahme bleiben offen.** Es ist kein
-vollständiger SUSFS-Installer und keine Zusage, dass Apps ein verändertes System
-akzeptieren. Modulprüfungen laufen bei jedem Push über GitHub Actions. Produktive Patches bleiben unverändert;
-hier wird ausschließlich unser Korrekturdelta hochgeladen.
+**Dokumentierte Kernel- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+unter Linux 6.6 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:
+SUSFS `v2.3.0` (GKI) ist im Kernel initialisiert (`susfs is initialized! version: v2.3.0`), KSU-Integration
+und Userspace-Werkzeuge (`/data/adb/ksu/bin/susfs`) sind aktiv und alle Kernelfeatures (`SUS_PATH`,
+`SUS_MOUNT`, `SUS_KSTAT`, `SPOOF_UNAME`, `HIDE_KSU_SUSFS_SYMBOLS`, `OPEN_REDIRECT`, `SUS_MAP`) aktiv.
+Modulprüfungen laufen bei jedem Push über GitHub Actions.
+
 
 ## Lizenzabgrenzung
 

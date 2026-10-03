@@ -130,13 +130,14 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 * **[GMS Compatibility Fixes](gms-fixes/):** Package visibility, Google Clock permission, targeted uses-library workarounds and an optional OnePlus package selection.
   Base: crDroid `16.0` with Evolution X `vendor_gms` branch `bka`. Public edition: source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653).
 * **[GPS Server Choices](gps-servers/):** Independently selectable GrapheneOS SUPL and German NTP pool configuration.
-  Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks; effective server use and GNSS measurements pending.
+  Base: crDroid `16.0`, OnePlus `sm8750-common`. Public edition: source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653; `/odm/etc/gps.conf` with SUPL/NTP active).
 * **[Disable Donation Requests](donation-disable/):** Removes donation UI and links, clears old reminders and preserves maintainer names.
-  Base: crDroid `16.0`. Personal UI preference; public edition: source/host checks, ROM/device validation pending.
+  Base: crDroid `16.0`. Personal UI preference; source checks and documented ROM/device acceptance on OnePlus 13 (`dodge`, CPH2653; `DonateActivity` completely removed).
 * **[BBRv3](bbrv3/):** Maintained TCP BBRv3 backport for crDroid `16.0` and its Android15/Linux6.6 OnePlus `sm8750` kernel.
-  Source application/reversal checked locally; newer Google algorithm changes and new kernel/ROM/device tests remain pending.
-* **[SUSFS Core Context Corrections](susfs-core/):** Only our context/index/position delta to the original upstream patch file.
-  Prepare the pinned external SUSFS checkout first; this does not bundle or install the full core, companion files or KernelSU hooks.
+  Source checks and documented kernel/device acceptance on OnePlus 13 (`dodge`, CPH2653; `bbr3` active as default and used by live sockets).
+* **[SUSFS Core Context Corrections](susfs-core/):** Our context/index/position delta to the original upstream patch file.
+  Source checks and documented kernel/device acceptance on OnePlus 13 (`dodge`, CPH2653; SUSFS v2.3.0 GKI active in kernel).
+
 
 ---
 
@@ -164,8 +165,8 @@ freezes the complete 2026-10-01 source-patch collection. Its module editions are
 
 Module tags use `<module>-v<version>`; collection tags use `v<version>`. Versions have
 two or three numeric components; module versions may have a suffix such as `-rc.1`.
-V1 is a source-patch edition: aptX and GMS have documented device acceptance on OnePlus 13; GPS and
-donation-disable still require their public-edition ROM/device tests.
+All 6 modules have documented live ROM/kernel and device acceptance on the OnePlus 13 (`dodge`, CPH2653).
+
 
 Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.
 They are not part of the immutable `v1.0` collection snapshot. Each has its own

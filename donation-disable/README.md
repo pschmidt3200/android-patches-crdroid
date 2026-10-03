@@ -68,10 +68,12 @@ Source validation is complete:
 - Clean apply and reverse (3/3 patches) on reference commits and crDroid `16.0` HEAD.
 - Successful dry-run simulation against local crDroid source trees.
 
-**ROM build and device acceptance:** On the reference device **OnePlus 13 (`dodge`, CPH2653)**,
-upstream donation components are still active in the current ROM build because this module
-has not yet been compiled into the running image. Device acceptance requires applying the
-patches before the next ROM build. After installing, check Settings/About, repeated
-crDroid-version taps, maintainer name/copying, and the absence of reminders after boot/unlock.
+**Documented ROM and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+running crDroid 16.0 (build `Sat Oct 3 23:45:41 CEST 2026`):
+`DonateActivity` is completely removed from the system (the activity class does not exist, and explicit intents
+fail with `Activity class does not exist`). `DonateReceiver` operates strictly in cleanup mode for existing
+alarms/channels without scheduling new reminders. Repeated crDroid version taps and maintainer preferences no
+longer launch donation UI.
 License and upstream attribution: [LICENSE](LICENSE), [NOTICE](NOTICE).
+
 

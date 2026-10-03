@@ -72,11 +72,12 @@ Die Quelltests sind vollständig verifiziert:
 - Saubere Anwendung und Rücknahme (3/3 Patches) auf den Referenz-Commits und crDroid `16.0` HEAD.
 - Fehlerfreie Dry-Run-Simulation gegen den lokalen crDroid-Quellbaum.
 
-**ROM-Build und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
-ist im aktuellen ROM-Build die Spendenfunktion aus Upstream noch aktiv, da das Modul
-im laufenden Build noch nicht einkompiliert ist. Die Geräteabnahme erfordert das Einspielen
-der Patches vor dem nächsten ROM-Build. Nach der Installation Einstellungen/Über, mehrfaches
-Tippen auf die crDroid-Version, Maintainer-Name/Kopieren und ausbleibende Erinnerungen nach
-Boot und Entsperrung prüfen.
+**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+unter crDroid 16.0 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:
+`DonateActivity` ist vollständig aus dem System entfernt (Klasse existiert nicht mehr, Intent-Aufrufe
+schlagen mit `Activity class does not exist` fehl). `DonateReceiver` läuft ausschließlich im
+Bereinigungsmodus für alte Alarme/Kanäle ohne neue Erinnerungen zu erzeugen. Mehrfaches Antippen
+der crDroid-Version und Maintainer-Eintrag öffnen keine Spendenaufrufe mehr.
 Lizenz und Herkunftsnachweise: [LICENSE](LICENSE), [NOTICE](NOTICE).
+
 

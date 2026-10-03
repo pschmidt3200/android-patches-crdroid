@@ -79,11 +79,12 @@ Source and helper validation is fully verified:
 - Successful core-patch dry-run simulation against the local OnePlus `sm8750` kernel tree.
 - Combined BBRv3 core application with the corrected SUSFS upstream patch verified in an isolated kernel index.
 
-**Kernel build and device acceptance:** On the reference device **OnePlus 13 (`dodge`, CPH2653)**,
-the active Linux 6.6 kernel currently uses BBRv1 (`net.ipv4.tcp_congestion_control = bbr`).
-BBRv3 registers as `bbr3`; deploying it requires applying the patch and enabling the kernel
-option (`CONFIG_TCP_CONG_BBR3=y`) in the next kernel build. Source checks do not measure throughput
-or latency. Module checks run on GitHub Actions on every push.
+**Documented kernel and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):
+BBRv3 is active as the default congestion control algorithm (`net.ipv4.tcp_congestion_control = bbr3`),
+kernel symbols (`bbr3_*`) are loaded, and all active TCP sockets (`ss -tin`) run on `bbr3`.
+Source checks do not measure throughput or latency. Module checks run on GitHub Actions on every push.
+
 
 
 ## License

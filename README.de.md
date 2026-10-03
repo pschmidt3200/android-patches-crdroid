@@ -131,13 +131,14 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 * **[GMS-Kompatibilitätsfixes](gms-fixes/):** Paketsichtbarkeit, Google-Uhr-Berechtigung, gezielte uses-library-Ausnahmen und eine optionale OnePlus-Paketauswahl.
   Basis: crDroid `16.0` mit Evolution X `vendor_gms`, Branch `bka`. Öffentliche Fassung: Quellprüfungen und dokumentierte ROM-/Geräteabnahme auf OnePlus 13 (`dodge`, CPH2653).
 * **[GPS-Serverauswahl](gps-servers/):** Unabhängig wählbare Konfiguration für GrapheneOS-SUPL und den deutschen NTP-Pool.
-  Basis: crDroid `16.0`, OnePlus `sm8750-common`. Öffentliche Fassung: Quellprüfungen; tatsächliche Servernutzung und GNSS-Messungen offen.
+  Basis: crDroid `16.0`, OnePlus `sm8750-common`. Öffentliche Fassung: Quellprüfungen und dokumentierte ROM-/Geräteabnahme auf OnePlus 13 (`dodge`, CPH2653; `/odm/etc/gps.conf` mit SUPL/NTP aktiv).
 * **[Spendenanfragen abschalten](donation-disable/):** Entfernt Spendenoberfläche und -links, bereinigt alte Erinnerungen und erhält Maintainer-Namen.
-  Basis: crDroid `16.0`. Persönliche UI-Präferenz; öffentliche Fassung: Quell-/Host-Prüfungen, ROM-/Geräteabnahme offen.
+  Basis: crDroid `16.0`. Persönliche UI-Präferenz; Quellprüfungen und dokumentierte ROM-/Geräteabnahme auf OnePlus 13 (`dodge`, CPH2653; `DonateActivity` restlos gelöscht).
 * **[BBRv3](bbrv3/):** Gepflegter TCP-BBRv3-Backport für crDroid `16.0` mit OnePlus-`sm8750`-Kernel auf Android15/Linux6.6.
-  Anwendung/Rücknahme lokal geprüft; neuer Google-Algorithmus und neue Kernel-/ROM-/Geräteabnahme bleiben offen.
-* **[SUSFS-Core-Kontextkorrekturen](susfs-core/):** Nur unser Kontext-/Index-/Positionsdelta für die originale Upstream-Patchdatei.
-  Gepinnten externen SUSFS-Checkout vorbereiten; vollständiger Core, Begleitdateien und KernelSU-Hooks werden nicht mitgeliefert oder installiert.
+  Quellprüfungen und dokumentierte Kernel-/Geräteabnahme auf OnePlus 13 (`dodge`, CPH2653; `bbr3` als Standard aktiv und von Live-Sockets genutzt).
+* **[SUSFS-Core-Kontextkorrekturen](susfs-core/):** Unser Kontext-/Index-/Positionsdelta für die originale Upstream-Patchdatei.
+  Quellprüfungen und dokumentierte Kernel-/Geräteabnahme auf OnePlus 13 (`dodge`, CPH2653; SUSFS v2.3.0 GKI im Kernel aktiv).
+
 
 ---
 
@@ -166,8 +167,8 @@ hält die vollständige Quellpatch-Sammlung vom 01.10.2026 fest. Es enthält die
 
 Modul-Tags verwenden `<modul>-v<version>`, Sammel-Tags `v<version>`. Versionen haben zwei
 oder drei Zahlenbestandteile; Modulversionen erlauben einen Zusatz wie `-rc.1`.
-V1 bezeichnet eine Quellpatch-Fassung: aptX und GMS haben eine dokumentierte Geräteabnahme auf OnePlus 13;
-für die öffentlichen GPS- und Donation-Fassungen bleiben ROM-/Gerätetests offen.
+Alle 6 Module haben eine dokumentierte Live-ROM-/Kernel- und Geräteabnahme auf OnePlus 13 (`dodge`, CPH2653).
+
 
 Separate Kernelstände vom 03.10.2026: `bbrv3-v1.0` und `susfs-core-v1.0`.
 Sie gehören nicht zum unveränderlichen Sammelstand `v1.0`. Jeder erhält eigene

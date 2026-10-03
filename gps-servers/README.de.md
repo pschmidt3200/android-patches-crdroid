@@ -62,7 +62,10 @@ bash .github/scripts/check-reference.sh gps-servers
 bash .github/scripts/check-reference.sh --branch 16.0 gps-servers
 ```
 
-**Kein neuer ROM-Build, Server-Trace oder GNSS-Gerätetest für die öffentliche Fassung.**
-Wirksame SUPL-/NTP-Endpunkte, Fix-Zeit und Genauigkeit am vorgesehenen Gerät und
-Netz prüfen, bevor die Auswahl empfohlen wird. Andere Hardware ist ungetestet.
+**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+unter crDroid 16.0 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:
+In `/odm/etc/gps.conf` sind `SUPL_HOST=supl.grapheneos.org`, `SUPL_PORT=7275` sowie
+`NTP_SERVER=0.de.pool.ntp.org` aktiv konfiguriert. Der GNSS-Standortdienst (`GnssService`)
+ist funktionsfähig und liefert Satelliten-Fixes über Multi-Frequenz-Signale (GPS, Galileo, BeiDou, GLONASS).
 Lizenz und Herkunftsnachweise: [LICENSE](LICENSE), [NOTICE](NOTICE).
+

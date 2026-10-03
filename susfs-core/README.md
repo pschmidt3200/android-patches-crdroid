@@ -52,10 +52,13 @@ Local checks cover structure, standalone installer behaviour, real patch-file
 application/reversal at the pinned upstream and its current `gki-android15-6.6`
 branch, plus reconstruction of the exact corrected SHA256. The resulting full
 patch is checked separately with BBRv3 in an isolated reference-kernel index.
-**No new kernel/ROM build or device acceptance is established.** This is not a
-complete SUSFS installer or a guarantee that apps accept a modified system.
-Module checks run on GitHub Actions on every push. Productive patch files stay
-unchanged; only the delta is uploaded here.
+**Documented kernel and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):
+SUSFS `v2.3.0` (GKI) is initialized in kernel (`susfs is initialized! version: v2.3.0`), KSU integration
+and userspace tools (`/data/adb/ksu/bin/susfs`) are active, and all kernel features (`SUS_PATH`,
+`SUS_MOUNT`, `SUS_KSTAT`, `SPOOF_UNAME`, `HIDE_KSU_SUSFS_SYMBOLS`, `OPEN_REDIRECT`, `SUS_MAP`) are enabled.
+Module checks run on GitHub Actions on every push.
+
 
 ## License boundary
 
