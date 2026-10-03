@@ -352,13 +352,13 @@ index 2d52d14..1bfb4ab 100644
 +    }
  }
 diff --git a/app/src/main/res/values-de-rDE/strings.xml b/app/src/main/res/values-de-rDE/strings.xml
-index cf35e3e..b3628e8 100644
+index f2b5c0b..b3628e8 100644
 --- a/app/src/main/res/values-de-rDE/strings.xml
 +++ b/app/src/main/res/values-de-rDE/strings.xml
 @@ -151,4 +151,19 @@
      <!-- Pulse bass haptics -->
-     <string name="pulse_bass_haptics_disabled_title">Disable pulse bass haptics</string>
-     <string name="pulse_bass_haptics_disabled_summary">Automatically disable pulse bass haptics if enabled</string>
+     <string name="pulse_bass_haptics_disabled_title">Pulse-Bass-Haptik deaktivieren</string>
+     <string name="pulse_bass_haptics_disabled_summary">Deaktiviert die Pulse-Bass-Haptik automatisch, falls aktiv</string>
 +
 +    <!-- Audiosteuerung -->
 +    <string name="audio_control_category_title">Audiosteuerung</string>

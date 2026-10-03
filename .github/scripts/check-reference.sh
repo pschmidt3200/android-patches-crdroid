@@ -13,7 +13,7 @@
 # Usage: .github/scripts/check-reference.sh [--branch <name>] [module-directory]
 #        default: the reference commits from NOTICE, module aptx-adaptive
 set -euo pipefail
-export LC_ALL=C
+export LC_ALL=C.UTF-8
 
 BRANCH=""
 if [[ "${1:-}" == "--branch" ]]; then
@@ -56,7 +56,7 @@ for repo in "${REPOS[@]}"; do
 
     git -c init.defaultBranch=check init -q "${dir}"
     git -C "${dir}" remote add origin "${url}"
-    git -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}"
+    git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}"
     git -C "${dir}" config core.sparseCheckout true
     for entry in "${ENTRIES[@]}"; do
         IFS=":" read -r entry_repo patch _ <<< "${entry}"
