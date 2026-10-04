@@ -1,7 +1,7 @@
 # Bluetooth-Codec-Status, -Badges und -Auswahl für crDroid 16.0
 
 Settings-Patches, die anzeigen, welcher Bluetooth-Audio-Codec und welche Abtastrate aktiv sind,
-und die Auswahl des bevorzugten Codecs ermöglichen. Sie sind codec-unabhängig: Alles, was angezeigt
+und die Auswahl von Codec und Abtastrate ermöglichen. Sie sind codec-unabhängig: Alles, was angezeigt
 oder angeboten wird, kommt vom Bluetooth-Stack und vom verbundenen Gerät, zum Beispiel SBC, AAC,
 aptX, aptX HD, LDAC oder — wenn der Stack es bereitstellt — aptX Adaptive.
 
@@ -19,7 +19,7 @@ Englische Fassung: [README.md](README.md)
 | **Codec-Status** | SettingsLib liest die aktive Codec-Konfiguration eines Geräts und aktualisiert den Geräteeintrag, wenn sie sich ändert |
 | **Codec-Badge** | die Geräteliste zeigt aktiven Codec und Rate, zum Beispiel `[aptX Adaptive 44.1 kHz]` |
 | **Codec-Dialog** | in den Gerätedetails öffnet die Zeile „Medien-Audio“ einen Dialog mit den Codecs, die das Gerät anbietet |
-| **Eintrag „Audio-Codec“** | die Seite „Verbundene Geräte“ hat einen eigenen Eintrag *Audio-Codec* für das aktive A2DP-Gerät, zeigt den aktuellen Codec und die Abtastrate an und bietet eine direkte Codec-Auswahl |
+| **Eintrag „Audio-Codec“** | die Seite „Verbundene Geräte“ hat einen eigenen Eintrag *Audio-Codec* für das aktive A2DP-Gerät, zeigt den aktuellen Codec und die Abtastrate an, mit Codec-Auswahl und Wahl der Abtastrate (*Automatisch* oder eine der Raten, die das Gerät für den aktuellen Codec anbietet) |
 
 Den eigenständigen Eintrag gibt es, weil die Gerätedetails nicht immer erreichbar sind: Bei
 Geräten, die zusätzlich LE Audio können, blendet Android die Zeile „Medien-Audio“ aus, und bei
@@ -27,11 +27,11 @@ Geräten mit Begleit-App legt diese App die Detailseite fest.
 
 ## Wie sich die Auswahl verhält
 
-* Angefordert wird nur der gewählte Codec-Typ über die öffentliche API
-  `BluetoothA2dp.setCodecConfigPreference`; Abtastrate und weitere Parameter handelt der
-  Bluetooth-Stack automatisch aus. Settings zeigt die danach zurückgelesene Konfiguration an,
+* Angefordert wird nur der Codec-Typ und auf Wunsch die Abtastrate, über die öffentliche API
+  `BluetoothA2dp.setCodecConfigPreference`; alle anderen Felder bleiben automatisch. Der
+  Bluetooth-Stack entscheidet, und Settings zeigt die danach zurückgelesene Konfiguration an,
   nicht die Anforderung.
-* Angeboten werden nur Codecs, die der Stack für das Gerät als auswählbar meldet.
+* Angeboten werden nur Codecs und Abtastraten, die der Stack für das Gerät als auswählbar meldet.
 * Eine Auswahl gilt für die aktuelle Verbindung. Nach einem erneuten Verbinden wird der Codec
   neu ausgehandelt.
 * Mit ausgeschaltetem HD-Audio ist nur SBC wählbar.
@@ -65,7 +65,7 @@ wird nach Patch 3 angewendet.
 | 1 | [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | Codec-Status und Aktualisierung in SettingsLib |
 | 2 | [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec-Badges in der Geräteliste |
 | 3 | [crdroid_settings_bluetooth_codec_menu.patch](patches/crdroid_settings_bluetooth_codec_menu.patch) | `packages/apps/Settings` | Codec-Dialog in den Gerätedetails |
-| 4 | [crdroid_settings_bluetooth_codec_entry.patch](patches/crdroid_settings_bluetooth_codec_entry.patch) | `packages/apps/Settings` | Eintrag *Audio-Codec* mit Codec-Auswahl |
+| 4 | [crdroid_settings_bluetooth_codec_entry.patch](patches/crdroid_settings_bluetooth_codec_entry.patch) | `packages/apps/Settings` | Eintrag *Audio-Codec* mit Codec- und Abtastratenwahl |
 
 ---
 
@@ -153,7 +153,7 @@ Eine `.patch`-Datei wird nicht direkt geflasht: Für die Installation muss ein n
    passen, was das Gerät tatsächlich abspielt.
 2. Auf „Verbundene Geräte“ *Audio-Codec* öffnen, einen anderen Codec wählen und prüfen, dass
    Badge und Eintrag die neue Konfiguration zeigen, nachdem der Stack sie übernommen hat.
-3. Prüfen, dass die in der Zusammenfassung angezeigte Abtastrate zur aktiven Wiedergabe passt.
+3. Eine Abtastrate und danach wieder *Automatisch* wählen; jedes Mal den zurückgelesenen Wert prüfen.
 4. Trennen und neu verbinden: Der Codec wird neu ausgehandelt, und der Eintrag folgt.
 
 ## Lizenz und Quellstände

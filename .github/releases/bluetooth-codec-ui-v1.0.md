@@ -8,7 +8,7 @@ Reference platforms: tested on **OnePlus 13** (`dodge`, CPH2653). Works with any
 * **Codec status & refresh:** SettingsLib reads the active Bluetooth audio codec and sample rate, and dynamically refreshes the device entry when the codec state changes.
 * **Device list badges:** Displays active codec badges in the connected devices list (e.g. `[LDAC]`, `[AAC]`, `[aptX Adaptive 44.1 kHz]`).
 * **Codec dialog in device details:** Allows choosing from codecs supported by the connected receiver via the Media audio row.
-* **Standalone Audio codec entry:** Provides a dedicated *Audio codec* entry on the Connected devices page with current status and direct codec selection dialog.
+* **Standalone Audio codec entry:** Provides a dedicated *Audio codec* entry on the Connected devices page with current status, codec selection and a sample-rate choice.
 * **Codec-independent:** Works with standard AOSP codecs (SBC, AAC, aptX, aptX HD, LDAC) as well as optional hardware integrations (such as aptX Adaptive).
 
 ## Requirements and source baselines
@@ -27,8 +27,8 @@ bash bluetooth-codec-ui/apply-patches.sh --check /path/to/crdroid
 
 ## Deutsch
 
-Erstveröffentlichung des eigenständigen Bluetooth-Codec-UI-Moduls: Codec-Statusanzeige und Live-Abtastrate
-in den Einstellungen, Badges in der Geräteliste, Codec-Auswahldialog in den Gerätedetails sowie ein
+Erstveröffentlichung des eigenständigen Bluetooth-Codec-UI-Moduls: Codec-Statusanzeige, Codec- und
+Abtastratenwahl in den Einstellungen, Badges in der Geräteliste, Codec-Auswahldialog in den Gerätedetails sowie ein
 eigenständiger Menüeintrag unter „Verbundene Geräte“. Vollständig codec-unabhängig (SBC, AAC, aptX, aptX HD, LDAC etc.).
 
 Apache License 2.0; preserve LICENSE, NOTICE and upstream file notices.
