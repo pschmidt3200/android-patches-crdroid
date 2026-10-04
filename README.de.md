@@ -1,6 +1,6 @@
 # android-patches-crdroid
 
-Eine strukturierte Sammlung modularer Quellcode-Patches, Framework-Erweiterungen und Hardware-Integrationen für **crDroid** (Android 16).
+Eine strukturierte Sammlung modularer Quellcode-Patches, Framework-Erweiterungen und Hardware-Integrationen für **crDroid 16.0 (Android 16)**.
 
 Alle Patches sind reine Quellcode-Diffs ohne proprietäre Binärdateien und können direkt in einen kompatiblen crDroid-Quellbaum eingespielt werden.
 
@@ -34,21 +34,21 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `aptx-adaptive-v1.2.zip`).
 
 ### Schritt 2: In den crDroid-Quellbaum einspielen
-1. Entpacke das heruntergeladene ZIP-Archiv in deinen crDroid-Quellordner.
+1. Entpacke das heruntergeladene ZIP-Archiv an einem beliebigen Ort außerhalb oder neben deinem crDroid-Quellordner.
 2. Öffne ein Terminal im entpackten Ordner und führe den Installer aus:
    ```bash
-   ./apply-patches.sh
+   ./apply-patches.sh /pfad/zu/crdroid
    ```
 Das Skript prüft automatisch die Kompatibilität deines Quellbaums und wendet die Patches sauber auf die jeweiligen Unter-Repositories an (`frameworks/base`, `packages/modules/Bluetooth`, etc.).
 
 Nur auf Anwendbarkeit prüfen (ohne Änderungen zu schreiben):
 ```bash
-./apply-patches.sh --check
+./apply-patches.sh --check /pfad/zu/crdroid
 ```
 
 Patches wieder rückgängig machen (Rollback):
 ```bash
-./apply-patches.sh --reverse
+./apply-patches.sh --reverse /pfad/zu/crdroid
 ```
 
 *(Erfahrene Nutzer, die direkt mit Git arbeiten möchten, können dieses Repository klonen und `git apply` nutzen, wie in den einzelnen Modul-READMEs beschrieben).*
@@ -59,7 +59,7 @@ Patches wieder rückgängig machen (Rollback):
 
 Falls ein Patch nicht sauber anwendbar ist oder Buildfehler auf crDroid 16.0 auftreten:
 1. Bitte ein [Issue über die Vorlage „Patch problem“ anlegen](https://github.com/pschmidt3200/android-patches-crdroid/issues/new?template=patch-problem.yml).
-2. Modulname, Gerätemodell und die Terminal-Fehlerausgabe beifügen.
+2. Modulname, Release-Tag oder Repository-Commit, Gerätemodell und die Terminal-Fehlerausgabe beifügen.
 3. *Bitte persönliche Daten (wie Bluetooth-MAC-Adressen oder Seriennummern) vor dem Absenden aus den Logs entfernen.*
 
 ---
@@ -67,10 +67,10 @@ Falls ein Patch nicht sauber anwendbar ist oder Buildfehler auf crDroid 16.0 auf
 ## Hinweise & Haftungsausschluss
 
 * **Privates Hobbyprojekt:** Dieses Repository wird in persönlicher Freizeit gepflegt. Hardwaretests beschränken sich auf eigene Referenzgeräte (wie das OnePlus 13).
-* **Rückmeldungen & Bearbeitungszeit:** Da die verfügbare Freizeit schwanken kann, bitte nicht wundern, wenn Anfragen oder Fehlermeldungen nicht immer sofort oder zeitnah beantwortet bzw. behoben werden können. Geduld und freundliches Feedback werden sehr geschätzt.
+* **Support:** Antworten auf Issues, Updates und Tests erfolgen nach Verfügbarkeit von persönlicher Freizeit und Hardware.
 * **Zielgruppe:** Die Patches richten sich an ROM-Builder und erfahrene Android-Nutzer, die crDroid aus den Quellen kompilieren.
 * **Keine proprietären Binärdateien:** Das Repository enthält ausschließlich Open-Source-Patches. Es werden keine proprietären Hersteller-Blobs, Firmware-Dateien oder lizenzierten Codec-Binaries verteilt.
-* **Vollständig umkehrbar:** Alle Patches sind zerstörungsfrei und können jederzeit sauber mit `./apply-patches.sh --reverse` oder `git apply --reverse` zurückgenommen werden.
+* **Umkehrbar:** Alle Module unterstützen das Zurücknehmen (`--reverse`) auf einem kompatiblen, ansonsten unveränderten Quellbaum. Spätere Konflikte durch lokale Änderungen müssen manuell aufgelöst werden.
 * **Nutzung auf eigene Verantwortung:** Änderungen am Quellcode und dem eigenen Gerät erfolgen ohne Gewährleistung („as is“).
 
 ---
