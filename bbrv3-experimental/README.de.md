@@ -22,12 +22,14 @@ Das Modul enthält eine vollständige Serie für **crDroid 16.0** und dessen One
 | DRAIN-Pacing-Gain | `88/256` (~0,344) | `128/256` (0,5) |
 | DRAIN-Rundengrenze | keine | Ausstieg nach mehr als 3 Runden |
 | Rücknahme bei fälschlichem Verlust | ältere modellgebundene Rücknahme | Zustand vor dem ersten verlorenen skb sichern, STARTUP/PROBE_UP wiederherstellen |
-| BBR-ECN, `ecn_low`, PLB | vorhanden | entfernt, wie in Googles Update |
+| BBRv3-spezifisches ECN, `ecn_low`, PLB | vorhanden | entfernt, wie in Googles Update (generisches TCP-ECN und Kernel-PLB bleiben erhalten) |
 
 Linux 6.6 kann Googles Datei nicht unverändert übernehmen. Die Anpassung behält den
 Heap-Zustand und die Callback-Schnittstelle des Kerns; Googles BPF-kfunc-Schnittstelle
-ist **nicht** portiert. Den TSO-Hook des Kerns behält das Experiment absichtlich, damit
-ein Vergleich mit `bbrv3` nur die Algorithmusänderung misst. Details und Quellen in [NOTICE](NOTICE).
+ist **nicht** portiert. Den `tcp_congestion_ops.min_tso_segs`-Hook des Kerns behält
+das Experiment absichtlich (Googles 2026-Fassung registriert diesen Callback nicht mehr,
+behält aber interne TSO/GSO-Berechnungshelfer), damit ein Vergleich mit `bbrv3` nur die
+Algorithmusänderung misst. Details und Quellen in [NOTICE](NOTICE).
 
 ## Voraussetzungen und Anwendung
 

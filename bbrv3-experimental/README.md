@@ -22,12 +22,13 @@ This module carries a complete series for **crDroid 16.0** and its OnePlus
 | DRAIN pacing gain | `88/256` (~0.344) | `128/256` (0.5) |
 | DRAIN round limit | absent | exit after more than 3 rounds |
 | Spurious loss undo | earlier model-bound restoration | save state before the first lost skb, restore STARTUP/PROBE_UP |
-| BBR ECN, `ecn_low`, PLB | present | removed, as in Google's update |
+| BBRv3-specific ECN, `ecn_low`, PLB | present | removed, as in Google's update (generic TCP ECN and kernel PLB unchanged) |
 
 Linux 6.6 cannot take Google's file unchanged. The adaptation keeps the core's
 heap-private state and callback interface; Google's BPF kfunc interface is **not**
-ported. The core's TSO sizing hook is kept on purpose, so a comparison against
-`bbrv3` measures only the algorithm update. Details and sources are in [NOTICE](NOTICE).
+ported. The Linux 6.6 core's `tcp_congestion_ops.min_tso_segs` hook is retained
+(Google's 2026 version no longer registers that callback, while keeping internal
+TSO/GSO helpers), so a comparison against `bbrv3` measures only the algorithm update. Details and sources are in [NOTICE](NOTICE).
 
 ## Requirements and use
 

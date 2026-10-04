@@ -33,12 +33,15 @@ for a test build; never apply both modules to the same tree.
    referenced from the 104-byte inline area, the existing cong_control(sk, rs)
    and skb_marked_lost callbacks are kept, TX_START/TLP stay in cwnd_event.
    Not ported: Google's BPF kfunc registration and callback ABI.
-   Deliberate deviations from Google: the TSO sizing hook of the core is kept
-   (Google removed it), so a comparison against the core measures only the
-   algorithm update; MODULE_VERSION reads "3-2026x" as a runtime marker
-   (BBR_VERSION reported in tcp_info stays 3); the core's TCP_ECN_LOW and
-   TCP_ECN_ECT_PERMANENT defines stay in place unused, so the patch applies to
-   the v1.1 (value 3) and v1.2 (value 32) core.
+   Deliberate deviations from Google: the Linux 6.6 core's tcp_congestion_ops
+   min_tso_segs callback is retained (Google's 2026 update no longer registers
+   that callback, while retaining internal TSO/GSO sizing helpers), so a
+   comparison against the core measures only the algorithm update;
+   MODULE_VERSION reads "3-2026x" as a runtime marker (BBR_VERSION reported in
+   tcp_info stays 3); the core's TCP_ECN_LOW and TCP_ECN_ECT_PERMANENT defines
+   stay in place unused, so the patch applies to the v1.1 (value 3) and v1.2
+   (value 32) core; BBRv3-specific ECN and PLB logic (including the ECN_LOW
+   route feature) is removed, while generic TCP ECN and kernel PLB are untouched.
    SHA256: dcb798e9b9cb159273de3fb1d2eb0b731fb8cc2d4be0b2c8cd60bc63ebad8834
 
 The kernel COPYING identifies GPL-2.0-only with Linux-syscall-note. Its exact
