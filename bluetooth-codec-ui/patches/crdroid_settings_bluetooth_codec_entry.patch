@@ -9,45 +9,113 @@
 # source root. Apply with:  git -C <target repository> apply <this file>
 #
 # Publication edition. Do not mix with another edition of these patches.
+diff --git a/res/drawable/ic_bluetooth_codec.xml b/res/drawable/ic_bluetooth_codec.xml
+new file mode 100644
+index 00000000000..9276421febd
+--- /dev/null
++++ b/res/drawable/ic_bluetooth_codec.xml
+@@ -0,0 +1,26 @@
++<!--
++    Copyright (C) 2020 The Android Open Source Project
++
++    Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++
++         http://www.apache.org/licenses/LICENSE-2.0
++
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++<!-- Bluetooth audio glyph (path from TvSettings ic_baseline_bluetooth_searching_large). -->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0"
++        android:tint="?android:attr/colorControlNormal">
++    <path
++        android:fillColor="#FF000000"
++        android:pathData="M14.24,12.01l2.32,2.32c0.28,-0.72 0.44,-1.51 0.44,-2.33 0,-0.82 -0.16,-1.59 -0.43,-2.31l-2.33,2.32zM19.53,6.71l-1.26,1.26c0.63,1.21 0.98,2.57 0.98,4.02s-0.36,2.82 -0.98,4.02l1.2,1.2c0.97,-1.54 1.54,-3.36 1.54,-5.31 -0.01,-1.89 -0.55,-3.67 -1.48,-5.19zM15.71,7.71L10,2L9,2v7.59L4.41,5 3,6.41 8.59,12 3,17.59 4.41,19 9,14.41L9,22h1l5.71,-5.71 -4.3,-4.29 4.3,-4.29zM11,5.83l1.88,1.88L11,9.59L11,5.83zM12.88,16.29L11,18.17v-3.76l1.88,1.88z"/>
++</vector>
+diff --git a/res/drawable/ic_bluetooth_sample_rate.xml b/res/drawable/ic_bluetooth_sample_rate.xml
+new file mode 100644
+index 00000000000..723f42af54a
+--- /dev/null
++++ b/res/drawable/ic_bluetooth_sample_rate.xml
+@@ -0,0 +1,26 @@
++<!--
++    Copyright 2021 The Android Open Source Project
++
++    Licensed under the Apache License, Version 2.0 (the "License");
++    you may not use this file except in compliance with the License.
++    You may obtain a copy of the License at
++
++         http://www.apache.org/licenses/LICENSE-2.0
++
++    Unless required by applicable law or agreed to in writing, software
++    distributed under the License is distributed on an "AS IS" BASIS,
++    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++    See the License for the specific language governing permissions and
++    limitations under the License.
++-->
++<!-- Equalizer glyph (path from Settings ic_audio_adjustment, without its badge background). -->
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++        android:width="24dp"
++        android:height="24dp"
++        android:viewportWidth="24.0"
++        android:viewportHeight="24.0"
++        android:tint="?android:attr/colorControlNormal">
++    <path
++        android:fillColor="#FF000000"
++        android:pathData="M7,18h2L9,6L7,6v12zM11,22h2L13,2h-2v20zM3,14h2v-4L3,10v4zM15,18h2L17,6h-2v12zM19,10v4h2v-4h-2z"/>
++</vector>
 diff --git a/res/values-de/bluetooth_codec_sample_rate_strings.xml b/res/values-de/bluetooth_codec_sample_rate_strings.xml
 new file mode 100644
-index 00000000000..8101ba19466
+index 00000000000..3d1764a953e
 --- /dev/null
 +++ b/res/values-de/bluetooth_codec_sample_rate_strings.xml
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,5 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<resources>
-+    <string name="bluetooth_codec_sample_rate_title">Abtastrate (kHz)</string>
-+    <string name="bluetooth_codec_sample_rate_auto">Automatisch</string>
++    <string name="bluetooth_codec_sample_rate_title">Abtastrate</string>
 +    <string name="bluetooth_codec_sample_rate_value">%1$s kHz</string>
 +</resources>
 diff --git a/res/values/bluetooth_codec_sample_rate_strings.xml b/res/values/bluetooth_codec_sample_rate_strings.xml
 new file mode 100644
-index 00000000000..6a5a7e3a486
+index 00000000000..4d406bfe3a3
 --- /dev/null
 +++ b/res/values/bluetooth_codec_sample_rate_strings.xml
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,5 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<resources>
-+    <string name="bluetooth_codec_sample_rate_title">Sample rate (kHz)</string>
-+    <string name="bluetooth_codec_sample_rate_auto">Automatic</string>
++    <string name="bluetooth_codec_sample_rate_title">Sample rate</string>
 +    <string name="bluetooth_codec_sample_rate_value">%1$s kHz</string>
 +</resources>
 diff --git a/res/xml/connected_devices.xml b/res/xml/connected_devices.xml
-index 05de0d624b7..eacaa773d5d 100644
+index 05de0d624b7..cfd37a8b83f 100644
 --- a/res/xml/connected_devices.xml
 +++ b/res/xml/connected_devices.xml
-@@ -47,6 +47,16 @@
+@@ -47,6 +47,22 @@
          android:title="@string/connected_device_media_device_title"
          settings:controller="com.android.settings.connecteddevice.AvailableMediaDeviceGroupController" />
  
 +    <com.android.settingslib.widget.UntitledPreferenceCategory>
 +      <Preference
-+          android:icon="@drawable/ic_media_stream"
++          android:icon="@drawable/ic_bluetooth_codec"
 +          android:key="bluetooth_audio_codec_entry"
 +          android:title="@string/bluetooth_codec_menu_title"
 +          android:summary="@string/summary_placeholder"
 +          settings:controller="com.android.settings.bluetooth.BluetoothCodecEntryPreferenceController"
++          settings:searchable="false" />
++      <Preference
++          android:icon="@drawable/ic_bluetooth_sample_rate"
++          android:key="bluetooth_audio_sample_rate_entry"
++          android:title="@string/bluetooth_codec_sample_rate_title"
++          android:summary="@string/summary_placeholder"
 +          settings:searchable="false" />
 +    </com.android.settingslib.widget.UntitledPreferenceCategory>
 +
@@ -56,10 +124,10 @@ index 05de0d624b7..eacaa773d5d 100644
          android:title="@string/connected_device_other_device_title"
 diff --git a/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
 new file mode 100644
-index 00000000000..9d8002d102a
+index 00000000000..3f420dab720
 --- /dev/null
 +++ b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
-@@ -0,0 +1,437 @@
+@@ -0,0 +1,457 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -86,6 +154,7 @@ index 00000000000..9d8002d102a
 +import android.bluetooth.BluetoothProfile;
 +import android.content.Context;
 +import android.util.Log;
++import android.util.TypedValue;
 +import android.widget.TextView;
 +
 +import androidx.annotation.VisibleForTesting;
@@ -286,12 +355,14 @@ index 00000000000..9d8002d102a
 +                supportedRates |= config.getSampleRate();
 +            }
 +        }
++        // Only actual rates. "Automatic" (NONE) is not offered: the stack then takes the audio
++        // output's rate or the codec default, which is nearly always the rate already playing.
 +        List<Integer> rates = new ArrayList<>();
-+        for (int rate : new int[] {BluetoothCodecConfig.SAMPLE_RATE_NONE,
++        for (int rate : new int[] {
 +                BluetoothCodecConfig.SAMPLE_RATE_44100, BluetoothCodecConfig.SAMPLE_RATE_48000,
 +                BluetoothCodecConfig.SAMPLE_RATE_88200, BluetoothCodecConfig.SAMPLE_RATE_96000,
 +                BluetoothCodecConfig.SAMPLE_RATE_176400, BluetoothCodecConfig.SAMPLE_RATE_192000}) {
-+            if ((rate == BluetoothCodecConfig.SAMPLE_RATE_NONE || (supportedRates & rate) != 0)
++            if ((supportedRates & rate) != 0
 +                    && status.isCodecConfigSelectable(new BluetoothCodecConfig.Builder()
 +                            .setExtendedCodecType(type).setSampleRate(rate).build())) {
 +                rates.add(rate);
@@ -337,6 +408,14 @@ index 00000000000..9d8002d102a
 +        int selected = types.indexOf(status.getCodecConfig().getExtendedCodecType());
 +        TextView hint = new TextView(mContext);
 +        hint.setText(R.string.bluetooth_codec_menu_connection_hint);
++        // A bare TextView sits on the dialog edge; give it the dialog's own content padding.
++        TypedValue padding = new TypedValue();
++        int paddingPx = mContext.getTheme().resolveAttribute(
++                android.R.attr.dialogPreferredPadding, padding, true)
++                ? TypedValue.complexToDimensionPixelSize(padding.data,
++                        mContext.getResources().getDisplayMetrics())
++                : 0;
++        hint.setPadding(paddingPx, paddingPx / 2, paddingPx, 0);
 +        AlertDialog dialog = new AlertDialog.Builder(mContext)
 +                .setTitle(R.string.bluetooth_codec_menu_title)
 +                .setSingleChoiceItems(labels, selected, (ignored, index) -> {
@@ -364,8 +443,6 @@ index 00000000000..9d8002d102a
 +                    mOnStateChanged.run();
 +                })
 +                .setView(hint)
-+                .setNeutralButton(R.string.bluetooth_codec_sample_rate_title,
-+                        (ignored, which) -> showSampleRateDialog())
 +                .setNegativeButton(android.R.string.cancel, null)
 +                .create();
 +        mDialog = dialog;
@@ -377,8 +454,21 @@ index 00000000000..9d8002d102a
 +            }
 +        });
 +        dialog.show();
-+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-+                .setEnabled(!getSelectableSampleRates(status).isEmpty());
++    }
++
++    /** True when the current codec offers a choice, i.e. at least two sample rates. */
++    public boolean canShowSampleRateDialog() {
++        return canShowDialog() && getSelectableSampleRates(getCodecStatus()).size() > 1;
++    }
++
++    /** Read-back sample rate of the active codec; "unavailable" when the stack reports none. */
++    public CharSequence getSampleRateSummary() {
++        BluetoothCodecStatus status = getCodecStatus();
++        BluetoothCodecConfig current = status == null ? null : status.getCodecConfig();
++        int rateHz = current == null ? 0 : getSampleRateHz(current.getSampleRate());
++        return rateHz == 0 ? mContext.getString(R.string.bluetooth_codec_menu_unavailable)
++                : mContext.getString(R.string.bluetooth_codec_sample_rate_value,
++                        formatSampleRate(rateHz));
 +    }
 +
 +    public void showSampleRateDialog() {
@@ -391,10 +481,8 @@ index 00000000000..9d8002d102a
 +        final CachedBluetoothDevice target = mTarget;
 +        final int generation = mGeneration;
 +        CharSequence[] labels = rates.stream().map(rate ->
-+                rate == BluetoothCodecConfig.SAMPLE_RATE_NONE
-+                        ? mContext.getString(R.string.bluetooth_codec_sample_rate_auto)
-+                        : mContext.getString(R.string.bluetooth_codec_sample_rate_value,
-+                                formatSampleRate(getSampleRateHz(rate))))
++                mContext.getString(R.string.bluetooth_codec_sample_rate_value,
++                        formatSampleRate(getSampleRateHz(rate))))
 +                .toArray(CharSequence[]::new);
 +        AlertDialog dialog = new AlertDialog.Builder(mContext)
 +                .setTitle(R.string.bluetooth_codec_sample_rate_title)
@@ -499,10 +587,10 @@ index 00000000000..9d8002d102a
 +}
 diff --git a/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java b/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java
 new file mode 100644
-index 00000000000..63e2915704f
+index 00000000000..f157723bac2
 --- /dev/null
 +++ b/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java
-@@ -0,0 +1,200 @@
+@@ -0,0 +1,222 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -545,9 +633,13 @@ index 00000000000..63e2915704f
 + */
 +public class BluetoothCodecEntryPreferenceController extends BasePreferenceController
 +        implements DefaultLifecycleObserver, BluetoothCallback {
++    /** Sample-rate row below the codec entry; it has no controller of its own. */
++    static final String KEY_SAMPLE_RATE = "bluetooth_audio_sample_rate_entry";
++
 +    @Nullable private final LocalBluetoothManager mManager;
 +    @Nullable private BluetoothCodecDialogController mCodecController;
 +    @Nullable private Preference mPreference;
++    @Nullable private Preference mSampleRatePreference;
 +    @Nullable private CachedBluetoothDevice mTarget;
 +    private boolean mStarted;
 +
@@ -566,6 +658,10 @@ index 00000000000..63e2915704f
 +    public void displayPreference(PreferenceScreen screen) {
 +        super.displayPreference(screen);
 +        mPreference = screen.findPreference(getPreferenceKey());
++        mSampleRatePreference = screen.findPreference(KEY_SAMPLE_RATE);
++        if (mSampleRatePreference != null) {
++            mSampleRatePreference.setVisible(false);
++        }
 +        if (mPreference == null || mManager == null) {
 +            return;
 +        }
@@ -603,6 +699,12 @@ index 00000000000..63e2915704f
 +
 +    @Override
 +    public boolean handlePreferenceTreeClick(Preference preference) {
++        if (TextUtils.equals(preference.getKey(), KEY_SAMPLE_RATE)) {
++            if (mCodecController != null && preference.isEnabled()) {
++                mCodecController.showSampleRateDialog();
++            }
++            return true;
++        }
 +        if (!TextUtils.equals(preference.getKey(), getPreferenceKey())) {
 +            return false;
 +        }
@@ -696,6 +798,14 @@ index 00000000000..63e2915704f
 +                && a2dp.getConnectionStatus(mTarget.getDevice()) == BluetoothProfile.STATE_CONNECTED
 +                && !isLeAudioActiveForTarget();
 +        mPreference.setVisible(visible);
++        // The rate row follows the codec entry and only appears when the codec offers rates.
++        boolean rateVisible = visible && mCodecController.canShowSampleRateDialog();
++        if (mSampleRatePreference != null) {
++            mSampleRatePreference.setVisible(rateVisible);
++            if (rateVisible) {
++                mSampleRatePreference.setSummary(mCodecController.getSampleRateSummary());
++            }
++        }
 +        if (!visible) {
 +            return;
 +        }
@@ -705,10 +815,10 @@ index 00000000000..63e2915704f
 +}
 diff --git a/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecDialogControllerTest.java b/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecDialogControllerTest.java
 new file mode 100644
-index 00000000000..2cd192566c6
+index 00000000000..e6e4295a5be
 --- /dev/null
 +++ b/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecDialogControllerTest.java
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,301 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -731,7 +841,11 @@ index 00000000000..2cd192566c6
 +import android.bluetooth.BluetoothProfile;
 +import android.content.Context;
 +import android.content.DialogInterface;
++import android.content.res.Configuration;
++import android.content.res.Resources;
++import android.os.LocaleList;
 +
++import com.android.settings.R;
 +import com.android.settingslib.bluetooth.A2dpProfile;
 +import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 +import com.android.settingslib.bluetooth.LocalBluetoothManager;
@@ -748,6 +862,7 @@ index 00000000000..2cd192566c6
 +import java.lang.reflect.Method;
 +import java.util.Arrays;
 +import java.util.List;
++import java.util.Locale;
 +
 +/** Actual codec models and controller methods; profile/service boundaries are mocked, no UI. */
 +@RunWith(RobolectricTestRunner.class)
@@ -813,14 +928,14 @@ index 00000000000..2cd192566c6
 +    }
 +
 +    @Test public void ratesOnlyForCurrentCodec() {
-+        assertEquals(List.of(0, 1, 2), mController.getSelectableSampleRates(mStatus));
++        assertEquals(List.of(1, 2), mController.getSelectableSampleRates(mStatus));
 +        status(mVendor, List.of(cap(mSbc, 1), cap(mAac, 3), cap(mVendor, 32)));
-+        assertEquals(List.of(0, 32), mController.getSelectableSampleRates(mStatus));
++        assertEquals(List.of(32), mController.getSelectableSampleRates(mStatus));
 +    }
 +
 +    @Test public void duplicateCapabilitiesMergeAllSixRates() {
 +        status(mAac, List.of(cap(mSbc, 1), cap(mAac, 15), cap(mAac, 48)));
-+        assertEquals(List.of(0, 1, 2, 4, 8, 16, 32), mController.getSelectableSampleRates(mStatus));
++        assertEquals(List.of(1, 2, 4, 8, 16, 32), mController.getSelectableSampleRates(mStatus));
 +    }
 +
 +    @Test public void disabledCapabilitiesDoNotContributeRates() {
@@ -828,7 +943,7 @@ index 00000000000..2cd192566c6
 +                .setSampleRate(32).setCodecPriority(BluetoothCodecConfig.CODEC_PRIORITY_DISABLED)
 +                .build();
 +        status(mAac, Arrays.asList(cap(mSbc, 1), cap(mAac, 3), disabled, null));
-+        assertEquals(List.of(0, 1, 2), mController.getSelectableSampleRates(mStatus));
++        assertEquals(List.of(1, 2), mController.getSelectableSampleRates(mStatus));
 +    }
 +
 +    @Test public void missingMandatoryCodecBlocksRates() {
@@ -843,7 +958,7 @@ index 00000000000..2cd192566c6
 +        assertTrue(mController.getSelectableSampleRates(mStatus).isEmpty());
 +        assertFalse(mController.requestSampleRate(mAac, 1));
 +        status(mSbc, List.of(cap(mSbc, 1), cap(mAac, 3)));
-+        assertEquals(List.of(0, 1), mController.getSelectableSampleRates(mStatus));
++        assertEquals(List.of(1), mController.getSelectableSampleRates(mStatus));
 +        noRequest();
 +    }
 +
@@ -861,11 +976,49 @@ index 00000000000..2cd192566c6
 +        assertEquals(1, mStatus.getCodecConfig().getSampleRate()); // No optimistic status mutation.
 +    }
 +
-+    @Test public void automaticSendsNone() {
-+        assertTrue(mController.requestSampleRate(mAac, 0));
-+        ArgumentCaptor<BluetoothCodecConfig> request = ArgumentCaptor.forClass(BluetoothCodecConfig.class);
-+        verify(mService).setCodecConfigPreference(eq(mDevice), request.capture());
-+        assertEquals(BluetoothCodecConfig.SAMPLE_RATE_NONE, request.getValue().getSampleRate());
++    @Test public void sampleRateRowFollowsSelectableRates() throws Exception {
++        assertTrue(mController.canShowSampleRateDialog());
++        // HD audio off: the codec dialog still offers SBC, but the active AAC has no rates.
++        when(mProfile.isHighQualityAudioEnabled(mDevice)).thenReturn(false);
++        assertTrue(mController.canShowDialog());
++        assertFalse(mController.canShowSampleRateDialog());
++        when(mProfile.isHighQualityAudioEnabled(mDevice)).thenReturn(true);
++        put(mController, "mResumed", false);
++        assertFalse(mController.canShowSampleRateDialog());
++    }
++
++    @Test public void sampleRateSummaryIsReadBackRateOrUnavailable() throws Exception {
++        Field contextField = BluetoothCodecDialogController.class.getDeclaredField("mContext");
++        contextField.setAccessible(true);
++        Context context = (Context) contextField.get(mController);
++        Resources resources = mock(Resources.class);
++        Configuration configuration = mock(Configuration.class);
++        LocaleList locales = mock(LocaleList.class);
++        when(context.getResources()).thenReturn(resources);
++        when(resources.getConfiguration()).thenReturn(configuration);
++        when(configuration.getLocales()).thenReturn(locales);
++        when(locales.get(0)).thenReturn(Locale.GERMANY);
++        when(context.getString(R.string.bluetooth_codec_sample_rate_value, "44,1"))
++                .thenReturn("44,1 kHz");
++        when(context.getString(R.string.bluetooth_codec_menu_unavailable)).thenReturn("unavailable");
++        assertEquals("44,1 kHz", mController.getSampleRateSummary());
++        List<BluetoothCodecConfig> caps = List.of(cap(mSbc, 1), cap(mAac, 3));
++        when(mProfile.getCodecStatus(mDevice)).thenReturn(new BluetoothCodecStatus(
++                cap(mAac, BluetoothCodecConfig.SAMPLE_RATE_NONE), caps, caps));
++        assertEquals("unavailable", mController.getSampleRateSummary());
++    }
++
++    @Test public void automaticIsNeverRequested() {
++        // "Automatic" (NONE) is no longer offered, so it is refused like any unlisted rate.
++        assertFalse(mController.requestSampleRate(mAac, BluetoothCodecConfig.SAMPLE_RATE_NONE));
++        noRequest();
++    }
++
++    @Test public void singleRateCodecHidesSampleRateRow() {
++        status(mSbc, List.of(cap(mSbc, 1), cap(mAac, 3)));  // SBC offers 44.1 kHz only
++        assertEquals(List.of(1), mController.getSelectableSampleRates(mStatus));
++        assertTrue(mController.canShowDialog());
++        assertFalse(mController.canShowSampleRateDialog());
 +    }
 +
 +    @Test public void unsupportedRateOrMaskNeverSubmitted() {
@@ -875,7 +1028,7 @@ index 00000000000..2cd192566c6
 +    }
 +
 +    @Test public void freshCapabilitiesOverrideOpenedList() {
-+        assertEquals(List.of(0, 1, 2), mController.getSelectableSampleRates(mStatus));
++        assertEquals(List.of(1, 2), mController.getSelectableSampleRates(mStatus));
 +        status(mAac, List.of(cap(mSbc, 1), cap(mAac, 1)));
 +        assertFalse(mController.requestSampleRate(mAac, 2));
 +        noRequest();
@@ -927,7 +1080,7 @@ index 00000000000..2cd192566c6
 +        int integerCount = 0;
 +        for (int i = 0; i < arguments.length; i++) {
 +            Class<?> type = click.getParameterTypes()[i];
-+            if (type == List.class) arguments[i] = List.of(0, 1, 2);
++            if (type == List.class) arguments[i] = List.of(1, 2);
 +            else if (type == BluetoothCodecType.class) arguments[i] = mAac;
 +            else if (type == CachedBluetoothDevice.class) arguments[i] = target;
 +            else if (type == int.class) arguments[i] = integerCount++ == 0 ? generation : index;
@@ -940,7 +1093,7 @@ index 00000000000..2cd192566c6
 +    @Test public void currentDialogGenerationSubmits() throws Exception {
 +        Field generation = BluetoothCodecDialogController.class.getDeclaredField("mGeneration");
 +        generation.setAccessible(true);
-+        clickRate(generation.getInt(mController), mCached, 2);
++        clickRate(generation.getInt(mController), mCached, 1);
 +        ArgumentCaptor<BluetoothCodecConfig> request = ArgumentCaptor.forClass(BluetoothCodecConfig.class);
 +        verify(mService).setCodecConfigPreference(eq(mDevice), request.capture());
 +        assertEquals(2, request.getValue().getSampleRate());

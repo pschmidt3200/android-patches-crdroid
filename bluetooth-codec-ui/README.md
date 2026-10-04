@@ -19,7 +19,7 @@ German version: [README.de.md](README.de.md)
 | **Codec status** | SettingsLib can read the active codec configuration of a device and refreshes the device entry when it changes |
 | **Codec badge** | the device list shows the active codec and rate, for example `[aptX Adaptive 44.1 kHz]` |
 | **Codec dialog** | in the device details, the media audio row opens a dialog with the codecs the device offers |
-| **Audio codec entry** | the Connected devices page displays an *Audio codec* entry for the active A2DP device, showing the current codec and sample rate, with codec selection and a sample-rate choice (*Automatic* or one of the rates the device offers for the current codec) |
+| **Audio codec entry** | the Connected devices page displays an *Audio codec* entry for the active A2DP device, showing the current codec and sample rate, with codec selection; a *Sample rate* row below it lets you choose one of the rates the device offers for the current codec (shown when there are at least two) |
 
 The standalone entry exists because the device details are not always reachable: for devices
 that also support LE Audio, Android hides the media audio row, and for devices with a companion
@@ -150,7 +150,7 @@ A patch file is not flashed directly: installing these changes requires a newly 
    the device actually plays.
 2. Open *Audio codec* on the Connected devices page, choose another codec and check that the
    badge and the entry show the new configuration after the stack has applied it.
-3. Choose a sample rate and then *Automatic* again; check the read-back each time.
+3. Choose other sample rates in the *Sample rate* row; check the read-back each time.
 4. Disconnect and reconnect: the codec is negotiated again and the entry follows.
 
 ## Licence and source baselines

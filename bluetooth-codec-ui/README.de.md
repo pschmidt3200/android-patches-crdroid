@@ -19,7 +19,7 @@ Englische Fassung: [README.md](README.md)
 | **Codec-Status** | SettingsLib liest die aktive Codec-Konfiguration eines Geräts und aktualisiert den Geräteeintrag, wenn sie sich ändert |
 | **Codec-Badge** | die Geräteliste zeigt aktiven Codec und Rate, zum Beispiel `[aptX Adaptive 44.1 kHz]` |
 | **Codec-Dialog** | in den Gerätedetails öffnet die Zeile „Medien-Audio“ einen Dialog mit den Codecs, die das Gerät anbietet |
-| **Eintrag „Audio-Codec“** | die Seite „Verbundene Geräte“ hat einen eigenen Eintrag *Audio-Codec* für das aktive A2DP-Gerät, zeigt den aktuellen Codec und die Abtastrate an, mit Codec-Auswahl und Wahl der Abtastrate (*Automatisch* oder eine der Raten, die das Gerät für den aktuellen Codec anbietet) |
+| **Eintrag „Audio-Codec“** | die Seite „Verbundene Geräte“ hat einen eigenen Eintrag *Audio-Codec* für das aktive A2DP-Gerät, zeigt den aktuellen Codec und die Abtastrate an, mit Codec-Auswahl; eine Zeile *Abtastrate* darunter wählt eine der Raten, die das Gerät für den aktuellen Codec anbietet (sichtbar ab zwei Raten) |
 
 Den eigenständigen Eintrag gibt es, weil die Gerätedetails nicht immer erreichbar sind: Bei
 Geräten, die zusätzlich LE Audio können, blendet Android die Zeile „Medien-Audio“ aus, und bei
@@ -153,7 +153,7 @@ Eine `.patch`-Datei wird nicht direkt geflasht: Für die Installation muss ein n
    passen, was das Gerät tatsächlich abspielt.
 2. Auf „Verbundene Geräte“ *Audio-Codec* öffnen, einen anderen Codec wählen und prüfen, dass
    Badge und Eintrag die neue Konfiguration zeigen, nachdem der Stack sie übernommen hat.
-3. Eine Abtastrate und danach wieder *Automatisch* wählen; jedes Mal den zurückgelesenen Wert prüfen.
+3. In der Zeile *Abtastrate* andere Raten wählen; jedes Mal den zurückgelesenen Wert prüfen.
 4. Trennen und neu verbinden: Der Codec wird neu ausgehandelt, und der Eintrag folgt.
 
 ## Lizenz und Quellstände

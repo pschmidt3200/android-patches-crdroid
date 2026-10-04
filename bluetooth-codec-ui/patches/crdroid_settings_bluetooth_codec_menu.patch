@@ -9,7 +9,7 @@
 # Publication edition. Do not mix with another edition of these patches.
 diff --git a/res/values-de/bluetooth_codec_menu_strings.xml b/res/values-de/bluetooth_codec_menu_strings.xml
 new file mode 100644
-index 00000000000..711c6082786
+index 00000000000..129354a4b7e
 --- /dev/null
 +++ b/res/values-de/bluetooth_codec_menu_strings.xml
 @@ -0,0 +1,20 @@
@@ -29,13 +29,13 @@ index 00000000000..711c6082786
 +-->
 +<resources>
 +    <string name="bluetooth_codec_menu_title">Audio-Codec</string>
-+    <string name="bluetooth_codec_menu_connection_hint">Die Auswahl gilt für die aktuelle Verbindung. Nach dem erneuten Verbinden wird der Codec wieder automatisch ausgehandelt. Bei ausgeschaltetem HD-Audio ist nur SBC wählbar.</string>
++    <string name="bluetooth_codec_menu_connection_hint">Die Auswahl gilt für die aktuelle Verbindung. Nach dem erneuten Verbinden wird der Codec wieder automatisch ausgehandelt.</string>
 +    <string name="bluetooth_codec_menu_unavailable">Codec-Status nicht verfügbar</string>
 +    <string name="bluetooth_codec_menu_current">%1$s · %2$s kHz</string>
 +</resources>
 diff --git a/res/values/bluetooth_codec_menu_strings.xml b/res/values/bluetooth_codec_menu_strings.xml
 new file mode 100644
-index 00000000000..661d4c3b323
+index 00000000000..0ffb4d34b2f
 --- /dev/null
 +++ b/res/values/bluetooth_codec_menu_strings.xml
 @@ -0,0 +1,20 @@
@@ -55,7 +55,7 @@ index 00000000000..661d4c3b323
 +-->
 +<resources>
 +    <string name="bluetooth_codec_menu_title">Audio codec</string>
-+    <string name="bluetooth_codec_menu_connection_hint">This selection applies to the current connection. After reconnecting, the device negotiates the codec again. With HD audio off, only SBC can be selected.</string>
++    <string name="bluetooth_codec_menu_connection_hint">This selection applies to the current connection. After reconnecting, the device negotiates the codec again.</string>
 +    <string name="bluetooth_codec_menu_unavailable">Codec status unavailable</string>
 +    <string name="bluetooth_codec_menu_current">%1$s · %2$s kHz</string>
 +</resources>
