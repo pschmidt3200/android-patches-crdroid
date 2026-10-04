@@ -24,8 +24,13 @@ Eigene Tests auf abweichender Hardware oder geänderten Quellständen bleiben de
 - R2.2-Property und gegenstellenabhängige Aushandlung bei **44,1 kHz** für den
   vorhandenen Lossless-Offload-Pfad. v39 bevorzugt bei passender R2.2-Gegenstelle
   Lossless im Alltag; eine explizite Nutzerwahl bleibt vorrangig.
-- Codec-/Abtastratenanzeige in den Bluetooth-Einstellungen und aktualisierte
-  auswählbare Codecs nach einem Reconnect.
+- Nach einem Reconnect stehen die auswählbaren Codecs sofort wieder vollständig
+  bereit.
+
+Codec-Anzeige und Codec-Auswahl in den Einstellungen gehören nicht zu diesem
+Modul. Das codec-unabhängige Modul [`bluetooth-codec-ui`](../bluetooth-codec-ui/README.de.md)
+ergänzt Codec-Status, Codec-Badges in der Geräteliste und ein Auswahlmenü; es
+funktioniert mit und ohne dieses Modul.
 
 ## Zweck und Interoperabilität
 
@@ -61,7 +66,6 @@ garantiert keine konfliktfreie Anwendung lokaler Patches.
 | `packages/modules/Bluetooth` | `c575db642364` |
 | `frameworks/base` | `a7b0e5e188fb` |
 | `packages/apps/GameSpace` | `ca3a15a2cb77` |
-| `packages/apps/Settings` | `62faa7098530` |
 | `device/oneplus/sm8750-common` | `30beb69ed08f` |
 
 Die vollständigen Commit-IDs und Lizenzhinweise stehen in [NOTICE](NOTICE).
@@ -74,7 +78,7 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 |---|---|---|
 | **Referenzgeräte** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Vollständig verifizierte Referenzplattformen (SM8750 / FastConnect 7900). |
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
-| **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 16.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 6 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
+| **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 16.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 4 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
 | **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |
 | | **Bose QuietComfort Ultra 2 Earbuds** | Bietet nur 44,1 / 48 kHz an (kein 96 kHz); Link-/Aufbauereignisse erfasst, siehe „Belege und Grenzen“. |
 
@@ -82,12 +86,12 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 
 ## Ausführliche Patch-Übersicht: Wer macht was?
 
-Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von der App bis zur Hardware:
+Um das Zusammenspiel der 4 Patches zu verstehen, folgt man der Audiokette von der App bis zur Hardware:
 
 ```text
 [App / Spiel] 
     │
-    ▼ (Patch 5: GameSpace erkennt Spielstart und schaltet auf Low-Latency)
+    ▼ (Patch 3: GameSpace erkennt Spielstart und schaltet auf Low-Latency)
 [AudioPolicy / AudioFlinger] 
     │
     ▼ (Patch 2: Schaltet aptX Adaptive in der Framework-Offload-Liste frei)
@@ -96,11 +100,8 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
     ▼ (Patch 1: Kern-Treiber — richtet DSP-Sitzung ohne Software-Encoder ein)
 [Qualcomm Hexagon DSP & Controller] 
     │
-    ▼ (Patch 6: System-Properties aktivieren Snapdragon Sound R2.2)
+    ▼ (Patch 4: System-Properties aktivieren Snapdragon Sound R2.2)
 [Drahtlose Übertragung -> Kopfhörer / DAC]
-    ▲
-    │ (Patch 3 & 4: SettingsLib & UI zeigen aktives Codec-Badge an)
-[Benutzeroberfläche]
 ```
 
 ### 1. `crdroid_bluetooth_aptx_adaptive_native.patch`
@@ -119,23 +120,7 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 * **Was er tut:** Ergänzt das Audioformat `AUDIO_FORMAT_APTX_ADAPTIVE` in `AudioSystem`, führt es bei den übrigen Bluetooth-Formaten und ordnet es dem aptX-Adaptive-Bluetooth-Codectyp zu.
 * **Wenn er weggelassen wird:** Das Framework kennt kein Audioformat für aptX Adaptive und kann den ausgehandelten Bluetooth-Codec keinem Offload-Format zuordnen.
 
-### 3. `crdroid_framework_settingslib_codec_status.patch`
-* **Ziel:** `frameworks/base` (`packages/SettingsLib`)
-* **Quellumfang:** crDroid-SettingsLib-Code
-* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
-* **Rolle:** **Die interne Status-Brücke.**
-* **Was er tut:** Ergänzt `A2dpProfile.getCodecStatus()` und aktualisiert einen Geräteeintrag, wenn sich die Codec-Konfiguration ändert (`ACTION_CODEC_CONFIG_CHANGED`).
-* **Wenn er weggelassen wird:** Patch 4 baut nicht (er ruft `getCodecStatus()` auf), und die Geräteliste aktualisiert sich nach einem Codec-Wechsel nicht.
-
-### 4. `crdroid_settings_bluetooth_codec_badges.patch`
-* **Ziel:** `packages/apps/Settings`
-* **Quellumfang:** crDroid-Settings-Code; **braucht Patch 3**
-* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf dem OnePlus 13 getestet
-* **Rolle:** **Die Benutzeroberfläche & Anzeige.**
-* **Was er tut:** Zeigt das aktive Codec-Badge (z. B. *aptX Adaptive*, *aptX Lossless*, *96 kHz*) in der Zusammenfassung eines verbundenen Geräts in der Bluetooth-Geräteliste an.
-* **Wenn er weggelassen wird:** Der Ton läuft zwar, aber die Einstellungs-App zeigt nur ein Standard- oder leeres Label.
-
-### 5. `crdroid_gamespace_bluetooth_gaming_audio.patch`
+### 3. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Ziel:** `packages/apps/GameSpace`
 * **Quellumfang:** die GameSpace-App von crDroid; braucht Patch 1
 * **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf crDroid `16.0` / OnePlus 13 getestet
@@ -143,7 +128,7 @@ Um das Zusammenspiel der 6 Patches zu verstehen, folgt man der Audiokette von de
 * **Was er tut:** Klinkt sich in die GameSpace-Ereignisse ein. Sobald ein Spiel gestartet wird, schaltet der Bluetooth-Stack automatisch von High-Quality (~348 ms) auf Low-Latency (~117 ms). Beim Beenden des Spiels wird das vorherige HQ- oder Lossless-Profil nahtlos wiederhergestellt.
 * **Wenn er weggelassen wird:** Spiele laufen mit Standard-Latenz oder müssen manuell geschaltet werden.
 
-### 6. `crdroid_aptx_r2_2_property.patch`
+### 4. `crdroid_aptx_r2_2_property.patch`
 * **Ziel:** `device/oneplus/sm8750-common` (oder der geräteeigene Device-Tree)
 * **Quellumfang:** **gerätespezifische Vorlage**
 * **Rolle:** **Hardware- & Treiber-Schalter.**
@@ -163,10 +148,8 @@ dieser Patches stapeln.
 |---|---|---|---|
 | 1 | [crdroid_bluetooth_aptx_adaptive_native.patch](patches/crdroid_bluetooth_aptx_adaptive_native.patch) | `packages/modules/Bluetooth` | Codec-Kern, HAL/Offload & Sitzungssteuerung |
 | 2 | [crdroid_framework_aptx_adaptive_offload.patch](patches/crdroid_framework_aptx_adaptive_offload.patch) | `frameworks/base` | AudioPolicy Offload-Freigabe |
-| 3 | [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | SettingsLib Status-Ereignisse |
-| 4 | [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec-Badges in den Einstellungen |
-| 5 | [crdroid_gamespace_bluetooth_gaming_audio.patch](patches/crdroid_gamespace_bluetooth_gaming_audio.patch) | `packages/apps/GameSpace` | Automatische Gaming-Low-Latency-Umschaltung |
-| 6 | [crdroid_aptx_r2_2_property.patch](patches/crdroid_aptx_r2_2_property.patch) | `device/oneplus/sm8750-common` | System-Properties für Snapdragon Sound |
+| 3 | [crdroid_gamespace_bluetooth_gaming_audio.patch](patches/crdroid_gamespace_bluetooth_gaming_audio.patch) | `packages/apps/GameSpace` | Automatische Gaming-Low-Latency-Umschaltung |
+| 4 | [crdroid_aptx_r2_2_property.patch](patches/crdroid_aptx_r2_2_property.patch) | `device/oneplus/sm8750-common` | System-Properties für Snapdragon Sound |
 
 ---
 
@@ -174,7 +157,7 @@ dieser Patches stapeln.
 
 ### Methode A: Automatisches Installationsskript (Empfohlen)
 
-Das Repository enthält das Hilfsskript `apply-patches.sh`, das alle 6 Patches vorab prüft und in einem Schritt einspielt:
+Das Repository enthält das Hilfsskript `apply-patches.sh`, das alle 4 Patches vorab prüft und in einem Schritt einspielt:
 
 ```bash
 # 1. Trockenlauf (prüft alle Repositories, ändert keine Dateien):
@@ -189,9 +172,9 @@ Das Repository enthält das Hilfsskript `apply-patches.sh`, das alle 6 Patches v
 
 Was das Skript tut, bevor es etwas ändert:
 
-* **Es simuliert die ganze Serie** an einer temporären Kopie der betroffenen Dateien. Die beiden
-  `frameworks/base`-Patches werden übereinander geprüft, nicht jeder einzeln gegen den
-  unveränderten Baum. Passt etwas nicht, wird nichts geändert (Exit-Code 2).
+* **Es simuliert die ganze Serie** an einer temporären Kopie der betroffenen Dateien. Patches für
+  dasselbe Repository werden übereinander geprüft, nicht jeder einzeln gegen den unveränderten
+  Baum. Passt etwas nicht, wird nichts geändert (Exit-Code 2).
 * **Es verweigert Zielrepositories mit nicht committeten Änderungen** (Exit-Code 4), damit eigene
   Änderungen nicht mit der Serie vermischt werden. `--allow-dirty` hebt das bewusst auf. Beim
   Rückgängigmachen gilt das nicht, denn eine angewendete Serie ist selbst eine offene Änderung.
@@ -229,16 +212,16 @@ git -C "$TARGET_REPO" diff --stat
 
 `git apply --check` ändert nichts. `git apply` verändert die Quelldateien, erstellt
 aber keinen Commit und installiert nichts auf dem Telefon. Die Bluetooth-Datei
-allein ist nicht das vollständige Funktionspaket; die Zuordnung der übrigen fünf
+allein ist nicht das vollständige Funktionspaket; die Zuordnung der übrigen drei
 Patches steht in der Tabelle. Diese Dateien mit `git apply`, nicht mit `git am`,
 anwenden. Bei einem Fehler nicht mit dem nächsten Befehl weitermachen.
 
-### Alle sechs Patches einspielen
+### Alle vier Patches einspielen
 
 `ANDROID_ROOT` ist die Wurzel des crDroid-Quellbaums, `PATCH_DIR` der Ordner,
-der die sechs `.patch`-Dateien **direkt** enthält. Beide Platzhalter ersetzen.
+der die vier `.patch`-Dateien **direkt** enthält. Beide Platzhalter ersetzen.
 Zuerst alle Zielrepositories mit `git status --short` auf fremde Änderungen
-prüfen und den gewünschten Quellstand sichern. Das Beispiel prüft alle sechs
+prüfen und den gewünschten Quellstand sichern. Das Beispiel prüft alle vier
 Diffs, bevor es den ersten anwendet; es ist keine atomare Transaktion.
 
 ```sh
@@ -248,8 +231,6 @@ ANDROID_ROOT="/pfad/zum/android-quellbaum"
 PATCH_DIR="/pfad/zu/aptx-patches"
 patches="packages/modules/Bluetooth:crdroid_bluetooth_aptx_adaptive_native.patch
 frameworks/base:crdroid_framework_aptx_adaptive_offload.patch
-frameworks/base:crdroid_framework_settingslib_codec_status.patch
-packages/apps/Settings:crdroid_settings_bluetooth_codec_badges.patch
 packages/apps/GameSpace:crdroid_gamespace_bluetooth_gaming_audio.patch
 device/oneplus/sm8750-common:crdroid_aptx_r2_2_property.patch"
 for item in $patches; do
@@ -302,8 +283,8 @@ werden; eine `.patch`-Datei wird nicht direkt geflasht.
 3. Das Bluetooth-Gaming-Audio-Profil in GameSpace aktivieren: bestätigte 48 kHz
    müssen vor bestätigtem LL stehen. Beim Verlassen des Spiels die vorherige
    Qualitätskonfiguration kontrollieren, auch bei schnellem Start/Ende/Start.
-4. Pause/Resume sowie Disconnect/Reconnect prüfen, einschließlich Codec-Menü
-   und Gaming-Status. Fremde Codecs dürfen keine aptX-Moduskommandos erhalten.
+4. Pause/Resume sowie Disconnect/Reconnect prüfen, einschließlich der wieder
+   vollständigen Codec-Liste und des Gaming-Status. Fremde Codecs dürfen keine aptX-Moduskommandos erhalten.
 5. Erst nach diesen Prüfungen einen längeren Alltagstest bewerten. Unbestätigte
    Controller-Zustände, Audioaussetzer oder Neustarts nicht als Erfolg werten.
 

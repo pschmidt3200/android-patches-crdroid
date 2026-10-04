@@ -1,0 +1,55 @@
+Bluetooth codec status, badges and selection for crDroid Settings
+Source snapshot: 2026-10-04.
+
+UPSTREAM SOURCES AND COMPATIBILITY
+
+This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+Other ROMs are outside the current scope. It is not a ROM image and contains no
+codec implementation: it only reads and requests codec configurations through the
+public Android Bluetooth API (BluetoothCodecStatus, BluetoothCodecConfig,
+BluetoothA2dp.setCodecConfigPreference). Which codecs and sample rates exist is
+decided by the Bluetooth stack and the connected device.
+
+The affected SettingsLib and Settings files in crDroid retain their upstream
+Apache License, Version 2.0, terms and attribution notices, including those of
+The Android Open Source Project. Newly created files are licensed under the
+Apache License, Version 2.0.
+Retain the actual copyright and attribution notices of each affected source file.
+This overview does not replace the upstream per-file notices or license an entire ROM tree.
+
+Reference repositories, commits and public sources (crDroid branch 16.0):
+  frameworks/base               a7b0e5e188fb72a566328bfed0e0412ddb7850e2  https://github.com/crdroidandroid/android_frameworks_base
+  packages/apps/Settings        62faa70985307e4e5fca0c7c838f11dba0b2c4ab  https://github.com/crdroidandroid/android_packages_apps_Settings
+
+The series was built into crDroid 16.0 on the OnePlus 13 (dodge, CPH2653) and used
+with dual-mode receivers and with receivers whose details page is provided by a
+companion app. No device-specific code is involved.
+
+LICENSE AND REDISTRIBUTION
+
+Apache License, Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
+The complete license is included as LICENSE. Keep it alongside any release, preserve
+applicable upstream notices and identify source modifications. This NOTICE is
+informational: it neither replaces the license nor overrides other licenses
+in the target ROM.
+
+Codec and product names remain the names or marks of their respective owners. This
+is an independent community integration, not an official release or endorsement by
+the named upstream projects or hardware vendors.
+
+RISK AND SUPPORT
+
+Provided as-is, without a compatibility or support guarantee. You are responsible
+for your own source review, backups, build and device validation. Flashing or
+modifying a device can cause data loss or boot failure. This notice does not
+purport to exclude statutory rights that cannot legally be excluded.
+
+APPLICATION CHECKLIST
+
+1. Check source revisions, licenses and backups; stop any build using the target tree.
+2. Run git apply --check, then git apply in each specified target repository, in the
+   listed order; patch paths are relative to that repository, not the Android root.
+3. Review the resulting source changes and build through the ROM's normal
+   device-specific workflow. Do not mix different patch editions.
+4. Validate the shown codec, the selection menu and the read-back after a change
+   with the receivers you actually use.

@@ -35,6 +35,7 @@ body:
       label: Module
       options:
         - aptx-adaptive
+        - bluetooth-codec-ui
         - gms-fixes
         - gps-servers
         - donation-disable

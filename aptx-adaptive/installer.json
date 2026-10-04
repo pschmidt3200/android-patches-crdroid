@@ -13,16 +13,6 @@
       "description": "AudioPolicy Framework Offload"
     },
     {
-      "repository": "frameworks/base",
-      "file": "crdroid_framework_settingslib_codec_status.patch",
-      "description": "SettingsLib Codec Status"
-    },
-    {
-      "repository": "packages/apps/Settings",
-      "file": "crdroid_settings_bluetooth_codec_badges.patch",
-      "description": "Settings UI Codec Badges"
-    },
-    {
       "repository": "packages/apps/GameSpace",
       "file": "crdroid_gamespace_bluetooth_gaming_audio.patch",
       "description": "GameSpace Low-Latency Hook"

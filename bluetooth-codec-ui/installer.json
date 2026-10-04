@@ -1,0 +1,26 @@
+{
+  "title": "Bluetooth Codec UI",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "frameworks/base",
+      "file": "crdroid_framework_settingslib_codec_status.patch",
+      "description": "SettingsLib Codec Status"
+    },
+    {
+      "repository": "packages/apps/Settings",
+      "file": "crdroid_settings_bluetooth_codec_badges.patch",
+      "description": "Settings UI Codec Badges"
+    },
+    {
+      "repository": "packages/apps/Settings",
+      "file": "crdroid_settings_bluetooth_codec_menu.patch",
+      "description": "Settings Codec Dialog (Device Details)"
+    },
+    {
+      "repository": "packages/apps/Settings",
+      "file": "crdroid_settings_bluetooth_codec_entry.patch",
+      "description": "Settings Codec Entry (Connected Devices)"
+    }
+  ]
+}

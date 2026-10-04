@@ -1,0 +1,1048 @@
+# Target repository: packages/apps/Settings
+#
+# Settings: standalone "Audio codec" entry for the active A2DP device on the
+# connected devices page, with codec and sample-rate selection. It also works
+# when the device details hide the media audio row. Apply after
+# crdroid_settings_bluetooth_codec_menu.patch.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/res/values-de/bluetooth_codec_sample_rate_strings.xml b/res/values-de/bluetooth_codec_sample_rate_strings.xml
+new file mode 100644
+index 00000000000..8101ba19466
+--- /dev/null
++++ b/res/values-de/bluetooth_codec_sample_rate_strings.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="bluetooth_codec_sample_rate_title">Abtastrate (kHz)</string>
++    <string name="bluetooth_codec_sample_rate_auto">Automatisch</string>
++    <string name="bluetooth_codec_sample_rate_value">%1$s kHz</string>
++</resources>
+diff --git a/res/values/bluetooth_codec_sample_rate_strings.xml b/res/values/bluetooth_codec_sample_rate_strings.xml
+new file mode 100644
+index 00000000000..6a5a7e3a486
+--- /dev/null
++++ b/res/values/bluetooth_codec_sample_rate_strings.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="bluetooth_codec_sample_rate_title">Sample rate (kHz)</string>
++    <string name="bluetooth_codec_sample_rate_auto">Automatic</string>
++    <string name="bluetooth_codec_sample_rate_value">%1$s kHz</string>
++</resources>
+diff --git a/res/xml/connected_devices.xml b/res/xml/connected_devices.xml
+index 05de0d624b7..eacaa773d5d 100644
+--- a/res/xml/connected_devices.xml
++++ b/res/xml/connected_devices.xml
+@@ -47,6 +47,16 @@
+         android:title="@string/connected_device_media_device_title"
+         settings:controller="com.android.settings.connecteddevice.AvailableMediaDeviceGroupController" />
+ 
++    <com.android.settingslib.widget.UntitledPreferenceCategory>
++      <Preference
++          android:icon="@drawable/ic_media_stream"
++          android:key="bluetooth_audio_codec_entry"
++          android:title="@string/bluetooth_codec_menu_title"
++          android:summary="@string/summary_placeholder"
++          settings:controller="com.android.settings.bluetooth.BluetoothCodecEntryPreferenceController"
++          settings:searchable="false" />
++    </com.android.settingslib.widget.UntitledPreferenceCategory>
++
+     <PreferenceCategory
+         android:key="connected_device_list"
+         android:title="@string/connected_device_other_device_title"
+diff --git a/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
+new file mode 100644
+index 00000000000..9d8002d102a
+--- /dev/null
++++ b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
+@@ -0,0 +1,437 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.android.settings.bluetooth;
++
++import android.app.AlertDialog;
++import android.bluetooth.BluetoothA2dp;
++import android.bluetooth.BluetoothAdapter;
++import android.bluetooth.BluetoothCodecConfig;
++import android.bluetooth.BluetoothCodecStatus;
++import android.bluetooth.BluetoothCodecType;
++import android.bluetooth.BluetoothDevice;
++import android.bluetooth.BluetoothManager;
++import android.bluetooth.BluetoothProfile;
++import android.content.Context;
++import android.util.Log;
++import android.widget.TextView;
++
++import androidx.annotation.VisibleForTesting;
++
++import com.android.settings.R;
++import com.android.settingslib.bluetooth.A2dpProfile;
++import com.android.settingslib.bluetooth.CachedBluetoothDevice;
++import com.android.settingslib.bluetooth.LocalBluetoothManager;
++
++import java.text.NumberFormat;
++import java.util.ArrayList;
++import java.util.Collections;
++import java.util.Comparator;
++import java.util.List;
++import java.util.Objects;
++import java.util.Set;
++import java.util.function.BooleanSupplier;
++
++/** Shared codec status, dialog and A2DP proxy lifecycle for Settings entry points. */
++public final class BluetoothCodecDialogController implements CachedBluetoothDevice.Callback {
++    private static final String TAG = "BluetoothCodecDialog";
++    private final Context mContext;
++    private final LocalBluetoothManager mManager;
++    private final boolean mRequireActiveTarget;
++    private final BooleanSupplier mIsBlocked;
++    private final Runnable mOnStateChanged;
++    private CachedBluetoothDevice mTarget;
++    private Set<CachedBluetoothDevice> mRegisteredDevices = Collections.emptySet();
++    private boolean mResumed;
++    private int mGeneration;
++    private BluetoothA2dp mOwnedA2dpProxy;
++    private AlertDialog mDialog;
++    private List<BluetoothCodecType> mDialogTypes = Collections.emptyList();
++    private List<Integer> mDialogRates = Collections.emptyList();
++    private BluetoothCodecType mDialogRateCodec;
++    @VisibleForTesting BluetoothAdapter mBluetoothAdapter;
++    @VisibleForTesting BluetoothA2dp mBluetoothA2dp;
++    @VisibleForTesting BluetoothProfile.ServiceListener mA2dpServiceListener;
++
++    public BluetoothCodecDialogController(Context context, LocalBluetoothManager manager,
++            boolean requireActiveTarget, BooleanSupplier isBlocked, Runnable onStateChanged) {
++        mContext = context;
++        mManager = manager;
++        mRequireActiveTarget = requireActiveTarget;
++        mIsBlocked = isBlocked;
++        mOnStateChanged = onStateChanged;
++        BluetoothManager bluetoothManager = context.getSystemService(BluetoothManager.class);
++        mBluetoothAdapter = bluetoothManager == null ? null : bluetoothManager.getAdapter();
++    }
++
++    /** Changing the target invalidates old dialogs and pending service callbacks. */
++    public void setTarget(CachedBluetoothDevice target) {
++        if (Objects.equals(mTarget, target)) {
++            return;
++        }
++        mGeneration++;
++        unregisterDeviceCallbacks();
++        dismissDialog();
++        closeProxy();
++        mTarget = target;
++        if (mResumed) {
++            registerDeviceCallbacks();
++            requestProxy();
++        }
++    }
++
++    public void onResume() {
++        if (mResumed) return;
++        mResumed = true;
++        registerDeviceCallbacks();
++        requestProxy();
++        refresh();
++    }
++
++    public void onPause() {
++        mResumed = false;
++        mGeneration++;
++        unregisterDeviceCallbacks();
++        dismissDialog();
++        closeProxy();
++    }
++
++    private Set<CachedBluetoothDevice> getDeviceGroup() {
++        return mTarget == null || mManager == null ? Collections.emptySet()
++                : Utils.findAllCachedBluetoothDevicesByGroupId(mManager, mTarget);
++    }
++
++    private void registerDeviceCallbacks() {
++        Set<CachedBluetoothDevice> group = getDeviceGroup();
++        if (group.equals(mRegisteredDevices)) return;
++        unregisterDeviceCallbacks();
++        mRegisteredDevices = group;
++        for (CachedBluetoothDevice device : group) {
++            device.registerCallback(mContext.getMainExecutor(), this);
++        }
++    }
++
++    private void unregisterDeviceCallbacks() {
++        for (CachedBluetoothDevice device : mRegisteredDevices) device.unregisterCallback(this);
++        mRegisteredDevices = Collections.emptySet();
++    }
++
++    @Override
++    public void onDeviceAttributesChanged() {
++        refresh();
++        mOnStateChanged.run();
++    }
++
++    private A2dpProfile getProfile() {
++        return mManager == null ? null : mManager.getProfileManager().getA2dpProfile();
++    }
++
++    private BluetoothCodecStatus getCodecStatus() {
++        A2dpProfile profile = getProfile();
++        if (mTarget == null || profile == null || !profile.isProfileReady() || mIsBlocked.getAsBoolean()) {
++            return null;
++        }
++        BluetoothDevice device = mTarget.getDevice();
++        Set<CachedBluetoothDevice> group = getDeviceGroup();
++        if (!profile.isEnabled(device)
++                || profile.getConnectionStatus(device) != BluetoothProfile.STATE_CONNECTED
++                || mTarget.isBusy() || group.stream().anyMatch(CachedBluetoothDevice::isBusy)) {
++            return null;
++        }
++        if (mRequireActiveTarget && (!device.equals(profile.getActiveDevice())
++                || group.stream().anyMatch(item -> item.isActiveDevice(BluetoothProfile.LE_AUDIO)))) {
++            return null;
++        }
++        return profile.getCodecStatus(device);
++    }
++
++    private List<BluetoothCodecType> getSelectableCodecTypes(BluetoothCodecStatus status) {
++        List<BluetoothCodecType> result = new ArrayList<>();
++        if (status == null || status.getCodecConfig() == null
++                || status.getCodecConfig().getExtendedCodecType() == null) return result;
++        List<BluetoothCodecConfig> capabilities = new ArrayList<>(status.getCodecsSelectableCapabilities());
++        capabilities.removeIf(config -> config == null || config.getExtendedCodecType() == null
++                || config.getCodecPriority() == BluetoothCodecConfig.CODEC_PRIORITY_DISABLED);
++        capabilities.sort(Comparator.comparingInt(BluetoothCodecConfig::getCodecPriority)
++                .reversed().thenComparingLong(config -> config.getExtendedCodecType().getCodecId()));
++        // The service rejects requests until mandatory SBC is known selectable.
++        if (capabilities.stream().noneMatch(BluetoothCodecConfig::isMandatoryCodec)) return result;
++        boolean hdEnabled = getProfile().isHighQualityAudioEnabled(mTarget.getDevice());
++        for (BluetoothCodecConfig config : capabilities) {
++            if (!hdEnabled && !config.isMandatoryCodec()) continue;
++            BluetoothCodecType type = config.getExtendedCodecType();
++            if (!result.contains(type)) result.add(type);
++        }
++        return result;
++    }
++
++    public boolean canShowDialog() {
++        return mResumed && mBluetoothA2dp != null
++                && !getSelectableCodecTypes(getCodecStatus()).isEmpty();
++    }
++
++    public CharSequence getSummary() {
++        BluetoothCodecStatus status = getCodecStatus();
++        BluetoothCodecConfig current = status == null ? null : status.getCodecConfig();
++        if (current == null || current.getExtendedCodecType() == null) {
++            return mContext.getString(R.string.bluetooth_codec_menu_unavailable);
++        }
++        String name = current.getExtendedCodecType().getCodecName();
++        int rateHz = getSampleRateHz(current.getSampleRate());
++        // NONE and capability bitmasks do not establish an actual sample rate.
++        return rateHz == 0 ? name : mContext.getString(R.string.bluetooth_codec_menu_current,
++                name, formatSampleRate(rateHz));
++    }
++
++    private static int getSampleRateHz(int sampleRate) {
++        return switch (sampleRate) {
++            case BluetoothCodecConfig.SAMPLE_RATE_44100 -> 44100;
++            case BluetoothCodecConfig.SAMPLE_RATE_48000 -> 48000;
++            case BluetoothCodecConfig.SAMPLE_RATE_88200 -> 88200;
++            case BluetoothCodecConfig.SAMPLE_RATE_96000 -> 96000;
++            case BluetoothCodecConfig.SAMPLE_RATE_176400 -> 176400;
++            case BluetoothCodecConfig.SAMPLE_RATE_192000 -> 192000;
++            default -> 0;
++        };
++    }
++
++    private String formatSampleRate(int rateHz) {
++        // Hz to kHz; fractional rates retain the locale's decimal separator.
++        return NumberFormat.getNumberInstance(
++                mContext.getResources().getConfiguration().getLocales().get(0))
++                .format(rateHz / 1000.0);
++    }
++
++    @VisibleForTesting
++    List<Integer> getSelectableSampleRates(BluetoothCodecStatus status) {
++        if (status == null || status.getCodecConfig() == null) return Collections.emptyList();
++        BluetoothCodecType type = status.getCodecConfig().getExtendedCodecType();
++        if (!getSelectableCodecTypes(status).contains(type)) return Collections.emptyList();
++        int supportedRates = 0;
++        for (BluetoothCodecConfig config : status.getCodecsSelectableCapabilities()) {
++            if (config != null && type.equals(config.getExtendedCodecType())
++                    && config.getCodecPriority() != BluetoothCodecConfig.CODEC_PRIORITY_DISABLED) {
++                supportedRates |= config.getSampleRate();
++            }
++        }
++        List<Integer> rates = new ArrayList<>();
++        for (int rate : new int[] {BluetoothCodecConfig.SAMPLE_RATE_NONE,
++                BluetoothCodecConfig.SAMPLE_RATE_44100, BluetoothCodecConfig.SAMPLE_RATE_48000,
++                BluetoothCodecConfig.SAMPLE_RATE_88200, BluetoothCodecConfig.SAMPLE_RATE_96000,
++                BluetoothCodecConfig.SAMPLE_RATE_176400, BluetoothCodecConfig.SAMPLE_RATE_192000}) {
++            if ((rate == BluetoothCodecConfig.SAMPLE_RATE_NONE || (supportedRates & rate) != 0)
++                    && status.isCodecConfigSelectable(new BluetoothCodecConfig.Builder()
++                            .setExtendedCodecType(type).setSampleRate(rate).build())) {
++                rates.add(rate);
++            }
++        }
++        return rates;
++    }
++
++    @VisibleForTesting
++    boolean requestSampleRate(BluetoothCodecType type, int sampleRate) {
++        if (!mResumed || mBluetoothA2dp == null) return false;
++        BluetoothCodecStatus freshStatus = getCodecStatus();
++        if (freshStatus == null || freshStatus.getCodecConfig() == null
++                || !type.equals(freshStatus.getCodecConfig().getExtendedCodecType())
++                || !getSelectableSampleRates(freshStatus).contains(sampleRate)) return false;
++        BluetoothCodecConfig request = new BluetoothCodecConfig.Builder()
++                .setExtendedCodecType(type)
++                .setCodecPriority(BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST)
++                .setSampleRate(sampleRate).build();
++        if (!freshStatus.isCodecConfigSelectable(request)) return false;
++        try {
++            mBluetoothA2dp.setCodecConfigPreference(mTarget.getDevice(), request);
++        } catch (IllegalArgumentException | SecurityException e) {
++            Log.w(TAG, "Sample rate request rejected", e);
++            return false;
++        }
++        // Submission is not readback. Only the codec broadcast supplies the actual rate.
++        refresh();
++        mOnStateChanged.run();
++        return true;
++    }
++
++    public void showDialog() {
++        dismissDialog();
++        if (!canShowDialog()) return;
++        BluetoothCodecStatus status = getCodecStatus();
++        List<BluetoothCodecType> types = getSelectableCodecTypes(status);
++        if (types.isEmpty()) return;
++        final CachedBluetoothDevice target = mTarget;
++        final int generation = mGeneration;
++        CharSequence[] labels = types.stream().map(BluetoothCodecType::getCodecName)
++                .toArray(CharSequence[]::new);
++        int selected = types.indexOf(status.getCodecConfig().getExtendedCodecType());
++        TextView hint = new TextView(mContext);
++        hint.setText(R.string.bluetooth_codec_menu_connection_hint);
++        AlertDialog dialog = new AlertDialog.Builder(mContext)
++                .setTitle(R.string.bluetooth_codec_menu_title)
++                .setSingleChoiceItems(labels, selected, (ignored, index) -> {
++                    dismissDialog();
++                    if (index < 0 || index >= types.size() || !mResumed || mBluetoothA2dp == null
++                            || generation != mGeneration || !Objects.equals(target, mTarget)) return;
++                    BluetoothCodecType type = types.get(index);
++                    BluetoothCodecStatus freshStatus = getCodecStatus();
++                    if (getSelectableCodecTypes(freshStatus).contains(type)) {
++                        BluetoothCodecConfig request = new BluetoothCodecConfig.Builder()
++                                .setExtendedCodecType(type)
++                                .setCodecPriority(BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST)
++                                .build();
++                        // Request only the type; rates and codec-specific fields remain AUTO.
++                        if (freshStatus.isCodecConfigSelectable(request)) {
++                            try {
++                                mBluetoothA2dp.setCodecConfigPreference(target.getDevice(), request);
++                            } catch (IllegalArgumentException | SecurityException e) {
++                                Log.w(TAG, "Codec request rejected", e);
++                            }
++                        }
++                    }
++                    // The setter returns void. The live codec status supplies every summary.
++                    refresh();
++                    mOnStateChanged.run();
++                })
++                .setView(hint)
++                .setNeutralButton(R.string.bluetooth_codec_sample_rate_title,
++                        (ignored, which) -> showSampleRateDialog())
++                .setNegativeButton(android.R.string.cancel, null)
++                .create();
++        mDialog = dialog;
++        mDialogTypes = List.copyOf(types);
++        dialog.setOnDismissListener(ignored -> {
++            if (mDialog == dialog) {
++                mDialog = null;
++                mDialogTypes = Collections.emptyList();
++            }
++        });
++        dialog.show();
++        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
++                .setEnabled(!getSelectableSampleRates(status).isEmpty());
++    }
++
++    public void showSampleRateDialog() {
++        dismissDialog();
++        if (!canShowDialog()) return;
++        BluetoothCodecStatus status = getCodecStatus();
++        List<Integer> rates = getSelectableSampleRates(status);
++        if (rates.isEmpty()) return;
++        final BluetoothCodecType type = status.getCodecConfig().getExtendedCodecType();
++        final CachedBluetoothDevice target = mTarget;
++        final int generation = mGeneration;
++        CharSequence[] labels = rates.stream().map(rate ->
++                rate == BluetoothCodecConfig.SAMPLE_RATE_NONE
++                        ? mContext.getString(R.string.bluetooth_codec_sample_rate_auto)
++                        : mContext.getString(R.string.bluetooth_codec_sample_rate_value,
++                                formatSampleRate(getSampleRateHz(rate))))
++                .toArray(CharSequence[]::new);
++        AlertDialog dialog = new AlertDialog.Builder(mContext)
++                .setTitle(R.string.bluetooth_codec_sample_rate_title)
++                .setSingleChoiceItems(labels, rates.indexOf(status.getCodecConfig().getSampleRate()),
++                        (ignored, index) -> {
++                            dismissDialog();
++                            if (index >= 0 && index < rates.size() && generation == mGeneration
++                                    && Objects.equals(target, mTarget)) {
++                                requestSampleRate(type, rates.get(index));
++                            }
++                        })
++                .setNegativeButton(android.R.string.cancel, null)
++                .create();
++        mDialog = dialog;
++        mDialogRates = List.copyOf(rates);
++        mDialogRateCodec = type;
++        dialog.setOnDismissListener(ignored -> {
++            if (mDialog == dialog) {
++                mDialog = null;
++                mDialogRates = Collections.emptyList();
++                mDialogRateCodec = null;
++            }
++        });
++        dialog.show();
++    }
++
++    public void refresh() {
++        if (mResumed) registerDeviceCallbacks();
++        if (mDialog == null) return;
++        BluetoothCodecStatus status = getCodecStatus();
++        if (mDialogRateCodec != null) {
++            if (!mResumed || mBluetoothA2dp == null || status == null
++                    || status.getCodecConfig() == null
++                    || !mDialogRateCodec.equals(status.getCodecConfig().getExtendedCodecType())
++                    || !getSelectableSampleRates(status).equals(mDialogRates)) {
++                dismissDialog();
++            } else {
++                int selected = mDialogRates.indexOf(status.getCodecConfig().getSampleRate());
++                mDialog.getListView().clearChoices();
++                if (selected >= 0) mDialog.getListView().setItemChecked(selected, true);
++            }
++            return;
++        }
++        if (!mResumed || mBluetoothA2dp == null
++                || !getSelectableCodecTypes(status).equals(mDialogTypes)) {
++            dismissDialog();
++        } else {
++            int selected = mDialogTypes.indexOf(status.getCodecConfig().getExtendedCodecType());
++            mDialog.getListView().clearChoices();
++            if (selected >= 0) mDialog.getListView().setItemChecked(selected, true);
++        }
++    }
++
++    private void dismissDialog() {
++        if (mDialog == null) return;
++        AlertDialog dialog = mDialog;
++        mDialog = null;
++        mDialogTypes = Collections.emptyList();
++        mDialogRates = Collections.emptyList();
++        mDialogRateCodec = null;
++        dialog.dismiss();
++    }
++
++    private void requestProxy() {
++        if (!mResumed || mTarget == null || mBluetoothAdapter == null || mOwnedA2dpProxy != null) return;
++        final int generation = ++mGeneration;
++        mA2dpServiceListener = new BluetoothProfile.ServiceListener() {
++            @Override
++            public void onServiceConnected(int profile, BluetoothProfile proxy) {
++                if (profile != BluetoothProfile.A2DP || !(proxy instanceof BluetoothA2dp)) return;
++                if (!mResumed || generation != mGeneration) {
++                    mBluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, proxy);
++                    return;
++                }
++                if (mOwnedA2dpProxy != proxy) closeProxy();
++                mOwnedA2dpProxy = (BluetoothA2dp) proxy;
++                mBluetoothA2dp = (BluetoothA2dp) proxy;
++                refresh();
++                mOnStateChanged.run();
++            }
++
++            @Override
++            public void onServiceDisconnected(int profile) {
++                if (profile == BluetoothProfile.A2DP && generation == mGeneration) {
++                    dismissDialog();
++                    mBluetoothA2dp = null;
++                    mOnStateChanged.run();
++                }
++            }
++        };
++        mBluetoothAdapter.getProfileProxy(mContext, mA2dpServiceListener, BluetoothProfile.A2DP);
++    }
++
++    private void closeProxy() {
++        BluetoothA2dp proxy = mOwnedA2dpProxy;
++        mOwnedA2dpProxy = null;
++        mBluetoothA2dp = null;
++        if (proxy != null && mBluetoothAdapter != null) {
++            mBluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, proxy);
++        }
++    }
++}
+diff --git a/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java b/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java
+new file mode 100644
+index 00000000000..63e2915704f
+--- /dev/null
++++ b/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java
+@@ -0,0 +1,200 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.android.settings.bluetooth;
++
++import android.bluetooth.BluetoothDevice;
++import android.bluetooth.BluetoothProfile;
++import android.content.Context;
++import android.text.TextUtils;
++
++import androidx.annotation.NonNull;
++import androidx.annotation.Nullable;
++import androidx.lifecycle.DefaultLifecycleObserver;
++import androidx.lifecycle.LifecycleOwner;
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++
++import com.android.settings.core.BasePreferenceController;
++import com.android.settingslib.bluetooth.A2dpProfile;
++import com.android.settingslib.bluetooth.BluetoothCallback;
++import com.android.settingslib.bluetooth.CachedBluetoothDevice;
++import com.android.settingslib.bluetooth.LocalBluetoothManager;
++
++/**
++ * "Audio codec" entry on the Connected devices page for the active A2DP device.
++ *
++ * <p>Device details cannot host this entry for every sink: dual-mode devices lose the A2DP row
++ * and vendor-configured detail layouts hide the profile list. This entry depends only on the
++ * active A2DP device and reuses {@link BluetoothCodecDialogController}.
++ */
++public class BluetoothCodecEntryPreferenceController extends BasePreferenceController
++        implements DefaultLifecycleObserver, BluetoothCallback {
++    @Nullable private final LocalBluetoothManager mManager;
++    @Nullable private BluetoothCodecDialogController mCodecController;
++    @Nullable private Preference mPreference;
++    @Nullable private CachedBluetoothDevice mTarget;
++    private boolean mStarted;
++
++    public BluetoothCodecEntryPreferenceController(Context context, String key) {
++        super(context, key);
++        // No proxy or callback work here: search indexing constructs this controller too.
++        mManager = Utils.getLocalBtManager(context);
++    }
++
++    @Override
++    public int getAvailabilityStatus() {
++        return mManager != null ? AVAILABLE_UNSEARCHABLE : UNSUPPORTED_ON_DEVICE;
++    }
++
++    @Override
++    public void displayPreference(PreferenceScreen screen) {
++        super.displayPreference(screen);
++        mPreference = screen.findPreference(getPreferenceKey());
++        if (mPreference == null || mManager == null) {
++            return;
++        }
++        mPreference.setVisible(false);
++        // The dialog needs the themed screen context, not an application context.
++        mCodecController = new BluetoothCodecDialogController(screen.getContext(), mManager,
++                true, this::isLeAudioActiveForTarget, this::updatePreference);
++    }
++
++    @Override
++    public void onStart(@NonNull LifecycleOwner owner) {
++        if (mManager == null || mCodecController == null || mStarted) {
++            return;
++        }
++        mStarted = true;
++        mManager.getEventManager().registerCallback(this);
++        retarget();
++        mCodecController.onResume();
++        updatePreference();
++    }
++
++    @Override
++    public void onStop(@NonNull LifecycleOwner owner) {
++        if (!mStarted) {
++            return;
++        }
++        mStarted = false;
++        if (mManager != null) {
++            mManager.getEventManager().unregisterCallback(this);
++        }
++        if (mCodecController != null) {
++            mCodecController.onPause();
++        }
++    }
++
++    @Override
++    public boolean handlePreferenceTreeClick(Preference preference) {
++        if (!TextUtils.equals(preference.getKey(), getPreferenceKey())) {
++            return false;
++        }
++        if (mCodecController != null && preference.isEnabled()) {
++            mCodecController.showDialog();
++        }
++        return true;
++    }
++
++    @Override
++    public void updateState(Preference preference) {
++        updatePreference();
++    }
++
++    @Override
++    public void onActiveDeviceChanged(@Nullable CachedBluetoothDevice activeDevice,
++            int bluetoothProfile) {
++        if (bluetoothProfile == BluetoothProfile.A2DP
++                || bluetoothProfile == BluetoothProfile.LE_AUDIO) {
++            retargetAndUpdate();
++        }
++    }
++
++    @Override
++    public void onProfileConnectionStateChanged(@NonNull CachedBluetoothDevice cachedDevice,
++            int state, int bluetoothProfile) {
++        if (bluetoothProfile == BluetoothProfile.A2DP
++                || bluetoothProfile == BluetoothProfile.LE_AUDIO) {
++            retargetAndUpdate();
++        }
++    }
++
++    @Override
++    public void onAclConnectionStateChanged(@NonNull CachedBluetoothDevice cachedDevice,
++            int state) {
++        retargetAndUpdate();
++    }
++
++    @Override
++    public void onBluetoothStateChanged(int bluetoothState) {
++        retargetAndUpdate();
++    }
++
++    private void retargetAndUpdate() {
++        if (!mStarted) {
++            return;
++        }
++        retarget();
++        updatePreference();
++    }
++
++    private void retarget() {
++        if (mCodecController == null) {
++            return;
++        }
++        mTarget = findActiveA2dpDevice();
++        mCodecController.setTarget(mTarget);
++    }
++
++    @Nullable
++    private CachedBluetoothDevice findActiveA2dpDevice() {
++        if (mManager == null) {
++            return null;
++        }
++        A2dpProfile a2dp = mManager.getProfileManager().getA2dpProfile();
++        if (a2dp == null || !a2dp.isProfileReady()) {
++            return null;
++        }
++        BluetoothDevice active = a2dp.getActiveDevice();
++        return active == null ? null : mManager.getCachedDeviceManager().findDevice(active);
++    }
++
++    private boolean isLeAudioActiveForTarget() {
++        CachedBluetoothDevice target = mTarget;
++        if (mManager == null || target == null) {
++            return false;
++        }
++        // LE support or an allowed connection policy does not establish the active audio route.
++        return Utils.findAllCachedBluetoothDevicesByGroupId(mManager, target).stream()
++                .anyMatch(device -> device.isActiveDevice(BluetoothProfile.LE_AUDIO));
++    }
++
++    private void updatePreference() {
++        if (mPreference == null || mCodecController == null) {
++            return;
++        }
++        // Visible only for an active A2DP sink without LE Audio; the summary is the live codec.
++        A2dpProfile a2dp = mManager == null ? null
++                : mManager.getProfileManager().getA2dpProfile();
++        boolean visible = mStarted && mTarget != null && a2dp != null
++                && a2dp.getConnectionStatus(mTarget.getDevice()) == BluetoothProfile.STATE_CONNECTED
++                && !isLeAudioActiveForTarget();
++        mPreference.setVisible(visible);
++        if (!visible) {
++            return;
++        }
++        mPreference.setSummary(mCodecController.getSummary());
++        mPreference.setEnabled(mCodecController.canShowDialog());
++    }
++}
+diff --git a/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecDialogControllerTest.java b/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecDialogControllerTest.java
+new file mode 100644
+index 00000000000..2cd192566c6
+--- /dev/null
++++ b/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecDialogControllerTest.java
+@@ -0,0 +1,258 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
++ * Unless required by applicable law or agreed to in writing, software distributed under the
++ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
++ * See the License for the specific language governing permissions and limitations under the License.
++ */
++package com.android.settings.bluetooth;
++
++import static org.junit.Assert.*;
++import static org.mockito.ArgumentMatchers.*;
++import static org.mockito.Mockito.*;
++
++import android.bluetooth.BluetoothA2dp;
++import android.bluetooth.BluetoothCodecConfig;
++import android.bluetooth.BluetoothCodecStatus;
++import android.bluetooth.BluetoothCodecType;
++import android.bluetooth.BluetoothDevice;
++import android.bluetooth.BluetoothProfile;
++import android.content.Context;
++import android.content.DialogInterface;
++
++import com.android.settingslib.bluetooth.A2dpProfile;
++import com.android.settingslib.bluetooth.CachedBluetoothDevice;
++import com.android.settingslib.bluetooth.LocalBluetoothManager;
++import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
++
++import org.junit.Before;
++import org.junit.Test;
++import org.junit.runner.RunWith;
++import org.mockito.ArgumentCaptor;
++import org.objenesis.ObjenesisStd;
++import org.robolectric.RobolectricTestRunner;
++
++import java.lang.reflect.Field;
++import java.lang.reflect.Method;
++import java.util.Arrays;
++import java.util.List;
++
++/** Actual codec models and controller methods; profile/service boundaries are mocked, no UI. */
++@RunWith(RobolectricTestRunner.class)
++public class BluetoothCodecDialogControllerTest {
++    private BluetoothCodecDialogController mController;
++    private A2dpProfile mProfile;
++    private CachedBluetoothDevice mCached;
++    private BluetoothDevice mDevice;
++    private BluetoothA2dp mService;
++    private final BluetoothCodecType mSbc = BluetoothCodecType.createFromType(0);
++    private final BluetoothCodecType mAac = BluetoothCodecType.createFromType(1);
++    private final BluetoothCodecType mVendor = new BluetoothCodecType(23, 0x10000ABCDL, "Vendor");
++    private BluetoothCodecStatus mStatus;
++    private int mNotifications;
++
++    @Before
++    public void setUp() throws Exception {
++        Context context = mock(Context.class);
++        LocalBluetoothManager manager = mock(LocalBluetoothManager.class);
++        LocalBluetoothProfileManager profiles = mock(LocalBluetoothProfileManager.class);
++        mProfile = mock(A2dpProfile.class);
++        mCached = mock(CachedBluetoothDevice.class);
++        // A genuine identity with a real equals/getAddress contract, without Binder construction.
++        mDevice = new ObjenesisStd().newInstance(BluetoothDevice.class);
++        put(mDevice, "mAddress", "00:11:22:33:44:55");
++        mService = mock(BluetoothA2dp.class);
++        when(manager.getProfileManager()).thenReturn(profiles);
++        when(profiles.getA2dpProfile()).thenReturn(mProfile);
++        when(mCached.getDevice()).thenReturn(mDevice);
++        when(mCached.getGroupId()).thenReturn(-1);
++        when(mProfile.getActiveDevice()).thenReturn(mDevice);
++        when(mProfile.isProfileReady()).thenReturn(true);
++        when(mProfile.isEnabled(mDevice)).thenReturn(true);
++        when(mProfile.getConnectionStatus(mDevice)).thenReturn(BluetoothProfile.STATE_CONNECTED);
++        when(mProfile.isHighQualityAudioEnabled(mDevice)).thenReturn(true);
++        mController = new BluetoothCodecDialogController(context, manager, true, () -> false,
++                () -> mNotifications++);
++        mController.setTarget(mCached);
++        put(mController, "mResumed", true);
++        mController.mBluetoothA2dp = mService;
++        status(mAac, List.of(cap(mSbc, 1), cap(mAac, 3), cap(mVendor, 32)));
++    }
++
++    private static void put(Object target, String name, Object value) throws Exception {
++        Field field = target.getClass().getDeclaredField(name);
++        field.setAccessible(true);
++        field.set(target, value);
++    }
++
++    private static BluetoothCodecConfig cap(BluetoothCodecType type, int rateMask) {
++        return new BluetoothCodecConfig.Builder().setExtendedCodecType(type)
++                .setSampleRate(rateMask).build();
++    }
++
++    private void status(BluetoothCodecType type, List<BluetoothCodecConfig> caps) {
++        mStatus = new BluetoothCodecStatus(cap(type, BluetoothCodecConfig.SAMPLE_RATE_44100),
++                caps, caps);
++        when(mProfile.getCodecStatus(mDevice)).thenReturn(mStatus);
++    }
++
++    private void noRequest() {
++        verify(mService, never()).setCodecConfigPreference(any(), any());
++    }
++
++    @Test public void ratesOnlyForCurrentCodec() {
++        assertEquals(List.of(0, 1, 2), mController.getSelectableSampleRates(mStatus));
++        status(mVendor, List.of(cap(mSbc, 1), cap(mAac, 3), cap(mVendor, 32)));
++        assertEquals(List.of(0, 32), mController.getSelectableSampleRates(mStatus));
++    }
++
++    @Test public void duplicateCapabilitiesMergeAllSixRates() {
++        status(mAac, List.of(cap(mSbc, 1), cap(mAac, 15), cap(mAac, 48)));
++        assertEquals(List.of(0, 1, 2, 4, 8, 16, 32), mController.getSelectableSampleRates(mStatus));
++    }
++
++    @Test public void disabledCapabilitiesDoNotContributeRates() {
++        BluetoothCodecConfig disabled = new BluetoothCodecConfig.Builder().setExtendedCodecType(mAac)
++                .setSampleRate(32).setCodecPriority(BluetoothCodecConfig.CODEC_PRIORITY_DISABLED)
++                .build();
++        status(mAac, Arrays.asList(cap(mSbc, 1), cap(mAac, 3), disabled, null));
++        assertEquals(List.of(0, 1, 2), mController.getSelectableSampleRates(mStatus));
++    }
++
++    @Test public void missingMandatoryCodecBlocksRates() {
++        status(mAac, List.of(cap(mAac, 3)));
++        assertTrue(mController.getSelectableSampleRates(mStatus).isEmpty());
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        noRequest();
++    }
++
++    @Test public void hdPolicyBlocksOptionalCodecRates() {
++        when(mProfile.isHighQualityAudioEnabled(mDevice)).thenReturn(false);
++        assertTrue(mController.getSelectableSampleRates(mStatus).isEmpty());
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        status(mSbc, List.of(cap(mSbc, 1), cap(mAac, 3)));
++        assertEquals(List.of(0, 1), mController.getSelectableSampleRates(mStatus));
++        noRequest();
++    }
++
++    @Test public void explicitRateUsesSameCodecAndAutoOtherFields() {
++        assertTrue(mController.requestSampleRate(mAac, 2));
++        ArgumentCaptor<BluetoothCodecConfig> request = ArgumentCaptor.forClass(BluetoothCodecConfig.class);
++        verify(mService).setCodecConfigPreference(eq(mDevice), request.capture());
++        assertEquals(mAac, request.getValue().getExtendedCodecType());
++        assertEquals(2, request.getValue().getSampleRate());
++        assertEquals(BluetoothCodecConfig.CODEC_PRIORITY_HIGHEST, request.getValue().getCodecPriority());
++        assertEquals(0, request.getValue().getBitsPerSample());
++        assertEquals(0, request.getValue().getChannelMode());
++        assertEquals(0L, request.getValue().getCodecSpecific1());
++        assertEquals(1, mNotifications);
++        assertEquals(1, mStatus.getCodecConfig().getSampleRate()); // No optimistic status mutation.
++    }
++
++    @Test public void automaticSendsNone() {
++        assertTrue(mController.requestSampleRate(mAac, 0));
++        ArgumentCaptor<BluetoothCodecConfig> request = ArgumentCaptor.forClass(BluetoothCodecConfig.class);
++        verify(mService).setCodecConfigPreference(eq(mDevice), request.capture());
++        assertEquals(BluetoothCodecConfig.SAMPLE_RATE_NONE, request.getValue().getSampleRate());
++    }
++
++    @Test public void unsupportedRateOrMaskNeverSubmitted() {
++        assertFalse(mController.requestSampleRate(mAac, 32));
++        assertFalse(mController.requestSampleRate(mAac, 3));
++        noRequest();
++    }
++
++    @Test public void freshCapabilitiesOverrideOpenedList() {
++        assertEquals(List.of(0, 1, 2), mController.getSelectableSampleRates(mStatus));
++        status(mAac, List.of(cap(mSbc, 1), cap(mAac, 1)));
++        assertFalse(mController.requestSampleRate(mAac, 2));
++        noRequest();
++    }
++
++    @Test public void changedCodecBlocksOldSelection() {
++        status(mSbc, List.of(cap(mSbc, 1), cap(mAac, 3)));
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        noRequest();
++    }
++
++    @Test public void disconnectedOrBusyNeverSubmitted() {
++        when(mProfile.getConnectionStatus(mDevice)).thenReturn(BluetoothProfile.STATE_DISCONNECTED);
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        when(mProfile.getConnectionStatus(mDevice)).thenReturn(BluetoothProfile.STATE_CONNECTED);
++        when(mCached.isBusy()).thenReturn(true);
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        noRequest();
++    }
++
++    @Test public void inactiveTargetOrActiveLeNeverSubmitted() throws Exception {
++        BluetoothDevice other = new ObjenesisStd().newInstance(BluetoothDevice.class);
++        put(other, "mAddress", "00:11:22:33:44:66");
++        when(mProfile.getActiveDevice()).thenReturn(other);
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        when(mProfile.getActiveDevice()).thenReturn(mDevice);
++        when(mCached.isActiveDevice(BluetoothProfile.LE_AUDIO)).thenReturn(true);
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        noRequest();
++    }
++
++    @Test public void pausedOrNoProxyNeverSubmitted() throws Exception {
++        put(mController, "mResumed", false);
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        put(mController, "mResumed", true);
++        mController.mBluetoothA2dp = null;
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        noRequest();
++    }
++
++    private void clickRate(int generation, CachedBluetoothDevice target, int index) throws Exception {
++        Method click = Arrays.stream(BluetoothCodecDialogController.class.getDeclaredMethods())
++                .filter(method -> method.getName().startsWith("lambda$showSampleRateDialog$")
++                        && Arrays.asList(method.getParameterTypes()).contains(DialogInterface.class)
++                        && Arrays.asList(method.getParameterTypes()).contains(List.class))
++                .findFirst().orElseThrow();
++        click.setAccessible(true);
++        Object[] arguments = new Object[click.getParameterCount()];
++        int integerCount = 0;
++        for (int i = 0; i < arguments.length; i++) {
++            Class<?> type = click.getParameterTypes()[i];
++            if (type == List.class) arguments[i] = List.of(0, 1, 2);
++            else if (type == BluetoothCodecType.class) arguments[i] = mAac;
++            else if (type == CachedBluetoothDevice.class) arguments[i] = target;
++            else if (type == int.class) arguments[i] = integerCount++ == 0 ? generation : index;
++            else assertEquals(DialogInterface.class, type);
++        }
++        assertEquals(2, integerCount);
++        click.invoke(mController, arguments);
++    }
++
++    @Test public void currentDialogGenerationSubmits() throws Exception {
++        Field generation = BluetoothCodecDialogController.class.getDeclaredField("mGeneration");
++        generation.setAccessible(true);
++        clickRate(generation.getInt(mController), mCached, 2);
++        ArgumentCaptor<BluetoothCodecConfig> request = ArgumentCaptor.forClass(BluetoothCodecConfig.class);
++        verify(mService).setCodecConfigPreference(eq(mDevice), request.capture());
++        assertEquals(2, request.getValue().getSampleRate());
++    }
++
++    @Test public void staleDialogGenerationDoesNotSubmit() throws Exception {
++        clickRate(-1, mCached, 1);
++        noRequest();
++    }
++
++    @Test public void differentTargetWithCurrentGenerationDoesNotSubmit() throws Exception {
++        Field generation = BluetoothCodecDialogController.class.getDeclaredField("mGeneration");
++        generation.setAccessible(true);
++        clickRate(generation.getInt(mController), mock(CachedBluetoothDevice.class), 1);
++        noRequest();
++    }
++
++    @Test public void nullStatusOrCurrentConfigOffersNoRates() {
++        assertTrue(mController.getSelectableSampleRates(null).isEmpty());
++        assertTrue(mController.getSelectableSampleRates(
++                new BluetoothCodecStatus(null, List.of(), List.of())).isEmpty());
++        when(mProfile.getCodecStatus(mDevice)).thenReturn(null);
++        assertFalse(mController.requestSampleRate(mAac, 1));
++        noRequest();
++    }
++}
+diff --git a/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceControllerTest.java b/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceControllerTest.java
+new file mode 100644
+index 00000000000..b4f8af5b632
+--- /dev/null
++++ b/tests/robotests/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceControllerTest.java
+@@ -0,0 +1,73 @@
++/*
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.android.settings.bluetooth;
++
++import static com.android.settings.core.BasePreferenceController.AVAILABLE_UNSEARCHABLE;
++import static com.android.settings.core.BasePreferenceController.UNSUPPORTED_ON_DEVICE;
++import static com.google.common.truth.Truth.assertThat;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++import android.content.Context;
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++import androidx.test.core.app.ApplicationProvider;
++
++import org.junit.Before;
++import org.junit.Test;
++import org.junit.runner.RunWith;
++import org.mockito.Mock;
++import org.mockito.MockitoAnnotations;
++import org.robolectric.RobolectricTestRunner;
++
++@RunWith(RobolectricTestRunner.class)
++public class BluetoothCodecEntryPreferenceControllerTest {
++    private static final String PREF_KEY = "bluetooth_audio_codec_entry";
++
++    private Context mContext;
++    private BluetoothCodecEntryPreferenceController mController;
++
++    @Mock
++    private PreferenceScreen mScreen;
++    @Mock
++    private Preference mPreference;
++
++    @Before
++    public void setUp() {
++        MockitoAnnotations.initMocks(this);
++        mContext = ApplicationProvider.getApplicationContext();
++        mController = new BluetoothCodecEntryPreferenceController(mContext, PREF_KEY);
++        when(mScreen.findPreference(PREF_KEY)).thenReturn(mPreference);
++        when(mPreference.getKey()).thenReturn(PREF_KEY);
++    }
++
++    @Test
++    public void getAvailabilityStatus_hasManager_availableUnsearchable() {
++        assertThat(mController.getAvailabilityStatus())
++                .isAnyOf(AVAILABLE_UNSEARCHABLE, UNSUPPORTED_ON_DEVICE);
++    }
++
++    @Test
++    public void handlePreferenceTreeClick_matchingKey_handled() {
++        when(mPreference.isEnabled()).thenReturn(false);
++        assertThat(mController.handlePreferenceTreeClick(mPreference)).isTrue();
++    }
++
++    @Test
++    public void handlePreferenceTreeClick_differentKey_notHandled() {
++        Preference otherPref = mock(Preference.class);
++        when(otherPref.getKey()).thenReturn("other_key");
++        assertThat(mController.handlePreferenceTreeClick(otherPref)).isFalse();
++    }
++}
