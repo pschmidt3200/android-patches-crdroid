@@ -9,7 +9,8 @@ Commit: 41ae18b35d20e0c6ac04116785a4a1089528ae94
 Path: common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch
 Original SHA256: b1d39b1469a7cfb4ce800cba6e21526b99985791e981d57c49c5db1b003008b6
 Maintained input SHA256: 0bd056dd15180eeac24c662780992469deeccb218e50c47fab3a6b2a7fe61146
-Repository edition SHA256: d6f0e7a5e2d6f53bc841b4afc2af8a5f2abe7945a39baf110d27aa74b4d15674
+Repository edition SHA256: 2cd4ff7c88d64810c85ab53ccc6b67bc5e9206a18a940b0ef0fd7e9ae806a554
+  (v1.0/v1.1 edition: d6f0e7a5e2d6f53bc841b4afc2af8a5f2abe7945a39baf110d27aa74b4d15674)
 Backport mail author: fatalcoder524; original patch commit 3bf381592fa3e5196bff1253505ce8265cbe1f3f.
 BBR core MODULE_AUTHOR entries: Van Jacobson, Neal Cardwell, Yuchung Cheng,
 Soheil Hassas Yeganeh, Priyaranjan Jha, Yousuk Seung, Kevin Yang, Arjun Roy,
@@ -28,6 +29,13 @@ Google algorithm is backported. All 2670 added lines match the pinned backport
 before packaging. Packaging adds the target header and removes trailing
 whitespace from five added lines (maintained input lines2438/2660/2948/2959/2988).
 No semantic changes or binaries. Source checks are not kernel/ROM/device tests.
+
+Correction in v1.2 (2026-10-04), one added line of the repository edition:
+  include/net/tcp.h TCP_ECN_ECT_PERMANENT 3 -> 32, the value used by Google's
+  BBRv3 tree (google/bbr 90210de4b779d40496dee0b89081780eeddf2a60). The value 3
+  overlapped TCP_ECN_OK|TCP_ECN_QUEUE_CWR, so tcp_ecn_send() kept ECT on pure ACKs
+  and retransmissions of every ECN-negotiated connection. The tcp.h index line
+  carries the new postimage blob. All other added lines are unchanged.
 Patch inventory:
   bbrv3-android15-6.6.patch
   bbrv3-default-android15-6.6.patch

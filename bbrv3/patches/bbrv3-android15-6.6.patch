@@ -43,7 +43,7 @@ index 7c061178fb39bfb8a95b885ffebf2f81dc1e6446..d2f518d6a4abcd4bfbcd67f158730153
  	u32	chrono_stat[3];	/* Time in jiffies for chrono_stat stats */
  	u8	chrono_type:2,	/* current chronograph type */
 diff --git a/include/net/tcp.h b/include/net/tcp.h
-index a19203586e84b55a1ce843ea7a966955b9240598..0f5da006c8466f89b7498e866e4a1148c1b67c92 100644
+index a19203586e84b55a1ce843ea7a966955b9240598..9e32e167e05d3ba209367a31ee8006360da79237 100644
 --- a/include/net/tcp.h
 +++ b/include/net/tcp.h
 @@ -375,6 +375,8 @@ static inline void tcp_dec_quickack_mode(struct sock *sk)
@@ -51,7 +51,7 @@ index a19203586e84b55a1ce843ea7a966955b9240598..0f5da006c8466f89b7498e866e4a1148
  #define	TCP_ECN_DEMAND_CWR	4
  #define	TCP_ECN_SEEN		8
 +#define	TCP_ECN_LOW				16
-+#define	TCP_ECN_ECT_PERMANENT	3
++#define	TCP_ECN_ECT_PERMANENT	32
  
  enum tcp_tw_status {
  	TCP_TW_SUCCESS = 0,
