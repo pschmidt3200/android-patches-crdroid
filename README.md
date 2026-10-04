@@ -2,7 +2,7 @@
 
 A collection of modular source patches, framework enhancements, and hardware integrations for **crDroid 16.0 (Android 16)**.
 
-All patches are pure source diffs without proprietary binaries, designed to be applied directly to a crDroid source tree.
+All functional changes are distributed as source patches without proprietary binaries, designed to be applied directly to a crDroid source tree.
 
 ---
 
@@ -37,19 +37,17 @@ Choose the module you want from the [Releases page](https://github.com/pschmidt3
 1. Extract the downloaded zip file anywhere outside or alongside your crDroid source tree.
 2. Open a terminal in the extracted folder and run:
    ```bash
+   # 1. Check compatibility first (dry-run without modifying files):
+   ./apply-patches.sh --check /path/to/crdroid
+
+   # 2. Apply all patches:
    ./apply-patches.sh /path/to/crdroid
+
+   # 3. (Optional) Revert cleanly later:
+   ./apply-patches.sh --reverse /path/to/crdroid
    ```
-The installer automatically checks compatibility and applies the patches to the correct sub-repositories (`frameworks/base`, `packages/modules/Bluetooth`, etc.).
 
-To check compatibility without applying changes:
-```bash
-./apply-patches.sh --check /path/to/crdroid
-```
-
-To revert the patches:
-```bash
-./apply-patches.sh --reverse /path/to/crdroid
-```
+The installer automatically checks compatibility and applies the patches to the target repositories defined by the module.
 
 *(Advanced users who prefer git directly can clone this repository and use `git apply` as documented in each module's README).*
 

@@ -2,7 +2,7 @@
 
 Eine strukturierte Sammlung modularer Quellcode-Patches, Framework-Erweiterungen und Hardware-Integrationen für **crDroid 16.0 (Android 16)**.
 
-Alle Patches sind reine Quellcode-Diffs ohne proprietäre Binärdateien und können direkt in einen kompatiblen crDroid-Quellbaum eingespielt werden.
+Alle funktionalen Änderungen werden als Quellcode-Patches ohne proprietäre Binärdateien bereitgestellt und können direkt in einen kompatiblen crDroid-Quellbaum eingespielt werden.
 
 ---
 
@@ -37,19 +37,17 @@ Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmid
 1. Entpacke das heruntergeladene ZIP-Archiv an einem beliebigen Ort außerhalb oder neben deinem crDroid-Quellordner.
 2. Öffne ein Terminal im entpackten Ordner und führe den Installer aus:
    ```bash
+   # 1. Zuerst Kompatibilität prüfen (Simulation ohne Dateien zu verändern):
+   ./apply-patches.sh --check /pfad/zu/crdroid
+
+   # 2. Patches einspielen:
    ./apply-patches.sh /pfad/zu/crdroid
+
+   # 3. (Optional) Patches bei Bedarf wieder rückgängig machen (Rollback):
+   ./apply-patches.sh --reverse /pfad/zu/crdroid
    ```
-Das Skript prüft automatisch die Kompatibilität deines Quellbaums und wendet die Patches sauber auf die jeweiligen Unter-Repositories an (`frameworks/base`, `packages/modules/Bluetooth`, etc.).
 
-Nur auf Anwendbarkeit prüfen (ohne Änderungen zu schreiben):
-```bash
-./apply-patches.sh --check /pfad/zu/crdroid
-```
-
-Patches wieder rückgängig machen (Rollback):
-```bash
-./apply-patches.sh --reverse /pfad/zu/crdroid
-```
+Das Skript prüft automatisch die Kompatibilität des Quellbaums und wendet die Patches sauber auf die vom jeweiligen Modul definierten Ziel-Repositories an.
 
 *(Erfahrene Nutzer, die direkt mit Git arbeiten möchten, können dieses Repository klonen und `git apply` nutzen, wie in den einzelnen Modul-READMEs beschrieben).*
 
