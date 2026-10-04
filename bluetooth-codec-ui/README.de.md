@@ -34,7 +34,6 @@ Geräten mit Begleit-App legt diese App die Detailseite fest.
 * Angeboten werden nur Codecs und Abtastraten, die der Stack für das Gerät als auswählbar meldet.
 * Eine Auswahl gilt für die aktuelle Verbindung. Nach einem erneuten Verbinden wird der Codec
   neu ausgehandelt.
-* Mit ausgeschaltetem HD-Audio ist nur SBC wählbar.
 * Solange LE Audio die aktive Route des Geräts ist, wird keine A2DP-Anforderung gesendet.
 * Komponenten, die die Codec-Konfiguration selbst ändern, etwa ein Spielmodus, können eine
   manuelle Wahl später ersetzen.

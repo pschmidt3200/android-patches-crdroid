@@ -32,7 +32,6 @@ app the details page is defined by that app.
   stack decides, and Settings displays the configuration read back from the stack afterwards.
 * Only codecs and sample rates that the stack reports as selectable for the device are offered.
 * A selection applies to the current connection. After a reconnect the codec is negotiated again.
-* With HD audio switched off, only SBC can be selected.
 * While LE Audio is the active route for the device, no A2DP request is sent.
 * Components that change the codec configuration themselves, such as a game mode, may later
   replace a manual choice.
