@@ -71,6 +71,10 @@ Source, authors, revisions and SHA256 values are in [NOTICE](NOTICE).
 This repository adds a target header and trims trailing whitespace in five
 added lines; the productive maintained patch remains unchanged.
 The editions therefore have different byte hashes, with no algorithm change.
+Edition v1.2 corrects one added line: `TCP_ECN_ECT_PERMANENT` is now `32`, as in
+Google's tree; `3` overlapped `TCP_ECN_OK|TCP_ECN_QUEUE_CWR` and kept ECT on pure
+ACKs and retransmissions of ECN connections. An experimental update of the algorithm
+is kept apart in the testing-only module [bbrv3-experimental](../bbrv3-experimental/).
 
 Source and helper validation is fully verified:
 

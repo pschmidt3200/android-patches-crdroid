@@ -37,6 +37,7 @@ android-patches-crdroid/
 ├── gps-servers/               # SUPL and NTP server configuration
 ├── donation-disable/          # Removal of donation prompts
 ├── bbrv3/                     # TCP congestion-control patch
+├── bbrv3-experimental/        # Experimental TCP congestion-control update (testing only)
 └── susfs-core/                # Kernel patch corrections
 
 ```
@@ -131,6 +132,7 @@ git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 * **[gps-servers](gps-servers/):** Alternative SUPL and NTP server configuration. See the module directory for technical details.
 * **[donation-disable](donation-disable/):** Removal of donation prompts in Settings. See the module directory for technical details.
 * **[bbrv3](bbrv3/):** TCP congestion-control patch. See the module directory for technical details.
+* **[bbrv3-experimental](bbrv3-experimental/):** Experimental update of the TCP congestion-control patch, for testing only; replaces `bbrv3` in a test build. See the module directory for technical details.
 * **[susfs-core](susfs-core/):** Kernel patch corrections. See the module directory for technical details.
 
 
@@ -170,6 +172,8 @@ They are not part of the immutable `v1.0` collection snapshot. Each has its own
 release notes and module ZIP; SUSFS contains only our patch-file correction delta.
 They were first tested and uploaded locally; push checks now run on GitHub Actions.
 `bbrv3-v1.1` adds a separate companion patch that makes `bbr3` the kernel TCP default.
+`bbrv3-v1.2` corrects one ECN flag value in the core patch. `bbrv3-experimental-v0.1` is a
+separate, testing-only module and not a successor of `bbrv3`.
 
 To use the complete V1 snapshot:
 
@@ -209,7 +213,7 @@ the module archives as release assets — no workflow artifacts or caches.
 For maintainers, run these checks from the repository root for the selected module:
 
 ```bash
-MODULE=aptx-adaptive  # or gms-fixes, gps-servers, donation-disable, bbrv3, susfs-core
+MODULE=aptx-adaptive  # or gms-fixes, gps-servers, donation-disable, bbrv3, bbrv3-experimental, susfs-core
 python3 .github/scripts/generate-installers.py --check
 bash .github/scripts/check-modules.sh
 bash .github/scripts/test-apply-script.sh "$MODULE"
@@ -249,7 +253,7 @@ ROM builds and device tests separately, including any checks that remain unperfo
 
 Unless otherwise stated within specific module subdirectories, patches and documentation in this repository are licensed under the **Apache License, Version 2.0**. See the [LICENSE](LICENSE) file for details.
 
-Kernel exceptions: `bbrv3` preserves kernel GPL terms, individual file notices
+Kernel exceptions: `bbrv3` and `bbrv3-experimental` preserve kernel GPL terms, individual file notices
 and the BBR core's `Dual BSD/GPL` declaration. `susfs-core` preserves upstream
 GPL Version3 for its patch-file delta; the GPL3/GPL2 combined-kernel boundary
 remains unresolved. Their own docs/metadata/installers remain Apache2.0.

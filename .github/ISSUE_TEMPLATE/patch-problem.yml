@@ -39,6 +39,7 @@ body:
         - gps-servers
         - donation-disable
         - bbrv3
+        - bbrv3-experimental
         - susfs-core
     validations:
       required: true

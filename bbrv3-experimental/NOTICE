@@ -1,0 +1,54 @@
+BBRv3 experimental source-patch edition for crDroid 16.0 / OnePlus sm8750.
+Prepared 2026-10-04; Android15 Linux6.6 kernel baseline. FOR TESTING ONLY.
+
+Reference repository, commit and source:
+  kernel/oneplus/sm8750 b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35 https://github.com/crdroidandroid/android_kernel_oneplus_sm8750 branch=16.0
+
+This module is a complete, self-contained series. It replaces the bbrv3 module
+for a test build; never apply both modules to the same tree.
+
+1. bbrv3-android15-6.6.patch
+   Byte-identical to bbrv3/patches/bbrv3-android15-6.6.patch of edition v1.2.
+   Upstream backport: https://github.com/WildKernels/kernel_patches
+   Commit: 41ae18b35d20e0c6ac04116785a4a1089528ae94
+   Path: common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch
+   Backport mail author: fatalcoder524; original patch commit 3bf381592fa3e5196bff1253505ce8265cbe1f3f.
+   SHA256: 2cd4ff7c88d64810c85ab53ccc6b67bc5e9206a18a940b0ef0fd7e9ae806a554
+
+2. bbrv3-default-android15-6.6.patch
+   Byte-identical to bbrv3/patches/bbrv3-default-android15-6.6.patch.
+   SHA256: e9c5477dc7f92db6da94a6e064360debdc510f75f378b81432288ab9e9f5b1f9
+
+3. bbrv3-2026-experimental-android15-6.6.patch
+   Algorithm source: https://github.com/google/bbr
+   Branch: bbr-v3-2026-09-16-01
+   Commit: 674859761ded9f32690c7bdaf22ef585531452ed
+   Path: net/ipv4/tcp_bbr3.c (Git blob d7070bbffed7c9908a09def2c13a3eb7d2fb171b,
+   SHA256 7a8b7e6df08f6815b78b7c03ce48af5829215ab6f7227dadfd980c4f7a4538a9)
+   SPDX-License-Identifier of that file: GPL-2.0 OR BSD-3-Clause (kept in line 1).
+   MODULE_AUTHOR entries: Van Jacobson, Neal Cardwell, Yuchung Cheng,
+   Soheil Hassas Yeganeh, Priyaranjan Jha, Yousuk Seung, Kevin Yang, Arjun Roy,
+   David Morley. MODULE_LICENSE declaration: Dual BSD/GPL (preserved).
+   Linux 6.6 adaptation: congestion-control state stays in a heap allocation
+   referenced from the 104-byte inline area, the existing cong_control(sk, rs)
+   and skb_marked_lost callbacks are kept, TX_START/TLP stay in cwnd_event.
+   Not ported: Google's BPF kfunc registration and callback ABI.
+   Deliberate deviations from Google: the TSO sizing hook of the core is kept
+   (Google removed it), so a comparison against the core measures only the
+   algorithm update; MODULE_VERSION reads "3-2026x" as a runtime marker
+   (BBR_VERSION reported in tcp_info stays 3); the core's TCP_ECN_LOW and
+   TCP_ECN_ECT_PERMANENT defines stay in place unused, so the patch applies to
+   the v1.1 (value 3) and v1.2 (value 32) core.
+   SHA256: dcb798e9b9cb159273de3fb1d2eb0b731fb8cc2d4be0b2c8cd60bc63ebad8834
+
+The kernel COPYING identifies GPL-2.0-only with Linux-syscall-note. Its exact
+COPYING and license/exception files are included as COPYING.kernel, LICENSE
+and LICENSE-Linux-syscall-note. Preserve individual GPL-2.0-or-later and UAPI
+exception notices in affected files; no uniform replacement is intended.
+Own documentation, metadata and the generated installer retain Apache 2.0
+terms in LICENSE-APACHE-2.0. Patch/kernel notices are separate from that license.
+
+Patch inventory:
+  bbrv3-android15-6.6.patch
+  bbrv3-default-android15-6.6.patch
+  bbrv3-2026-experimental-android15-6.6.patch

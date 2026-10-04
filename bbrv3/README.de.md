@@ -68,6 +68,10 @@ Die gepinnten Vergleichsquellen stehen in der [englischen Anleitung](README.md).
 Die Repo-Fassung ergänzt den Zielkopf und entfernt Leerzeichen am Ende von fünf
 hinzugefügten Zeilen. Die produktive Vorlage bleibt bytegleich erhalten.
 Die Fassungen haben deshalb unterschiedliche Prüfsummen, ohne Algorithmusänderung.
+Fassung v1.2 korrigiert eine hinzugefügte Zeile: `TCP_ECN_ECT_PERMANENT` ist jetzt `32`
+wie bei Google; `3` überschnitt sich mit `TCP_ECN_OK|TCP_ECN_QUEUE_CWR` und ließ ECT auf
+reinen ACKs und Wiederholungen von ECN-Verbindungen stehen. Ein experimentelles Update des
+Algorithmus liegt getrennt im Testmodul [bbrv3-experimental](../bbrv3-experimental/).
 
 Die Quell- und Helferprüfungen sind vollständig verifiziert:
 

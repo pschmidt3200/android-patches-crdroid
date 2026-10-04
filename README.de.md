@@ -37,6 +37,7 @@ android-patches-crdroid/
 ├── gps-servers/               # SUPL- und NTP-Serverkonfiguration
 ├── donation-disable/          # Bereinigung von Spendenhinweisen
 ├── bbrv3/                     # TCP-Congestion-Control-Patch
+├── bbrv3-experimental/        # Experimentelles TCP-Congestion-Control-Update (nur zum Testen)
 └── susfs-core/                # Kernel-Patch-Korrekturen
 
 ```
@@ -132,6 +133,7 @@ git apply /pfad/zu/android-patches-crdroid/<modul>/patches/<ziel_patch>.patch
 * **[gps-servers](gps-servers/):** Alternative SUPL- und NTP-Serverkonfiguration. Technische Details im Modulordner.
 * **[donation-disable](donation-disable/):** Bereinigung von Spendenhinweisen in den Einstellungen. Technische Details im Modulordner.
 * **[bbrv3](bbrv3/):** TCP-Congestion-Control-Patch. Technische Details im Modulordner.
+* **[bbrv3-experimental](bbrv3-experimental/):** Experimentelles Update des TCP-Congestion-Control-Patches, nur zum Testen; ersetzt `bbrv3` in einem Testbuild. Technische Details im Modulordner.
 * **[susfs-core](susfs-core/):** Kernel-Patch-Korrekturen. Technische Details im Modulordner.
 
 
@@ -172,6 +174,8 @@ Sie gehören nicht zum unveränderlichen Sammelstand `v1.0`. Jeder erhält eigen
 Release-Notizen und ein Modul-ZIP; SUSFS enthält ausschließlich unser Patchdatei-
 Korrekturdelta. Erstprüfung und Upload erfolgten lokal; die Push-Prüfungen laufen jetzt über GitHub Actions.
 `bbrv3-v1.1` ergänzt einen separaten Zusatzpatch, der `bbr3` zum TCP-Standard des Kernels macht.
+`bbrv3-v1.2` korrigiert einen ECN-Flag-Wert im Kernpatch. `bbrv3-experimental-v0.1` ist ein
+separates Modul nur zum Testen und kein Nachfolger von `bbrv3`.
 
 Für den vollständigen V1-Stand:
 
@@ -213,7 +217,7 @@ Release-Anhänge — keine Workflow-Artefakte und keine Caches.
 Für das ausgewählte Modul führen Maintainer diese Prüfungen in der Repository-Wurzel aus:
 
 ```bash
-MODULE=aptx-adaptive  # oder gms-fixes, gps-servers, donation-disable, bbrv3, susfs-core
+MODULE=aptx-adaptive  # oder gms-fixes, gps-servers, donation-disable, bbrv3, bbrv3-experimental, susfs-core
 python3 .github/scripts/generate-installers.py --check
 bash .github/scripts/check-modules.sh
 bash .github/scripts/test-apply-script.sh "$MODULE"
@@ -254,7 +258,7 @@ durchgeführter Prüfungen.
 
 Soweit nicht in den Unterordnern anders angegeben, stehen alle Patches und Dokumentationen in diesem Repository unter der **Apache License, Version 2.0** (siehe [LICENSE](LICENSE)).
 
-Kernel-Ausnahmen: `bbrv3` erhält Kernel-GPL, einzelne Dateihinweise und die
+Kernel-Ausnahmen: `bbrv3` und `bbrv3-experimental` erhalten Kernel-GPL, einzelne Dateihinweise und die
 `Dual BSD/GPL`-Kennzeichnung des BBR-Core. `susfs-core` behält Upstream-GPL-Version3
 für sein Patchdatei-Delta; die GPL3/GPL2-Abgrenzung im kombinierten Kernel bleibt
 ungeklärt. Eigene Doku/Metadaten/Installer bleiben Apache2.0. Die jeweiligen

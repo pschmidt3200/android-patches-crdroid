@@ -1,0 +1,21 @@
+{
+  "title": "BBRv3 experimental 2026 update for crDroid sm8750 (testing only)",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "kernel/oneplus/sm8750",
+      "file": "bbrv3-android15-6.6.patch",
+      "description": "TCP BBRv3 Android15 Linux6.6 core (same as bbrv3 v1.2)"
+    },
+    {
+      "repository": "kernel/oneplus/sm8750",
+      "file": "bbrv3-default-android15-6.6.patch",
+      "description": "Build BBRv3 in and select bbr3 as the TCP default"
+    },
+    {
+      "repository": "kernel/oneplus/sm8750",
+      "file": "bbrv3-2026-experimental-android15-6.6.patch",
+      "description": "EXPERIMENTAL: Google BBRv3 2026 update on top of the core"
+    }
+  ]
+}
