@@ -82,7 +82,7 @@ and the vendor-offload requirements still apply.
 | **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
 | **Other Devices** | — | **Untested.** The patches target crDroid 16.0; patch 1 sends FastConnect 7900 vendor commands and patch 6 is device-specific. A port is your own integration and validation work. |
 | **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181) | Reference sink: 44.1 kHz Lossless, 48 / 96 kHz, 48 kHz low latency. |
-| | **Bose QuietComfort Ultra 2** | Offers 44.1 / 48 kHz only (no 96 kHz); link/setup events were logged, see above. |
+| | **Bose QuietComfort Ultra 2 Earbuds** | Offers 44.1 / 48 kHz only (no 96 kHz); link/setup events were logged, see above. |
 
 ---
 

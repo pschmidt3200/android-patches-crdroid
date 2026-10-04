@@ -76,7 +76,7 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
 | **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 16.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 6 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
 | **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |
-| | **Bose QuietComfort Ultra 2** | Bietet nur 44,1 / 48 kHz an (kein 96 kHz); Link-/Aufbauereignisse erfasst, siehe „Belege und Grenzen“. |
+| | **Bose QuietComfort Ultra 2 Earbuds** | Bietet nur 44,1 / 48 kHz an (kein 96 kHz); Link-/Aufbauereignisse erfasst, siehe „Belege und Grenzen“. |
 
 ---
 
@@ -329,7 +329,7 @@ Betriebs. Persönliche Rohmitschnitte sind nicht Teil dieses Publikationspakets.
 
 **Bekannte Grenzen:**
 
-- FiiO BTR17 ist die Referenz für 44,1/48/96 kHz. Die getestete Bose QC Ultra 2
+- FiiO BTR17 ist die Referenz für 44,1/48/96 kHz. Die getestete Bose QC Ultra 2 Earbuds
   bietet nur 44,1/48 kHz an; Fosi Audio K7 bietet kein aptX Adaptive an. Eine
   zweite vollständig vermessene 48/96-kHz-Gegenstelle fehlt.
 - Der Low-Latency-Gewinn wurde mit LL am Controller und HQ am DSP beobachtet.
