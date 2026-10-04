@@ -24,9 +24,9 @@ body:
   - type: input
     id: patch_revision
     attributes:
-      label: Patch release tag or commit SHA
-      description: Run git rev-parse HEAD in this patch repository, or name the release tag you downloaded.
-      placeholder: e.g. aptx-adaptive-v1.0 or the full commit SHA
+      label: Patch version or release tag
+      description: The release tag you downloaded (e.g. aptx-adaptive-v1.2, v1.0) or git commit SHA.
+      placeholder: e.g. aptx-adaptive-v1.2 or v1.0
     validations:
       required: true
   - type: dropdown
@@ -56,27 +56,29 @@ body:
   - type: input
     id: device
     attributes:
-      label: Device and codename
+      label: Device model and codename
       placeholder: e.g. OnePlus 13 (dodge)
     validations:
       required: true
   - type: input
     id: source
     attributes:
-      label: ROM, branch and date of your last repo sync
-      placeholder: e.g. crDroid 16.0, synced 2026-10-01
+      label: ROM version
+      description: Which crDroid version/branch (e.g. crDroid 16.0). Add sync date if known.
+      placeholder: e.g. crDroid 16.0
     validations:
       required: true
   - type: textarea
     id: output
     attributes:
-      label: Exact error output or log excerpt
-      description: For apply or build failures paste the full message. For runtime problems, a module-relevant filtered logcat around the event.
+      label: Error message or log excerpt
+      description: Paste the terminal error output (git apply / build error) or relevant logcat lines here.
       render: shell
     validations:
       required: true
   - type: textarea
     id: notes
     attributes:
-      label: Anything else
-      description: App, GApps vendor, receiver or network details as relevant; what you expected and what happened instead.
+      label: Additional details (optional)
+      description: What did you expect and what happened instead? Details about audio devices, apps, or setup.
+

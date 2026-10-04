@@ -4,155 +4,105 @@ A curated collection of modular patches, framework improvements, and hardware in
 
 The goal of this repository is to maintain clean, modular source patches for crDroid — including hardware-specific integrations where a module documents them — without bundled proprietary vendor binaries. The patches are applied directly to a compatible crDroid source tree.
 
-**Current ROM scope: crDroid only.** Each module documents its crDroid branch and reference hardware.
-Support for other ROMs has not been established.
+**Current ROM scope: crDroid only.** Each module documents its crDroid branch and reference hardware. Support for other ROMs has not been established.
 
-**Current repository status: public; GitHub Actions enabled.** Module checks run
-on every push. Kernel modules retain their upstream license
-terms; read each module's NOTICE before building or redistributing.
+**Current repository status: public; GitHub Actions enabled.** Module checks run on every push. Kernel modules retain their upstream license terms; read each module's `NOTICE` before building or redistributing.
 
 ---
 
-## Repository Structure
+## Available Modules
 
-Patches and improvements are organized into topic-specific directories:
+Patches are organized into topic-specific, self-contained module directories:
 
-```text
-android-patches-crdroid/
-├── README.md                  # General documentation & overview
-├── README.de.md               # German documentation
-├── LICENSE                    # Default license (module-specific terms below)
-├── .github/                   # Issue form, installer template, CI and release tooling
-│
-├── aptx-adaptive/             # Bluetooth audio integration
-│   ├── README.md              # Detailed module documentation & requirements
-│   ├── README.de.md           # German module documentation
-│   ├── apply-patches.sh       # Automated patch installation & verification script
-│   ├── installer.json         # Title, ordered patch list and optional target repository
-│   ├── NOTICE                 # Upstream attribution, reference commits & licensing
-│   ├── LICENSE                # Module license (Apache 2.0)
-│   └── patches/               # .patch files (Bluetooth, frameworks, Settings, GameSpace, device)
-│
-├── gms-fixes/                 # GMS compatibility adjustments
-├── gps-servers/               # SUPL and NTP server configuration
-├── donation-disable/          # Removal of donation prompts
-├── bbrv3/                     # TCP congestion-control patch
-├── bbrv3-experimental/        # Experimental TCP congestion-control update (testing only)
-└── susfs-core/                # Kernel patch corrections
+### Hardware & Media Subsystems
+* **[aptx-adaptive](aptx-adaptive/):** Hardware stack integration for Qualcomm FastConnect 7900 / SM8750 (aptX Adaptive, 44.1 kHz Lossless, Game Audio low-latency mode). Reference hardware: OnePlus 13 (`dodge`), OnePlus Pad 3 / Pad 2 Pro (`erhai`).
 
+### User Interface & Preferences
+* **[donation-disable](donation-disable/):** Removal of donation prompts and promotional entries in crDroidSettings. Scope: Universal (crDroid 16.0).
+
+### System Services & Networking
+* **[gps-servers](gps-servers/):** Configuration of privacy-preserving SUPL (location) and NTP (time sync) server endpoints. Scope: Universal (crDroid 16.0).
+* **[gms-fixes](gms-fixes/):** Package visibility and permission adjustments for Google Play Services (GApps / MicroG). Scope: Universal (crDroid 16.0 with GApps).
+
+### Kernel Subsystems
+* **[bbrv3](bbrv3/):** Google BBRv3 TCP congestion-control implementation for Linux 6.6 kernels.
+* **[bbrv3-experimental](bbrv3-experimental/):** Experimental update of the TCP congestion-control patch, for testing only; replaces `bbrv3` in a test build.
+* **[susfs-core](susfs-core/):** Patch corrections for the SUSFS kernel driver module. Scope: Linux Kernel 6.6.
+
+---
+
+## How to Use These Modules
+
+### Option 1: Download a Ready-to-Use Module Release (Recommended)
+
+For individual modules, you do not need to clone this entire repository:
+1. Go to the [Releases page](https://github.com/pschmidt3200/android-patches-crdroid/releases) and download the `<module>-<version>.zip` of your choice (e.g. `aptx-adaptive-v1.2.zip`).
+2. Extract the archive into your crDroid source directory.
+3. Open a terminal, navigate into the extracted module folder, and run:
+   ```bash
+   ./apply-patches.sh
+   ```
+   The script checks whether your source tree is compatible and cleanly applies all necessary patches.
+
+### Option 2: Using the Complete Git Repository
+
+```bash
+# Clone the repository
+git clone https://github.com/pschmidt3200/android-patches-crdroid.git
+cd android-patches-crdroid
+
+# Switch to a specific collection release (e.g. v1.0)
+git switch --detach v1.0
+
+# Run the installer for the desired module
+cd <module-directory>
+./apply-patches.sh
+```
+
+Alternatively, patches can be applied manually with standard git tooling:
+```bash
+cd /path/to/crdroid/source/<target-repository>
+git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
 ```
 
 ---
 
 ## How Modules Are Kept Apart
 
-Every patch set is a **self-contained module directory**. A module never depends on, refers to or
-documents another module unless its own README says so explicitly.
+Every patch set is a **self-contained module directory**. A module never depends on, refers to, or documents another module unless its own README explicitly says so.
 
 | Location | Belongs to | Contains |
 |---|---|---|
-| Repository root | the whole collection | this overview, the module index, the disclaimer and the default `LICENSE` — **no patches** |
-| `<module>/` | exactly one patch set | `README.md` + `README.de.md`, `NOTICE` (upstream sources and reference commits), `LICENSE`, `installer.json` and standalone `apply-patches.sh` |
+| Repository root | the whole collection | Overview, module index, disclaimer, and default `LICENSE` — **no patches** |
+| `<module>/` | exactly one patch set | `README.md` + `README.de.md`, `NOTICE` (upstream sources & reference commits), `LICENSE`, `installer.json`, and standalone `apply-patches.sh` |
 | `<module>/patches/` | that patch set only | `.patch` files; each starts with a `# Target repository:` header naming the Android repository it applies to |
 
-Rules for every module:
-
+**Core rules for every module:**
 * **One feature, one directory** (`kebab-case`). Unrelated changes never go into an existing module's `patches/`.
-* **Docs describe only their own module:** requirements, crDroid branch, reference commits, tested devices and known limits.
-* **Support ends where the module README ends.** A module is only as tested as its README states.
+* **Pure source diffs:** Patches are standard git diffs against source and build configuration used by crDroid. No proprietary blobs, compiled firmware binaries, or device secrets are hosted here.
+* **Docs describe only their own module:** Requirements, crDroid branch, reference commits, tested devices, and known limits.
+* **Support ends where the module README ends:** A module is only as tested as its README states.
 * **Scripts stay inside their module** and only touch that module's own `patches/` directory.
-* **Editions are not mixed:** apply all patches of a module from the same commit of this repository.
-* **The *Available Modules* list below is the only place where modules are linked together.**
-
-These rules are checked automatically on every push by GitHub Actions. `.github/scripts/check-modules.sh` verifies the
-layout, patch headers and format, and that script, READMEs and `NOTICE` name the same patches;
-`.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against a throwaway tree.
-`.github/scripts/test-markdown-links.sh` verifies that external URLs are ignored and broken local
-links are rejected, including local links with fragments.
-The *reference-check* workflow (`.github/scripts/check-reference.sh`) also runs when patches,
-application scripts, reference notices or CI scripts change, checking the commits in each module's
-`NOTICE`. Every Monday at 06:23 UTC it checks the current crDroid `16.0` branch. Manual runs accept
-another branch; leaving the branch empty selects the NOTICE commits. A fourth NOTICE field,
-`branch=<name>`, maps a vendor's Android branch (GMS uses `bka`) during branch checks.
-It checks, applies and
-reverses the real patches, requiring every source repository to be clean afterwards. Only the
-touched files are downloaded. All four scripts can be run locally from the repository root.
-
-Installer logic is maintained once in `.github/installer/apply-patches.sh.in`. Each module's
-`installer.json` supplies its title, patch order and optional target repository. The generated
-`apply-patches.sh` remains a complete standalone Bash script: users need only the module directory,
-Bash and Git; Python and the template are used only when maintaining this repository.
-Edit the template or metadata, then regenerate from the repository root:
-
-```bash
-python3 .github/scripts/generate-installers.py
-python3 .github/scripts/generate-installers.py --check
-```
-
-Do not edit generated installers directly. CI rejects generation drift and tests malformed
-metadata, standalone use and every module's existing installer behaviour. The generator validates
-all modules before writing the first installer. If an I/O failure interrupts generation, fix the
-reported error and rerun it; `--check` never changes files.
-
-CI uses standard `ubuntu-latest` runners, which are [free for public repositories](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
-Jobs skip private repositories, have time limits and use no cache or artifact uploads. GitHub may
-delay scheduled runs and [disables them after 60 days without repository activity](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule);
-check the Actions page before relying on the weekly test. These checks establish source
-applicability and rollback, not a ROM build or device acceptance.
-
----
-
-## Design Principles & Standards
-
-* **Modular & Independent:** Each topic or feature resides in its own directory with dedicated documentation, requirements, and patch files.
-* **Pure Source Diffs:** Patches are standard git diffs against source and build configuration used by crDroid. No proprietary blobs, compiled firmware binaries, or device secrets are hosted here.
-* **Upstream Hygiene:** Changes are kept atomic and cleanly separated by Android subsystem (`packages/modules/*`, `frameworks/*`, `hardware/*`).
-
----
-
-## General Usage
-
-Each subfolder contains its own detailed `README.md` with prerequisites, target commits, and instructions.
-
-In general, patches can be applied using standard git tooling:
-```bash
-# Navigate to the target repository inside your crDroid source tree
-cd /path/to/crdroid/source/<target-subrepo>
-
-# Apply the respective patch
-git apply /path/to/android-patches-crdroid/<module>/patches/<target_patch>.patch
-```
-
----
-
-## Available Modules
-
-* **[aptx-adaptive](aptx-adaptive/):** Bluetooth audio integration. See the module directory for technical details and prerequisites.
-* **[gms-fixes](gms-fixes/):** Compatibility adjustments for Google services. See the module directory for technical details.
-* **[gps-servers](gps-servers/):** Alternative SUPL and NTP server configuration. See the module directory for technical details.
-* **[donation-disable](donation-disable/):** Removal of donation prompts in Settings. See the module directory for technical details.
-* **[bbrv3](bbrv3/):** TCP congestion-control patch. See the module directory for technical details.
-* **[bbrv3-experimental](bbrv3-experimental/):** Experimental update of the TCP congestion-control patch, for testing only; replaces `bbrv3` in a test build. See the module directory for technical details.
-* **[susfs-core](susfs-core/):** Kernel patch corrections. See the module directory for technical details.
-
-
+* **Editions are not mixed:** Apply all patches of a module from the same commit or release archive.
 
 ---
 
 ## Reporting Problems
 
-If a patch does not apply, does not build or misbehaves on the reference setup, please open an issue
-with the **Patch problem** form and include the patch release tag or commit SHA and exact error output.
-Find the patch commit with `git rev-parse HEAD` in this repository. Remove Bluetooth MAC addresses and
-serial numbers from logs before posting. Reports from other devices are welcome as information —
-please read the disclaimer below first.
+If a patch does not apply, does not build, or misbehaves on the reference setup, please [open an issue](https://github.com/pschmidt3200/android-patches-crdroid/issues/new?template=patch-problem.yml) using the **Patch problem** template.
+
+Please include:
+* The module name and release tag (e.g. `aptx-adaptive-v1.2`) or commit SHA.
+* The exact error output or relevant log excerpt.
+* Please remove personal data (Bluetooth MAC addresses, serial numbers) from logs before posting.
+
+Reports from other devices are welcome as informational feedback. Please check the disclaimer below before reporting.
 
 ---
 
 ## Module Releases
 
-The [V1 collection release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0)
-freezes the complete 2026-10-01 source-patch collection. Its module editions are:
+The [V1 collection release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/v1.0) freezes the complete 2026-10-01 source-patch collection. Its module editions are:
 
 | Module | Release tag |
 |---|---|
@@ -161,57 +111,25 @@ freezes the complete 2026-10-01 source-patch collection. Its module editions are
 | `gps-servers` | `gps-servers-v1.0` |
 | `donation-disable` | `donation-disable-v1.0` |
 
-Module tags use `<module>-v<version>`; collection tags use `v<version>`. Versions have
-two or three numeric components; module versions may have a suffix such as `-rc.1`.
-Details on device acceptance and test status for individual modules are documented in their respective module READMEs.
+Separate kernel editions added on 2026-10-03: `bbrv3-v1.0`, `bbrv3-v1.1`, `bbrv3-v1.2`, `bbrv3-experimental-v0.1`, and `susfs-core-v1.0`. They are not part of the immutable `v1.0` collection snapshot. Each has its own release notes and standalone module ZIP.
 
+---
 
+## Continuous Integration & Automated Testing
 
-Separate kernel editions added on 2026-10-03: `bbrv3-v1.0` and `susfs-core-v1.0`.
-They are not part of the immutable `v1.0` collection snapshot. Each has its own
-release notes and module ZIP; SUSFS contains only our patch-file correction delta.
-They were first tested and uploaded locally; push checks now run on GitHub Actions.
-`bbrv3-v1.1` adds a separate companion patch that makes `bbr3` the kernel TCP default.
-`bbrv3-v1.2` corrects one ECN flag value in the core patch. `bbrv3-experimental-v0.1` is a
-separate, testing-only module and not a successor of `bbrv3`.
+All modularity rules and patch applicabilities are verified automatically by GitHub Actions on every push:
 
-To use the complete V1 snapshot:
+* **Modularity and Format:** `.github/scripts/check-modules.sh` verifies directory layout, patch headers, and consistency between `apply-patches.sh`, READMEs, and `NOTICE`.
+* **Throwaway Tree Test:** `.github/scripts/test-apply-script.sh` runs each module's `apply-patches.sh` against an isolated mock source tree.
+* **Link Validation:** `.github/scripts/test-markdown-links.sh` ensures local documentation links resolve correctly.
+* **Reference Upstream Checks:** `.github/scripts/check-reference.sh` downloads the exact files touched by patches from upstream crDroid repositories, applies and reverses the patches, and ensures the source tree returns to a clean state.
+* **Installer Generation:** Installer logic is maintained in `.github/installer/apply-patches.sh.in`. Each module's `installer.json` supplies its metadata. To regenerate installers:
+  ```bash
+  python3 .github/scripts/generate-installers.py
+  python3 .github/scripts/generate-installers.py --check
+  ```
 
-```bash
-git clone https://github.com/pschmidt3200/android-patches-crdroid.git
-cd android-patches-crdroid
-git switch --detach v1.0
-```
-
-Follow the module's README to check and apply its patches to your source tree. Do not mix files
-from different tags or commits. A tag identifies the patch edition; source checks do not establish
-a successful ROM build or device test.
-
-To use a single module, download `<tag>.zip` from that module's release page, for example
-`aptx-adaptive-v1.2.zip` on the [aptX v1.2 release](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.2).
-It contains only the module's directory exactly as tagged, with its own `apply-patches.sh`,
-`NOTICE` and `LICENSE`. GitHub's automatic *Source code* archives on every release always contain
-the whole repository at that tag.
-
-Module release pages provide the notes, the module archive `<tag>.zip` and GitHub's source
-archives; the collection release has no extra archive. To publish, commit `.github/releases/<tag>.md`,
-review and verify that commit, then create immutable tags at it and push `main` and the tags together.
-Pushing new notes to `main` runs the
-*release* workflow; it can also be started manually with a tag. The tagged module must match
-the tested commit and have no uncommitted changes. The helper checks **all unpublished candidates
-before creating any release**, including generated installer consistency and the four checks below.
-Existing releases keep their tag, title and notes; the helper only attaches a missing module
-archive once and never replaces an attached one. Starting the workflow manually without a tag does
-this for every module release. A publication failure reports which releases were already created
-and which archives were already attached; rerunning checks the remaining candidates. New module releases do not automatically
-replace GitHub's global *Latest* selection. Collection releases check the complete repository
-snapshot and all modules, are published after pending module releases, and become *Latest*.
-Only the release job receives `contents: write` via GitHub's temporary job token; it runs only
-on `main` in this public repository, using the same free standard runner. Its only uploads are
-the module archives as release assets — no workflow artifacts or caches.
-
-For maintainers, run these checks from the repository root for the selected module:
-
+For local maintainer preflight:
 ```bash
 MODULE=aptx-adaptive  # or gms-fixes, gps-servers, donation-disable, bbrv3, bbrv3-experimental, susfs-core
 python3 .github/scripts/generate-installers.py --check
@@ -220,21 +138,6 @@ bash .github/scripts/test-apply-script.sh "$MODULE"
 bash .github/scripts/check-reference.sh "$MODULE"
 bash .github/scripts/check-reference.sh --branch 16.0 "$MODULE"
 ```
-
-With an authenticated GitHub CLI, `GH_REPO=pschmidt3200/android-patches-crdroid bash
-.github/scripts/release-modules.sh --check <tag>` runs the complete release preflight without
-publishing. Omitting the tag selects all notes in `.github/releases/`. The same helper is used
-by the workflow. [`--verify-tag`](https://cli.github.com/manual/gh_release_create) requires a tag
-already on GitHub; the helper never creates or moves tags.
-
-The reference checks use temporary source trees. Any failure stops the release: record the target
-repository, source revision and exact error, then correct the patch or its documented baseline.
-Commit the reviewed changes and attach the release tag to that verified commit.
-
-**Existing tags are immutable.** When published patches change, use a new module tag, for example
-`aptx-adaptive-v1.2`. Release notes must identify
-the patch commit, source baselines, changed behaviour and known limits. Report source checks,
-ROM builds and device tests separately, including any checks that remain unperformed.
 
 ---
 
@@ -253,8 +156,4 @@ ROM builds and device tests separately, including any checks that remain unperfo
 
 Unless otherwise stated within specific module subdirectories, patches and documentation in this repository are licensed under the **Apache License, Version 2.0**. See the [LICENSE](LICENSE) file for details.
 
-Kernel exceptions: `bbrv3` and `bbrv3-experimental` preserve kernel GPL terms, individual file notices
-and the BBR core's `Dual BSD/GPL` declaration. `susfs-core` preserves upstream
-GPL Version3 for its patch-file delta; the GPL3/GPL2 combined-kernel boundary
-remains unresolved. Their own docs/metadata/installers remain Apache2.0.
-The module LICENSE and NOTICE files define these distinctions.
+Kernel exceptions: `bbrv3` and `bbrv3-experimental` preserve kernel GPL terms, individual file notices, and the BBR core's `Dual BSD/GPL` declaration. `susfs-core` preserves upstream GPL Version 3 for its patch-file delta. Their own docs, metadata, and installers remain Apache 2.0. The module `LICENSE` and `NOTICE` files define these distinctions.
