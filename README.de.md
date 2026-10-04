@@ -31,7 +31,7 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 ## Installation & Verwendung
 
 ### Schritt 1: Modul herunterladen
-Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `aptx-adaptive-v1.2.zip`).
+Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `bluetooth-codec-ui-v1.0.zip` oder `aptx-adaptive-v1.3.zip`).
 
 ### Schritt 2: In den crDroid-Quellbaum einspielen
 1. Entpacke das heruntergeladene ZIP-Archiv an einem beliebigen Ort außerhalb oder neben deinem crDroid-Quellordner.
