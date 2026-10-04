@@ -66,8 +66,11 @@ Falls ein Patch nicht sauber anwendbar ist oder Buildfehler auf crDroid 16.0 auf
 
 ## Hinweise & Haftungsausschluss
 
-* **Privates Hobbyprojekt:** Dieses Repository wird in privater Freizeit gepflegt. Hardwaretests beschränken sich auf Geräte in meinem persönlichen Besitz (wie das OnePlus 13).
+* **Privates Hobbyprojekt:** Dieses Repository wird in persönlicher Freizeit gepflegt. Hardwaretests beschränken sich auf eigene Referenzgeräte (wie das OnePlus 13).
+* **Rückmeldungen & Bearbeitungszeit:** Da die verfügbare Freizeit schwanken kann, bitte nicht wundern, wenn Anfragen oder Fehlermeldungen nicht immer sofort oder zeitnah beantwortet bzw. behoben werden können. Geduld und freundliches Feedback werden sehr geschätzt.
 * **Zielgruppe:** Die Patches richten sich an ROM-Builder und erfahrene Android-Nutzer, die crDroid aus den Quellen kompilieren.
+* **Keine proprietären Binärdateien:** Das Repository enthält ausschließlich Open-Source-Patches. Es werden keine proprietären Hersteller-Blobs, Firmware-Dateien oder lizenzierten Codec-Binaries verteilt.
+* **Vollständig umkehrbar:** Alle Patches sind zerstörungsfrei und können jederzeit sauber mit `./apply-patches.sh --reverse` oder `git apply --reverse` zurückgenommen werden.
 * **Nutzung auf eigene Verantwortung:** Änderungen am Quellcode und dem eigenen Gerät erfolgen ohne Gewährleistung („as is“).
 
 ---

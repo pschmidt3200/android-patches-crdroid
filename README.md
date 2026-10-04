@@ -66,8 +66,11 @@ If a patch does not apply cleanly or causes build errors on crDroid 16.0:
 
 ## Disclaimer & Notes
 
-* **Personal Hobby Project:** This repository is maintained in personal spare time. Testing is conducted on hardware I personally own (such as the OnePlus 13).
-* **Target Audience:** These patches are intended for ROM builders and experienced Android enthusiasts who know how to build crDroid from source.
+* **Personal Hobby Project:** This repository is maintained in personal spare time. Testing is conducted on personal reference hardware (such as the OnePlus 13).
+* **Response Times & Updates:** Because available free time varies, please understand that issues, questions, or updates might not always be addressed immediately. Your patience and feedback are always appreciated.
+* **Target Audience:** These patches are intended for ROM builders and experienced Android enthusiasts familiar with building crDroid from source.
+* **No Proprietary Blobs:** This repository contains only open-source patches and diffs. No proprietary vendor binaries, firmware, or licensed codec blobs are distributed here.
+* **Reversible:** All patches are non-destructive and can be cleanly reverted at any time using `./apply-patches.sh --reverse` or `git apply --reverse`.
 * **Provided As-Is:** Modifications are applied at your own discretion without warranty.
 
 ---

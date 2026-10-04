@@ -1,7 +1,7 @@
 # Bluetooth codec status, badges and selection for crDroid 16.0
 
-Settings patches that show which Bluetooth audio codec is active and let you choose the codec
-and its sample rate. They are codec-independent: everything shown or offered comes from the
+Settings patches that show the active Bluetooth audio codec and sample rate, and allow selecting
+the preferred codec. They are codec-independent: everything shown or offered comes from the
 Bluetooth stack and the connected device, for example SBC, AAC, aptX, aptX HD, LDAC or — when
 the stack provides it — aptX Adaptive.
 
@@ -19,7 +19,7 @@ German version: [README.de.md](README.de.md)
 | **Codec status** | SettingsLib can read the active codec configuration of a device and refreshes the device entry when it changes |
 | **Codec badge** | the device list shows the active codec and rate, for example `[aptX Adaptive 44.1 kHz]` |
 | **Codec dialog** | in the device details, the media audio row opens a dialog with the codecs the device offers |
-| **Audio codec entry** | the Connected devices page has its own *Audio codec* entry for the active A2DP device, with codec selection and a sample-rate choice (*Automatic* or one of the rates the device offers for the current codec) |
+| **Audio codec entry** | the Connected devices page displays an *Audio codec* entry for the active A2DP device, showing the current codec and sample rate, with direct codec selection |
 
 The standalone entry exists because the device details are not always reachable: for devices
 that also support LE Audio, Android hides the media audio row, and for devices with a companion
@@ -27,10 +27,10 @@ app the details page is defined by that app.
 
 ## How the selection behaves
 
-* Only the codec type, and optionally the sample rate, is requested through the public
-  `BluetoothA2dp.setCodecConfigPreference` API; every other field stays automatic. The Bluetooth
-  stack decides, and Settings shows the configuration read back afterwards, not the request.
-* Only codecs and rates that the stack reports as selectable for the device are offered.
+* Only the codec type is requested through the public `BluetoothA2dp.setCodecConfigPreference`
+  API; the Bluetooth stack negotiates the sample rate and other parameters automatically.
+  Settings displays the active configuration read back from the stack afterwards.
+* Only codecs that the stack reports as selectable for the device are offered.
 * A selection applies to the current connection. After a reconnect the codec is negotiated again.
 * With HD audio switched off, only SBC can be selected.
 * While LE Audio is the active route for the device, no A2DP request is sent.
@@ -62,7 +62,7 @@ to the Android source root. Patches 2 to 4 need patch 1; patch 4 is applied afte
 | 1 | [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | SettingsLib codec status and refresh |
 | 2 | [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec badges in the device list |
 | 3 | [crdroid_settings_bluetooth_codec_menu.patch](patches/crdroid_settings_bluetooth_codec_menu.patch) | `packages/apps/Settings` | Codec dialog in the device details |
-| 4 | [crdroid_settings_bluetooth_codec_entry.patch](patches/crdroid_settings_bluetooth_codec_entry.patch) | `packages/apps/Settings` | *Audio codec* entry with sample-rate choice |
+| 4 | [crdroid_settings_bluetooth_codec_entry.patch](patches/crdroid_settings_bluetooth_codec_entry.patch) | `packages/apps/Settings` | *Audio codec* entry with codec selection |
 
 ---
 
@@ -150,7 +150,7 @@ A patch file is not flashed directly: installing these changes requires a newly 
    the device actually plays.
 2. Open *Audio codec* on the Connected devices page, choose another codec and check that the
    badge and the entry show the new configuration after the stack has applied it.
-3. Choose a sample rate and *Automatic* again; check the read-back each time.
+3. Verify that the sample rate shown in the summary updates to reflect the active stream.
 4. Disconnect and reconnect: the codec is negotiated again and the entry follows.
 
 ## Licence and source baselines
