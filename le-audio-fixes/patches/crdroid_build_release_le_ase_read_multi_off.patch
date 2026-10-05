@@ -1,0 +1,31 @@
+# Target repository: build/release
+#
+# LE Audio: build-time flag value DISABLED for
+# com.android.bluetooth.flags.le_ase_read_multiple_variable.
+#
+# With the flag enabled, the LE Audio client and Volume Control send ATT
+# "Read Multiple Variable Length" to peers that advertise EATT. Receivers that
+# advertise EATT but never answer that request make every LE connection attempt
+# hang and drop after about 30 seconds. With the flag off, the stack falls back
+# to AOSP single reads, which those receivers do answer.
+#
+# This changes only a release configuration value; no stack source is modified.
+# The value is set at build time because the flag is READ_ONLY and cannot be
+# switched on the device. See README.md for scope, verification and limits.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/aconfig/bp4a/com.android.bluetooth.flags/le_ase_read_multiple_variable_flag_values.textproto b/aconfig/bp4a/com.android.bluetooth.flags/le_ase_read_multiple_variable_flag_values.textproto
+new file mode 100644
+index 0000000..95a652c
+--- /dev/null
++++ b/aconfig/bp4a/com.android.bluetooth.flags/le_ase_read_multiple_variable_flag_values.textproto
+@@ -0,0 +1,6 @@
++flag_value {
++  package: "com.android.bluetooth.flags"
++  name: "le_ase_read_multiple_variable"
++  state: DISABLED
++  permission: READ_ONLY
++}

@@ -12,6 +12,7 @@ Each module is self-contained and focuses on a single feature:
 
 ### Hardware & Media
 * **[aptx-adaptive](aptx-adaptive/):** Bluetooth audio integration. See the module directory for technical details and prerequisites.
+* **[le-audio-fixes](le-audio-fixes/):** LE Audio fixes: receivers that never answer the stack's grouped attribute read can connect, a chosen sample rate or frame duration reaches the stream, and 32 kHz and 24 kHz / 7.5 ms become available for media. See the module directory for technical details and prerequisites.
 
 ### User Interface & Settings
 * **[bluetooth-codec-ui](bluetooth-codec-ui/):** Bluetooth audio codec selection menu and status display in Settings. See the module directory for technical details.

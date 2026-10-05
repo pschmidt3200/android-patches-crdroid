@@ -1,0 +1,21 @@
+{
+  "title": "LE Audio Fixes",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "build/release",
+      "file": "crdroid_build_release_le_ase_read_multi_off.patch",
+      "description": "LE Audio: ASE read-multiple flag disabled for release bp4a"
+    },
+    {
+      "repository": "packages/modules/Bluetooth",
+      "file": "crdroid_bluetooth_le_codec_preference_match.patch",
+      "description": "LE Audio: codec preference matcher"
+    },
+    {
+      "repository": "packages/modules/Bluetooth",
+      "file": "crdroid_bluetooth_le_media_32khz.patch",
+      "description": "LE Audio: 32 kHz and 24 kHz/7.5 ms media configurations"
+    }
+  ]
+}

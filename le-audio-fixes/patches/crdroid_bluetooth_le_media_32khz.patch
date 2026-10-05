@@ -1,0 +1,31 @@
+# Target repository: packages/modules/Bluetooth
+#
+# LE Audio: offer 32 kHz (7.5 and 10 ms) and 24 kHz / 7.5 ms sink configurations for
+# media. Eight configurations that already exist in the stack's catalogue are appended
+# to the end of the Media scenario. Priority order, codec definitions and QoS values
+# stay unchanged.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/system/bta/le_audio/audio_set_scenarios.json b/system/bta/le_audio/audio_set_scenarios.json
+--- a/system/bta/le_audio/audio_set_scenarios.json
++++ b/system/bta/le_audio/audio_set_scenarios.json
+@@ -113,7 +113,15 @@
+         "VND_SingleDev_OneChanStereoSnk_48khz_100octs_High_Reliability_1",
+         "VND_SingleDev_OneChanStereoSnk_48khz_100octs_R15_L70_1",
+         "Two-OneChan-SrcAse-Lc3_16_2_Balanced_Reliability",
+-        "One-OneChan-SrcAse-Lc3_16_2_Balanced_Reliability"
++        "One-OneChan-SrcAse-Lc3_16_2_Balanced_Reliability",
++        "Two-OneChan-SnkAse-Lc3_32_2_Low_Latency",
++        "Two-OneChan-SnkAse-Lc3_32_1_Low_Latency",
++        "One-TwoChan-SnkAse-Lc3_32_2_Low_Latency",
++        "One-TwoChan-SnkAse-Lc3_32_1_Low_Latency",
++        "One-OneChan-SnkAse-Lc3_32_2_Low_Latency",
++        "One-OneChan-SnkAse-Lc3_32_1_Low_Latency",
++        "Two-OneChan-SnkAse-Lc3_24_1_Low_Latency",
++        "One-TwoChan-SnkAse-Lc3_24_1_Low_Latency"
+       ]
+     },
+     {

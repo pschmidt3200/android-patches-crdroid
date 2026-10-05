@@ -1,0 +1,69 @@
+# Target repository: packages/modules/Bluetooth
+#
+# LE Audio: honour the user's codec preference when choosing the ASE configuration.
+# Absent preference fields and a channel count of 0 are treated as "any" instead of
+# rejecting every candidate, and the requested frame duration is compared with the
+# candidate instead of with itself. Candidate completeness and topology checks stay.
+#
+# Paths below are relative to the target repository, NOT to the Android
+# source root. Apply with:  git -C <target repository> apply <this file>
+#
+# Publication edition. Do not mix with another edition of these patches.
+diff --git a/system/bta/le_audio/le_audio_utils.cc b/system/bta/le_audio/le_audio_utils.cc
+--- a/system/bta/le_audio/le_audio_utils.cc
++++ b/system/bta/le_audio/le_audio_utils.cc
+@@ -508,11 +508,12 @@
+     const auto& req_config = reqs.at(i).params.GetAsCoreCodecConfig();
+ 
+     /* Sampling frequency */
+-    if (!ase_config.sampling_frequency || !req_config.sampling_frequency) {
++    if (!ase_config.sampling_frequency) {
+       log::debug("Missing sampling frequencies capability");
+       return false;
+     }
+-    if (ase_config.sampling_frequency.value() != req_config.sampling_frequency.value()) {
++    if (req_config.sampling_frequency &&
++        ase_config.sampling_frequency.value() != req_config.sampling_frequency.value()) {
+       log::debug("Ase cfg: SamplingFrequency= {:#x}", ase_config.sampling_frequency.value());
+       log::debug("Req cfg: SamplingFrequency= {:#x}", req_config.sampling_frequency.value());
+       log::debug("Sampling frequency not supported");
+@@ -520,7 +521,8 @@
+     }
+ 
+     /* Channel counts */
+-    if (ase_confs.at(i).codec.GetChannelCountPerIsoStream() != channel_cnt_per_ase) {
++    if (channel_cnt_per_ase != 0 &&
++        ase_confs.at(i).codec.GetChannelCountPerIsoStream() != channel_cnt_per_ase) {
+       log::debug("Ase cfg: Allocated channel count= {:#x}",
+                  ase_confs.at(i).codec.GetChannelCountPerIsoStream());
+       log::debug("Req cfg: Allocated channel counts= {:#x}", channel_cnt_per_ase);
+@@ -529,11 +531,12 @@
+     }
+ 
+     /* Frame duration */
+-    if (!ase_config.frame_duration || !req_config.frame_duration) {
++    if (!ase_config.frame_duration) {
+       log::debug("Missing frame duration capability");
+       return false;
+     }
+-    if (ase_config.frame_duration.value() != ase_config.frame_duration.value()) {
++    if (req_config.frame_duration &&
++        ase_config.frame_duration.value() != req_config.frame_duration.value()) {
+       log::debug("Ase cfg: FrameDuration= {:#x}", ase_config.frame_duration.value());
+       log::debug("Req cfg: FrameDuration= {:#x}", req_config.frame_duration.value());
+       log::debug("Frame duration not supported");
+@@ -541,11 +544,12 @@
+     }
+ 
+     /* Octets per frame */
+-    if (!ase_config.octets_per_codec_frame || !req_config.octets_per_codec_frame) {
++    if (!ase_config.octets_per_codec_frame) {
+       log::debug("Missing octets per codec frame");
+       return false;
+     }
+-    if (ase_config.octets_per_codec_frame.value() != req_config.octets_per_codec_frame.value()) {
++    if (req_config.octets_per_codec_frame &&
++        ase_config.octets_per_codec_frame.value() != req_config.octets_per_codec_frame.value()) {
+       log::debug("Ase cfg: Octets per frame={}", ase_config.octets_per_codec_frame.value());
+       log::debug("Req cfg: Octets per frame={}", req_config.octets_per_codec_frame.value());
+       return false;

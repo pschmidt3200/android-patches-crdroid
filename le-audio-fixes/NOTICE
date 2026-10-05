@@ -1,0 +1,64 @@
+LE Audio fixes for crDroid
+Source snapshot: 2026-10-05.
+
+UPSTREAM SOURCES AND COMPATIBILITY
+
+This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+Other ROMs are outside the current scope. It is not a ROM image and contains no
+codec implementation: it sets one build-time aconfig flag value that already
+exists in the Android source tree, corrects the LE Audio configuration matcher of
+the Bluetooth stack and appends existing LC3 configurations to the Media scenario
+list. No driver or codec source is modified.
+
+The affected build configuration directory and Bluetooth stack files in crDroid
+retain their upstream Apache License, Version 2.0, terms and attribution notices,
+including those of The Android Open Source Project. The added file is a release
+configuration value, licensed under the Apache License, Version 2.0.
+Retain the actual copyright and attribution notices of each affected source file.
+This overview does not replace the upstream per-file notices or license an entire ROM tree.
+
+Reference repositories, commits and public sources (as used by crDroid branch 16.0).
+Note that build/release is a LineageOS repository which crDroid builds on; it is not
+a crDroid fork:
+  build/release                 d76088e515490325b6edd276ef167449fd71805a  https://github.com/LineageOS/android_build_release  branch=lineage-23.2
+  packages/modules/Bluetooth    c575db642364a8e3e2f9878d2fdd55dc4451230e  https://github.com/crdroidandroid/android_packages_modules_Bluetooth
+
+The series was built into crDroid 16.0 on the OnePlus 13 (dodge, CPH2653) and
+verified with a dual-mode receiver that advertises EATT, using LC3 with hardware
+offload. No device-specific code is involved. The changes affect the LE Audio
+client, Volume Control and LE Audio configuration selection of the Bluetooth
+stack, which are part of upstream Android.
+
+LICENSE AND REDISTRIBUTION
+
+Apache License, Version 2.0: https://www.apache.org/licenses/LICENSE-2.0
+The complete license is included as LICENSE. Keep it alongside any release, preserve
+applicable upstream notices and identify source modifications. This NOTICE is
+informational: it neither replaces the license nor overrides other licenses
+in the target ROM.
+
+Product and trademark names remain the names or marks of their respective owners.
+This is an independent community integration, not an official release or endorsement
+by the named upstream projects or hardware vendors.
+
+RISK AND SUPPORT
+
+Provided as-is, without a compatibility or support guarantee. You are responsible
+for your own source review, backups, build and device validation. Flashing or
+modifying a device can cause data loss or boot failure. This notice does not
+purport to exclude statutory rights that cannot legally be excluded.
+
+APPLICATION CHECKLIST
+
+1. Check source revisions, licenses and backups; stop any build using the target tree.
+2. Run git apply --check, then git apply in each specified target repository, in the
+   listed order; patch paths are relative to that repository, not the Android root.
+3. Confirm the release configuration your build actually uses. The flag file is placed
+   in the bp4a directory; a build that selects a different release configuration will
+   not read it.
+4. After flashing, verify on the device with
+   adb shell aflags list | grep le_ase_read_multiple_variable
+   which must report the flag as disabled, then connect the receiver over LE Audio.
+5. Choose a sample rate or frame duration and confirm that the active stream
+   configuration (dumpsys bluetooth_manager, "Stream config") follows it, with audible
+   playback on the receivers you actually use.
