@@ -322,6 +322,9 @@ Betriebs. Persönliche Rohmitschnitte sind nicht Teil dieses Publikationspakets.
   A2DP-Ausgabepfad ist nicht enthalten.
 - Das Paket schaltet keine fehlenden Codec-Lizenzen, Vendor-Funktionen oder
   Hardwarefähigkeiten frei und enthält keinen allgemeinen MMAP-/AudioPolicy-Fix.
+- Die TWS-Kanalarten von aptX Adaptive (TWS-Stereo, TWS-Mono, TWS+) werden nicht
+  angeboten. Die getesteten True-Wireless-Ohrhörer nutzen den normalen Stereo-Modus;
+  eine Senke, die nur TWS-Modi anbietet, weicht auf einen anderen Codec aus.
 
 ## Support-Hinweis & Haftungsausschluss
 

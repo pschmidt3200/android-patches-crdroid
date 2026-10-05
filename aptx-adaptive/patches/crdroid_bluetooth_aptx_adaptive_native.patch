@@ -2956,7 +2956,7 @@ new file mode 100644
 index 0000000000..1618b8bfaa
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_aptx_adaptive.cc
-@@ -0,0 +1,464 @@
+@@ -0,0 +1,479 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -3033,6 +3033,14 @@ index 0000000000..1618b8bfaa
 +          A2DP_APTX_ADAPTIVE_SINK_FEATURE_R2_2) != 0 &&
 +         (p_peer_codec_info[A2DP_APTX_ADAPTIVE_SINK_SAMPLE_RATE_IDX] &
 +          A2DP_APTX_ADAPTIVE_WIRE_SAMPLERATE_44100) != 0;
++}
++
++// Feature byte of a locally selected R2.2 configuration: the selection bits of either
++// side (high nibble) and only the features both sides support (low nibble).
++static uint8_t A2dpAptxAdaptiveNegotiatedFeatureByte(uint8_t sink_features,
++                                                     uint8_t source_features) {
++  return static_cast<uint8_t>((((sink_features >> 4) | (source_features >> 4)) << 4) |
++                              (sink_features & source_features & 0x0F));
 +}
 +
 +static btav_a2dp_codec_sample_rate_t A2dpAptxAdaptiveLocalSampleRates() {
@@ -3230,15 +3238,15 @@ index 0000000000..1618b8bfaa
 +    }
 +    p_result_codec_config[A2DP_APTX_ADAPTIVE_SINK_CAP_EXT_VER_IDX] =
 +            A2DP_APTX_ADAPTIVE_VERSION_R2_1;
-+    // For a locally selected R2.2 configuration, preserve peer feature bits and add
-+    // the R2.2 selection bit. Preserve peer-selected configurations verbatim.
++    // For a locally selected R2.2 configuration, send the negotiated feature byte.
++    // Preserve peer-selected configurations verbatim.
 +    // Measured: FiiO BTR17 caps 0x82 -> 0x92 plays LS with sound; Bose QC Ultra 2 caps 0x87
 +    // selects 0x97 itself. A fixed 0x17 drops peer feature bits and does not select
 +    // the same 44.1-kHz configuration on the FiiO.
 +    p_result_codec_config[A2DP_APTX_ADAPTIVE_SINK_FEATURE_IDX] =
 +            (select_r2_2 && is_capability)
-+                    ? static_cast<uint8_t>(sink_feature_byte |
-+                                           A2DP_APTX_ADAPTIVE_CONFIG_FEATURE_R2_2_SELECT)
++                    ? A2dpAptxAdaptiveNegotiatedFeatureByte(sink_feature_byte,
++                                                            A2DP_APTX_ADAPTIVE_SOURCE_FEATURE_R2_2)
 +                    : sink_feature_byte;
 +  }
 +
@@ -3251,6 +3259,13 @@ index 0000000000..1618b8bfaa
 +  codec_config_.sample_rate = target_sample_rate;
 +  codec_config_.bits_per_sample = BTAV_A2DP_CODEC_BITS_PER_SAMPLE_24;
 +  codec_config_.channel_mode = BTAV_A2DP_CODEC_CHANNEL_MODE_STEREO;
++  if (useR2_2Config) {
++    codec_config_.codec_specific_3 =
++            (codec_config_.codec_specific_3 &
++             ~static_cast<int64_t>(A2DP_APTX_ADAPTIVE_R2_2_STATUS_MASK)) |
++            (supports_r2_2 ? A2DP_APTX_ADAPTIVE_R2_2_STATUS_AVAILABLE
++                           : A2DP_APTX_ADAPTIVE_R2_2_STATUS_NOT_AVAILABLE);
++  }
 +
 +  memcpy(ota_codec_config_, p_result_codec_config, sizeof(ota_codec_config_));
 +  return A2DP_SUCCESS;
@@ -3529,7 +3544,7 @@ new file mode 100644
 index 0000000000..648ee93391
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,88 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the License);
 + * you may not use this file except in compliance with the License.
@@ -3550,7 +3565,7 @@ index 0000000000..648ee93391
 +#include "a2dp_vendor.h"
 +
 +/* aptX-Adaptive codec specific settings */
-+#define APTX_VSQC_PATCH_VERSION "v39-best-aptx-config-lossless-first"
++#define APTX_VSQC_PATCH_VERSION "v40-negotiated-feature-byte"
 +#define A2DP_APTX_ADAPTIVE_CODEC_LEN 42
 +
 +#define A2DP_APTX_ADAPTIVE_VENDOR_ID 0x000000D7
@@ -3568,16 +3583,20 @@ index 0000000000..648ee93391
 +#define A2DP_APTX_ADAPTIVE_WIRE_SAMPLERATE_96000 0x20
 +#define A2DP_APTX_ADAPTIVE_WIRE_SAMPLERATE_MASK 0xF8
 +
-+// An R2.2 sink advertises bit 7 in its feature byte. The source feature mask is
-+// advertised only as a local capability; negotiated configurations preserve the
-+// peer features and add the selection bit below when required. The source mask
-+// 0x17 describes local capabilities; it must not replace negotiated peer features
-+// in an active configuration.
++// An R2.2 sink advertises bit 7 in its feature byte. The source feature mask 0x17
++// describes local capabilities (it includes split TX, bit 2); it must not replace
++// negotiated peer features in an active configuration. A locally selected R2.2
++// configuration carries the negotiated byte instead: high nibble = selection bits of
++// either side, low nibble = features both sides support. Measured on FiiO BTR17
++// (0x82 -> 0x92) and Bose QC Ultra 2 (0x87 -> 0x97).
 +#define A2DP_APTX_ADAPTIVE_SINK_FEATURE_R2_2 0x80
 +#define A2DP_APTX_ADAPTIVE_SOURCE_FEATURE_R2_2 0x17
-+// R2.2 configuration-selection bit applied to a peer capability mask. Measured on
-+// FiiO BTR17 (0x82 -> 0x92) and Bose QC Ultra 2 (0x87 -> 0x97).
-+#define A2DP_APTX_ADAPTIVE_CONFIG_FEATURE_R2_2_SELECT 0x10
++
++// R2.2 status reported to the framework in codec_specific_3 (bits 12-13): whether the
++// connected sink supports the R2.2 decoder. Informational; the stack does not read it.
++#define A2DP_APTX_ADAPTIVE_R2_2_STATUS_MASK 0x00003000
++#define A2DP_APTX_ADAPTIVE_R2_2_STATUS_NOT_AVAILABLE 0x00001000
++#define A2DP_APTX_ADAPTIVE_R2_2_STATUS_AVAILABLE 0x00002000
 +
 +// Channel mode
 +#define A2DP_APTX_ADAPTIVE_CHANNELS_MONO 0x01

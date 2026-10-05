@@ -62,6 +62,9 @@ Being explicit about the limits is the point of this section.
   Treat anything beyond the measured device as untested.
 * **Latency work applies to aptX Adaptive, not to Lossless.** A value above 360 ms at 44.1 kHz is
   expected and is not a defect.
+* **No TWS channel modes.** The TWS modes of aptX Adaptive (TWS stereo, TWS mono, TWS+) are not
+  offered. The true-wireless earbuds tested here use the regular stereo mode; a sink that offers only
+  TWS modes falls back to another codec.
 
 ## Requirements
 
@@ -280,8 +283,9 @@ A codec claim is only complete once the whole path has been looked at. In order:
 
 1. **Capability exchange (AVDTP).** The sink advertises what it can do; the phone picks a
    configuration and the sink confirms it. For Lossless the relevant bits are the sample-rate mask
-   and the vendor feature byte — the patch keeps the sink's own feature byte instead of overwriting
-   it, which is what made the DSP produce sound rather than silence.
+   and the vendor feature byte — the patch keeps the sink's own feature bits instead of overwriting
+   them (a locally selected configuration confirms only the features both sides support), which is
+   what made the DSP produce sound rather than silence.
 2. **Controller (vendor-specific commands).** Starting an offload stream on this controller needs a
    vendor command, and so does changing the mode of a *running* stream. The patch sends START/STOP
    around the session and `UPDATE_MODE` for changes in between, and only treats a mode as applied
