@@ -25,4 +25,4 @@ Keep the module files together. Kernel GPL/file terms and BBR's preserved
 Deutsch: V1.2 korrigiert eine Zeile im Kernpatch: `TCP_ECN_ECT_PERMANENT` ist jetzt `32`
 wie bei Google. Mit `3` blieb ECT bei ECN-Verbindungen auf reinen ACKs und
 Wiederholungen gesetzt. Zusatzpatch und Algorithmus sind unverändert;
-neuer Build und Geräteabnahme bleiben offen. `bbrv3-v1.0` und `v1.1` bleiben unverändert.
+neuer Build und Geräteabnahme bleiben offen.
