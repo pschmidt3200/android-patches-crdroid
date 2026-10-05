@@ -32,7 +32,7 @@ Each module is self-contained and focuses on a single feature:
 ## How to Install
 
 ### Step 1: Download the Module
-Choose the module you want from the [Releases page](https://github.com/pschmidt3200/android-patches-crdroid/releases) and download its `.zip` archive (e.g. `bluetooth-codec-ui-v1.2.zip` or `aptx-adaptive-v1.3.zip`).
+Choose the module you want from the [Releases page](https://github.com/pschmidt3200/android-patches-crdroid/releases) and download its `.zip` archive (e.g. `bluetooth-codec-ui-v1.2.zip` or `aptx-adaptive-v1.4.zip`).
 
 ### Step 2: Apply to Your crDroid Source Tree
 1. Extract the downloaded zip file anywhere outside or alongside your crDroid source tree.

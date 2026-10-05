@@ -19,7 +19,7 @@ with **FiiO BTR17** and **Bose QC Ultra 2 Earbuds**.
 
 Device check of this edition: FiiO BTR17 negotiates 44.1 kHz with feature byte `0x92` and
 plays aptX Lossless with sound; Bose QC Ultra 2 selects `0x97` and plays with sound;
-`codec_specific_3` reads `0x2000` on both. The long-term record of v1.3 covers the
+`codec_specific_3` reads `0x2000` on both. The long-term record of the previous edition covers the
 unchanged behaviour of these receivers; this edition has a short device check, not a
 new long-term run.
 
