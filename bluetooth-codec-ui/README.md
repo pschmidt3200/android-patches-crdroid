@@ -1,9 +1,9 @@
 # Bluetooth codec status, badges and selection for crDroid 16.0
 
 Settings patches that show the active Bluetooth audio codec and sample rate, and let you choose
-the codec and its sample rate. They are codec-independent: everything shown or offered comes from the
-Bluetooth stack and the connected device, for example SBC, AAC, aptX, aptX HD, LDAC or — when
-the stack provides it — aptX Adaptive.
+the codec and its sample rate — for LE Audio also the frame duration. They are codec-independent:
+everything shown or offered comes from the Bluetooth stack and the connected device, for example
+SBC, AAC, aptX, aptX HD, LDAC or — when the stack provides it — aptX Adaptive, and LC3 over LE Audio.
 
 **ROM scope:** This package is currently intended only for **crDroid 16.0** (Android 16).
 Support for other ROMs has not been established.
@@ -19,7 +19,8 @@ German version: [README.de.md](README.de.md)
 | **Codec status** | SettingsLib can read the active codec configuration of a device and refreshes the device entry when it changes |
 | **Codec badge** | the device list shows the active codec and rate, for example `[aptX Adaptive 44.1 kHz]` |
 | **Codec dialog** | in the device details, the media audio row opens a dialog with the codecs the device offers |
-| **Audio codec entry** | the Connected devices page displays an *Audio codec* entry for the active A2DP device, showing the current codec and sample rate, with codec selection; a *Sample rate* row below it lets you choose one of the rates the device offers for the current codec (shown when there are at least two) |
+| **Audio codec entry** | the Connected devices page displays an *Audio codec* entry for the active A2DP device or LE Audio group, showing the current configuration, with codec selection; a *Sample rate* row below it lets you choose one of the rates the device offers for the current codec (shown when there are at least two) |
+| **LE Audio rows** | for an LE Audio group the entry shows codec, sample rate, frame duration and octets per frame; a *Frame duration* row offers 7.5 and 10 ms where the device supports both; an *Octets per frame* row appears only when the stack reports valid limits |
 
 The standalone entry exists because the device details are not always reachable: for devices
 that also support LE Audio, Android hides the media audio row, and for devices with a companion
@@ -33,6 +34,15 @@ app the details page is defined by that app.
 * Only codecs and sample rates that the stack reports as selectable for the device are offered.
 * A selection applies to the current connection. After a reconnect the codec is negotiated again.
 * While LE Audio is the active route for the device, no A2DP request is sent.
+* For an LE Audio group, the codec type and optionally the sample rate or frame duration are
+  requested through the system API `BluetoothLeAudio.setCodecConfigPreference` for the active
+  group; the input (microphone) direction stays automatic. Choices are validated against
+  complete selectable capabilities of the device, and the entry shows the configuration read back
+  from the stack, not the value that was tapped.
+* Whether an LE Audio choice reaches the stream is decided by the stack. On crDroid 16.0 this needs
+  the [`le-audio-fixes`](../le-audio-fixes/README.md) module (configuration matcher and Media
+  configurations); without it the stream stays on its default configuration and the entry shows
+  that.
 * Components that change the codec configuration themselves, such as a game mode, may later
   replace a manual choice.
 
@@ -61,7 +71,7 @@ to the Android source root. Patches 2 to 4 need patch 1; patch 4 is applied afte
 | 1 | [crdroid_framework_settingslib_codec_status.patch](patches/crdroid_framework_settingslib_codec_status.patch) | `frameworks/base` | SettingsLib codec status and refresh |
 | 2 | [crdroid_settings_bluetooth_codec_badges.patch](patches/crdroid_settings_bluetooth_codec_badges.patch) | `packages/apps/Settings` | Codec badges in the device list |
 | 3 | [crdroid_settings_bluetooth_codec_menu.patch](patches/crdroid_settings_bluetooth_codec_menu.patch) | `packages/apps/Settings` | Codec dialog in the device details |
-| 4 | [crdroid_settings_bluetooth_codec_entry.patch](patches/crdroid_settings_bluetooth_codec_entry.patch) | `packages/apps/Settings` | *Audio codec* entry with codec and sample-rate choice |
+| 4 | [crdroid_settings_bluetooth_codec_entry.patch](patches/crdroid_settings_bluetooth_codec_entry.patch) | `packages/apps/Settings` | *Audio codec* entry with codec, sample-rate and (LE Audio) frame-duration choice |
 
 ---
 
@@ -150,7 +160,9 @@ A patch file is not flashed directly: installing these changes requires a newly 
 2. Open *Audio codec* on the Connected devices page, choose another codec and check that the
    badge and the entry show the new configuration after the stack has applied it.
 3. Choose other sample rates in the *Sample rate* row; check the read-back each time.
-4. Disconnect and reconnect: the codec is negotiated again and the entry follows.
+4. For an LE Audio receiver, also choose another frame duration and compare the entry with
+   `adb shell dumpsys bluetooth_manager` (`Stream config`).
+5. Disconnect and reconnect: the codec is negotiated again and the entry follows.
 
 ## Licence and source baselines
 

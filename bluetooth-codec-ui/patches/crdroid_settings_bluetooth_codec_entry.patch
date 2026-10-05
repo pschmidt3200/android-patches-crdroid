@@ -1,7 +1,7 @@
 # Target repository: packages/apps/Settings
 #
-# Settings: standalone "Audio codec" entry for the active A2DP device on the
-# connected devices page, with codec and sample-rate selection. It also works
+# Settings: standalone "Audio codec" entry for the active A2DP device or LE
+# audio group, with live status and validated configuration choices. It works
 # when the device details hide the media audio row. Apply after
 # crdroid_settings_bluetooth_codec_menu.patch.
 #
@@ -75,34 +75,44 @@ index 00000000000..723f42af54a
 +</vector>
 diff --git a/res/values-de/bluetooth_codec_sample_rate_strings.xml b/res/values-de/bluetooth_codec_sample_rate_strings.xml
 new file mode 100644
-index 00000000000..3d1764a953e
+index 00000000000..bcf6b82a50a
 --- /dev/null
 +++ b/res/values-de/bluetooth_codec_sample_rate_strings.xml
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,10 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<resources>
 +    <string name="bluetooth_codec_sample_rate_title">Abtastrate</string>
 +    <string name="bluetooth_codec_sample_rate_value">%1$s kHz</string>
++    <string name="bluetooth_codec_le_current">LE Audio · %1$s · %2$s · %3$s · %4$s</string>
++    <string name="bluetooth_codec_le_frame_title">Frame-Dauer</string>
++    <string name="bluetooth_codec_le_frame_value">%1$s ms</string>
++    <string name="bluetooth_codec_le_octets_title">Octets pro Frame</string>
++    <string name="bluetooth_codec_le_octets_value">%1$d Octets/Frame</string>
 +</resources>
 diff --git a/res/values/bluetooth_codec_sample_rate_strings.xml b/res/values/bluetooth_codec_sample_rate_strings.xml
 new file mode 100644
-index 00000000000..4d406bfe3a3
+index 00000000000..d0ff7c5fec8
 --- /dev/null
 +++ b/res/values/bluetooth_codec_sample_rate_strings.xml
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,10 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<resources>
 +    <string name="bluetooth_codec_sample_rate_title">Sample rate</string>
 +    <string name="bluetooth_codec_sample_rate_value">%1$s kHz</string>
++    <string name="bluetooth_codec_le_current">LE Audio · %1$s · %2$s · %3$s · %4$s</string>
++    <string name="bluetooth_codec_le_frame_title">Frame duration</string>
++    <string name="bluetooth_codec_le_frame_value">%1$s ms</string>
++    <string name="bluetooth_codec_le_octets_title">Octets per frame</string>
++    <string name="bluetooth_codec_le_octets_value">%1$d octets/frame</string>
 +</resources>
 diff --git a/res/xml/connected_devices.xml b/res/xml/connected_devices.xml
-index 05de0d624b7..cfd37a8b83f 100644
 --- a/res/xml/connected_devices.xml
 +++ b/res/xml/connected_devices.xml
-@@ -47,6 +47,22 @@
+@@ -46,6 +46,34 @@
+         android:key="available_device_list"
          android:title="@string/connected_device_media_device_title"
          settings:controller="com.android.settings.connecteddevice.AvailableMediaDeviceGroupController" />
- 
++
 +    <com.android.settingslib.widget.UntitledPreferenceCategory>
 +      <Preference
 +          android:icon="@drawable/ic_bluetooth_codec"
@@ -117,17 +127,28 @@ index 05de0d624b7..cfd37a8b83f 100644
 +          android:title="@string/bluetooth_codec_sample_rate_title"
 +          android:summary="@string/summary_placeholder"
 +          settings:searchable="false" />
++      <Preference
++          android:icon="@drawable/ic_bluetooth_sample_rate"
++          android:key="bluetooth_audio_frame_duration_entry"
++          android:title="@string/bluetooth_codec_le_frame_title"
++          android:summary="@string/summary_placeholder"
++          settings:searchable="false" />
++      <Preference
++          android:icon="@drawable/ic_bluetooth_sample_rate"
++          android:key="bluetooth_audio_octets_entry"
++          android:title="@string/bluetooth_codec_le_octets_title"
++          android:summary="@string/summary_placeholder"
++          settings:searchable="false" />
 +    </com.android.settingslib.widget.UntitledPreferenceCategory>
-+
+ 
      <PreferenceCategory
          android:key="connected_device_list"
-         android:title="@string/connected_device_other_device_title"
 diff --git a/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
 new file mode 100644
-index 00000000000..3f420dab720
+index 00000000000..689170129f6
 --- /dev/null
 +++ b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
-@@ -0,0 +1,457 @@
+@@ -0,0 +1,904 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -150,6 +171,9 @@ index 00000000000..3f420dab720
 +import android.bluetooth.BluetoothCodecStatus;
 +import android.bluetooth.BluetoothCodecType;
 +import android.bluetooth.BluetoothDevice;
++import android.bluetooth.BluetoothLeAudio;
++import android.bluetooth.BluetoothLeAudioCodecConfig;
++import android.bluetooth.BluetoothLeAudioCodecStatus;
 +import android.bluetooth.BluetoothManager;
 +import android.bluetooth.BluetoothProfile;
 +import android.content.Context;
@@ -173,7 +197,7 @@ index 00000000000..3f420dab720
 +import java.util.Set;
 +import java.util.function.BooleanSupplier;
 +
-+/** Shared codec status, dialog and A2DP proxy lifecycle for Settings entry points. */
++/** Shared A2DP/LE status and dialogs, with separately owned profile proxies. */
 +public final class BluetoothCodecDialogController implements CachedBluetoothDevice.Callback {
 +    private static final String TAG = "BluetoothCodecDialog";
 +    private final Context mContext;
@@ -190,6 +214,15 @@ index 00000000000..3f420dab720
 +    private List<BluetoothCodecType> mDialogTypes = Collections.emptyList();
 +    private List<Integer> mDialogRates = Collections.emptyList();
 +    private BluetoothCodecType mDialogRateCodec;
++    private BluetoothLeAudio mOwnedLeProxy;
++    private BluetoothLeAudio mBluetoothLeAudio;
++    private BluetoothLeAudio.Callback mLeCallback;
++    private boolean mLeProxyPending;
++    private AlertDialog mLeDialog;
++    private int mLeDialogGroupId = -1;
++    private int mLeDialogCodecType;
++    private LeParameter mLeDialogParameter;
++    private List<BluetoothLeAudioCodecConfig> mLeDialogOptions = Collections.emptyList();
 +    @VisibleForTesting BluetoothAdapter mBluetoothAdapter;
 +    @VisibleForTesting BluetoothA2dp mBluetoothA2dp;
 +    @VisibleForTesting BluetoothProfile.ServiceListener mA2dpServiceListener;
@@ -214,10 +247,12 @@ index 00000000000..3f420dab720
 +        unregisterDeviceCallbacks();
 +        dismissDialog();
 +        closeProxy();
++        closeLeProxy();
 +        mTarget = target;
 +        if (mResumed) {
 +            registerDeviceCallbacks();
 +            requestProxy();
++            requestLeProxy();
 +        }
 +    }
 +
@@ -226,6 +261,7 @@ index 00000000000..3f420dab720
 +        mResumed = true;
 +        registerDeviceCallbacks();
 +        requestProxy();
++        requestLeProxy();
 +        refresh();
 +    }
 +
@@ -235,6 +271,7 @@ index 00000000000..3f420dab720
 +        unregisterDeviceCallbacks();
 +        dismissDialog();
 +        closeProxy();
++        closeLeProxy();
 +    }
 +
 +    private Set<CachedBluetoothDevice> getDeviceGroup() {
@@ -307,11 +344,15 @@ index 00000000000..3f420dab720
 +    }
 +
 +    public boolean canShowDialog() {
++        if (isLeAudioRoute()) {
++            return mResumed && !LeOptions.of(getLeCodecStatus(), LeParameter.CODEC).isEmpty();
++        }
 +        return mResumed && mBluetoothA2dp != null
 +                && !getSelectableCodecTypes(getCodecStatus()).isEmpty();
 +    }
 +
 +    public CharSequence getSummary() {
++        if (isLeAudioRoute()) return getLeSummary();
 +        BluetoothCodecStatus status = getCodecStatus();
 +        BluetoothCodecConfig current = status == null ? null : status.getCodecConfig();
 +        if (current == null || current.getExtendedCodecType() == null) {
@@ -397,6 +438,10 @@ index 00000000000..3f420dab720
 +
 +    public void showDialog() {
 +        dismissDialog();
++        if (isLeAudioRoute()) {
++            showLeChoices(LeParameter.CODEC);
++            return;
++        }
 +        if (!canShowDialog()) return;
 +        BluetoothCodecStatus status = getCodecStatus();
 +        List<BluetoothCodecType> types = getSelectableCodecTypes(status);
@@ -458,11 +503,19 @@ index 00000000000..3f420dab720
 +
 +    /** True when the current codec offers a choice, i.e. at least two sample rates. */
 +    public boolean canShowSampleRateDialog() {
++        if (isLeAudioRoute()) {
++            return mResumed && LeOptions.of(getLeCodecStatus(), LeParameter.RATE).size() > 1;
++        }
 +        return canShowDialog() && getSelectableSampleRates(getCodecStatus()).size() > 1;
 +    }
 +
 +    /** Read-back sample rate of the active codec; "unavailable" when the stack reports none. */
 +    public CharSequence getSampleRateSummary() {
++        if (isLeAudioRoute()) {
++            BluetoothLeAudioCodecStatus status = getLeCodecStatus();
++            BluetoothLeAudioCodecConfig current = status == null ? null : status.getOutputCodecConfig();
++            return leRateLabel(current == null ? 0 : current.getSampleRate());
++        }
 +        BluetoothCodecStatus status = getCodecStatus();
 +        BluetoothCodecConfig current = status == null ? null : status.getCodecConfig();
 +        int rateHz = current == null ? 0 : getSampleRateHz(current.getSampleRate());
@@ -473,6 +526,10 @@ index 00000000000..3f420dab720
 +
 +    public void showSampleRateDialog() {
 +        dismissDialog();
++        if (isLeAudioRoute()) {
++            showLeChoices(LeParameter.RATE);
++            return;
++        }
 +        if (!canShowDialog()) return;
 +        BluetoothCodecStatus status = getCodecStatus();
 +        List<Integer> rates = getSelectableSampleRates(status);
@@ -511,6 +568,7 @@ index 00000000000..3f420dab720
 +
 +    public void refresh() {
 +        if (mResumed) registerDeviceCallbacks();
++        if (mLeDialog != null) refreshLeDialog();
 +        if (mDialog == null) return;
 +        BluetoothCodecStatus status = getCodecStatus();
 +        if (mDialogRateCodec != null) {
@@ -537,6 +595,7 @@ index 00000000000..3f420dab720
 +    }
 +
 +    private void dismissDialog() {
++        dismissLeDialog();
 +        if (mDialog == null) return;
 +        AlertDialog dialog = mDialog;
 +        mDialog = null;
@@ -584,13 +643,422 @@ index 00000000000..3f420dab720
 +            mBluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, proxy);
 +        }
 +    }
++
++    private boolean isLeAudioRoute() {
++        return getDeviceGroup().stream()
++                .anyMatch(device -> device.isActiveDevice(BluetoothProfile.LE_AUDIO));
++    }
++
++    private int getLeGroupId() {
++        if (!mResumed || mBluetoothLeAudio == null || mTarget == null || !isLeAudioRoute()) return -1;
++        try {
++            return mBluetoothLeAudio.getGroupId(mTarget.getDevice());
++        } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
++            Log.w(TAG, "LE group unavailable", e);
++            return -1;
++        }
++    }
++
++    private BluetoothLeAudioCodecStatus getLeCodecStatus() {
++        int groupId = getLeGroupId();
++        if (groupId < 0 || mTarget.isBusy()
++                || getDeviceGroup().stream().anyMatch(CachedBluetoothDevice::isBusy)) return null;
++        try {
++            boolean connected = getDeviceGroup().stream().anyMatch(device ->
++                    mBluetoothLeAudio.getConnectionState(device.getDevice()) == BluetoothProfile.STATE_CONNECTED);
++            return connected ? mBluetoothLeAudio.getCodecStatus(groupId) : null;
++        } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
++            Log.w(TAG, "LE codec status unavailable", e);
++            return null;
++        }
++    }
++
++    private String leCodecName(int type) {
++        return switch (type) {
++            case BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_LC3 -> "LC3";
++            case BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_OPUS -> "Opus";
++            case BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_OPUS_HI_RES -> "Opus Hi-res";
++            default -> mContext.getString(R.string.bluetooth_codec_menu_unavailable);
++        };
++    }
++
++    private String leRateLabel(int rate) {
++        int rateHz = LeOptions.rateHz(rate);
++        return rateHz == 0 ? mContext.getString(R.string.bluetooth_codec_menu_unavailable)
++                : mContext.getString(R.string.bluetooth_codec_sample_rate_value, formatSampleRate(rateHz));
++    }
++
++    private String leFrameLabel(int frame) {
++        int frameUs = LeOptions.frameUs(frame);
++        // Microseconds to milliseconds; only scalar reported durations are displayed.
++        return frameUs == 0 ? mContext.getString(R.string.bluetooth_codec_menu_unavailable)
++                : mContext.getString(R.string.bluetooth_codec_le_frame_value,
++                        NumberFormat.getNumberInstance(mContext.getResources().getConfiguration()
++                                .getLocales().get(0)).format(frameUs / 1000.0));
++    }
++
++    private CharSequence getLeSummary() {
++        BluetoothLeAudioCodecStatus status = getLeCodecStatus();
++        BluetoothLeAudioCodecConfig current = status == null ? null : status.getOutputCodecConfig();
++        if (current == null) return mContext.getString(R.string.bluetooth_codec_menu_unavailable);
++        String octets = current.getOctetsPerFrame() > 0
++                ? mContext.getString(R.string.bluetooth_codec_le_octets_value, current.getOctetsPerFrame())
++                : mContext.getString(R.string.bluetooth_codec_menu_unavailable);
++        return mContext.getString(R.string.bluetooth_codec_le_current, leCodecName(current.getCodecType()),
++                leRateLabel(current.getSampleRate()), leFrameLabel(current.getFrameDuration()), octets);
++    }
++
++    private int leTitle(LeParameter parameter) {
++        return switch (parameter) {
++            case CODEC -> R.string.bluetooth_codec_menu_title;
++            case RATE -> R.string.bluetooth_codec_sample_rate_title;
++            case FRAME -> R.string.bluetooth_codec_le_frame_title;
++            case OCTETS -> R.string.bluetooth_codec_le_octets_title;
++        };
++    }
++
++    private String leLabel(BluetoothLeAudioCodecConfig option, LeParameter parameter) {
++        return switch (parameter) {
++            case CODEC -> leCodecName(option.getCodecType());
++            case RATE -> leRateLabel(option.getSampleRate());
++            case FRAME -> leFrameLabel(option.getFrameDuration());
++            case OCTETS -> mContext.getString(R.string.bluetooth_codec_le_octets_value, option.getOctetsPerFrame());
++        };
++    }
++
++    public boolean canShowFrameDurationDialog() {
++        return mResumed && isLeAudioRoute()
++                && LeOptions.of(getLeCodecStatus(), LeParameter.FRAME).size() > 1;
++    }
++
++    public CharSequence getFrameDurationSummary() {
++        BluetoothLeAudioCodecStatus status = getLeCodecStatus();
++        BluetoothLeAudioCodecConfig current = status == null ? null : status.getOutputCodecConfig();
++        return leFrameLabel(current == null ? 0 : current.getFrameDuration());
++    }
++
++    public void showFrameDurationDialog() {
++        if (canShowFrameDurationDialog()) showLeChoices(LeParameter.FRAME);
++    }
++
++    public boolean canShowOctetsDialog() {
++        return mResumed && isLeAudioRoute()
++                && LeOptions.of(getLeCodecStatus(), LeParameter.OCTETS).size() > 1;
++    }
++
++    public CharSequence getOctetsSummary() {
++        BluetoothLeAudioCodecStatus status = getLeCodecStatus();
++        BluetoothLeAudioCodecConfig current = status == null ? null : status.getOutputCodecConfig();
++        return current == null || current.getOctetsPerFrame() <= 0
++                ? mContext.getString(R.string.bluetooth_codec_menu_unavailable)
++                : mContext.getString(R.string.bluetooth_codec_le_octets_value, current.getOctetsPerFrame());
++    }
++
++    public void showOctetsDialog() {
++        if (canShowOctetsDialog()) showLeChoices(LeParameter.OCTETS);
++    }
++
++    private void showLeChoices(LeParameter parameter) {
++        dismissDialog();
++        BluetoothLeAudioCodecStatus status = getLeCodecStatus();
++        List<BluetoothLeAudioCodecConfig> options = LeOptions.of(status, parameter);
++        if (options.isEmpty()) return;
++        final int groupId = getLeGroupId();
++        final int generation = mGeneration;
++        final int type = status.getOutputCodecConfig().getCodecType();
++        int currentValue = LeOptions.value(status.getOutputCodecConfig(), parameter);
++        int selected = -1;
++        for (int index = 0; index < options.size(); index++) {
++            if (LeOptions.value(options.get(index), parameter) == currentValue) selected = index;
++        }
++        CharSequence[] labels = options.stream().map(option -> leLabel(option, parameter))
++                .toArray(CharSequence[]::new);
++        AlertDialog dialog = new AlertDialog.Builder(mContext).setTitle(leTitle(parameter))
++                .setSingleChoiceItems(labels, selected, (ignored, index) -> {
++                    dismissLeDialog();
++                    if (index >= 0 && index < options.size()) {
++                        requestLePreference(groupId, generation, type, parameter, options.get(index));
++                    }
++                }).setNegativeButton(android.R.string.cancel, null).create();
++        mLeDialog = dialog;
++        mLeDialogGroupId = groupId;
++        mLeDialogCodecType = type;
++        mLeDialogParameter = parameter;
++        mLeDialogOptions = List.copyOf(options);
++        dialog.setOnDismissListener(ignored -> {
++            if (mLeDialog == dialog) dismissLeDialog();
++        });
++        dialog.show();
++    }
++
++    @VisibleForTesting
++    boolean requestLePreference(int groupId, int generation, int codecType, LeParameter parameter,
++            BluetoothLeAudioCodecConfig output) {
++        if (!mResumed || mBluetoothLeAudio == null || generation != mGeneration
++                || groupId < 0 || groupId != getLeGroupId()) return false;
++        BluetoothLeAudioCodecStatus fresh = getLeCodecStatus();
++        if (fresh == null || fresh.getOutputCodecConfig() == null
++                || fresh.getOutputCodecConfig().getCodecType() != codecType
++                || !LeOptions.of(fresh, parameter).contains(output)) return false;
++        try {
++            mBluetoothLeAudio.setCodecConfigPreference(groupId, LeOptions.inputFor(output), output);
++        } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
++            Log.w(TAG, "LE codec preference rejected", e);
++            return false;
++        }
++        // A submitted preference is not the stream status. Poll/callback readback supplies the UI.
++        refresh();
++        mOnStateChanged.run();
++        return true;
++    }
++
++    private void refreshLeDialog() {
++        BluetoothLeAudioCodecStatus status = getLeCodecStatus();
++        if (status == null || status.getOutputCodecConfig() == null
++                || mLeDialogGroupId != getLeGroupId()
++                || mLeDialogCodecType != status.getOutputCodecConfig().getCodecType()) {
++            dismissLeDialog();
++            return;
++        }
++        if (!LeOptions.of(status, mLeDialogParameter).equals(mLeDialogOptions)) {
++            dismissLeDialog();
++            return;
++        }
++        int current = LeOptions.value(status.getOutputCodecConfig(), mLeDialogParameter);
++        mLeDialog.getListView().clearChoices();
++        for (int index = 0; index < mLeDialogOptions.size(); index++) {
++            if (LeOptions.value(mLeDialogOptions.get(index), mLeDialogParameter) == current) {
++                mLeDialog.getListView().setItemChecked(index, true);
++            }
++        }
++    }
++
++    private void dismissLeDialog() {
++        AlertDialog dialog = mLeDialog;
++        mLeDialog = null;
++        mLeDialogGroupId = -1;
++        mLeDialogParameter = null;
++        mLeDialogOptions = Collections.emptyList();
++        if (dialog != null) dialog.dismiss();
++    }
++
++    private void requestLeProxy() {
++        if (!mResumed || mTarget == null || mBluetoothAdapter == null
++                || mOwnedLeProxy != null || mLeProxyPending) return;
++        final int generation = mGeneration;
++        mLeProxyPending = true;
++        BluetoothProfile.ServiceListener listener = new BluetoothProfile.ServiceListener() {
++            @Override
++            public void onServiceConnected(int profile, BluetoothProfile proxy) {
++                if (profile != BluetoothProfile.LE_AUDIO || !(proxy instanceof BluetoothLeAudio leAudio)) return;
++                if (!mResumed || generation != mGeneration) {
++                    if (proxy != mOwnedLeProxy) mBluetoothAdapter.closeProfileProxy(BluetoothProfile.LE_AUDIO, proxy);
++                    return;
++                }
++                if (mOwnedLeProxy == leAudio && mLeCallback != null) {
++                    mLeProxyPending = false;
++                    return;
++                }
++                closeLeProxy();
++                mOwnedLeProxy = leAudio;
++                mBluetoothLeAudio = leAudio;
++                BluetoothLeAudio.Callback callback = new BluetoothLeAudio.Callback() {
++                    private void changed() {
++                        if (mResumed && generation == mGeneration && mBluetoothLeAudio == leAudio) {
++                            refresh();
++                            mOnStateChanged.run();
++                        }
++                    }
++                    @Override public void onCodecConfigChanged(int groupId, BluetoothLeAudioCodecStatus status) {
++                        if (groupId == getLeGroupId()) changed();
++                    }
++                    @Override public void onGroupNodeAdded(BluetoothDevice device, int groupId) { changed(); }
++                    @Override public void onGroupNodeRemoved(BluetoothDevice device, int groupId) { changed(); }
++                    @Override public void onGroupStatusChanged(int groupId, int groupStatus) { changed(); }
++                };
++                try {
++                    leAudio.registerCallback(mContext.getMainExecutor(), callback);
++                    mLeCallback = callback;
++                } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
++                    Log.w(TAG, "LE callback registration rejected", e);
++                    closeLeProxy();
++                }
++                refresh();
++                mOnStateChanged.run();
++            }
++            @Override
++            public void onServiceDisconnected(int profile) {
++                if (profile == BluetoothProfile.LE_AUDIO && generation == mGeneration) {
++                    dismissLeDialog();
++                    closeLeProxy();
++                    mOnStateChanged.run();
++                }
++            }
++        };
++        try {
++            mLeProxyPending = mBluetoothAdapter.getProfileProxy(mContext, listener, BluetoothProfile.LE_AUDIO);
++        } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
++            mLeProxyPending = false;
++            Log.w(TAG, "LE proxy unavailable", e);
++        }
++    }
++
++    private void closeLeProxy() {
++        BluetoothLeAudio proxy = mOwnedLeProxy;
++        BluetoothLeAudio.Callback callback = mLeCallback;
++        mOwnedLeProxy = null;
++        mBluetoothLeAudio = null;
++        mLeCallback = null;
++        mLeProxyPending = false;
++        if (proxy == null) return;
++        if (callback != null) {
++            try {
++                proxy.unregisterCallback(callback);
++            } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
++                Log.w(TAG, "LE callback already unavailable", e);
++            }
++        }
++        if (mBluetoothAdapter != null) mBluetoothAdapter.closeProfileProxy(BluetoothProfile.LE_AUDIO, proxy);
++    }
++
++    enum LeParameter { CODEC, RATE, FRAME, OCTETS }
++
++    /** LE choices are per direction and configuration, never a union of unrelated PAC records. */
++    static final class LeOptions {
++        static boolean known(int type) {
++            return type == BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_LC3
++                    || type == BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_OPUS
++                    || type == BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_OPUS_HI_RES;
++        }
++
++        static BluetoothLeAudioCodecConfig inputFor(BluetoothLeAudioCodecConfig output) {
++            // The microphone has its own rate/frame limits; do not copy sink parameters to it.
++            return new BluetoothLeAudioCodecConfig.Builder().setCodecType(output.getCodecType())
++                    .setCodecPriority(BluetoothLeAudioCodecConfig.CODEC_PRIORITY_HIGHEST).build();
++        }
++
++        private static List<BluetoothLeAudioCodecConfig> enabled(
++                List<BluetoothLeAudioCodecConfig> capabilities) {
++            List<BluetoothLeAudioCodecConfig> result = new ArrayList<>();
++            if (capabilities == null) return result;
++            for (BluetoothLeAudioCodecConfig capability : capabilities) {
++                if (capability != null && known(capability.getCodecType())
++                        && capability.getCodecPriority()
++                                != BluetoothLeAudioCodecConfig.CODEC_PRIORITY_DISABLED) {
++                    result.add(capability);
++                }
++            }
++            return result;
++        }
++
++        static boolean selectable(BluetoothLeAudioCodecStatus status,
++                BluetoothLeAudioCodecConfig output) {
++            if (status == null || output == null || !known(output.getCodecType())) return false;
++            BluetoothLeAudioCodecStatus filtered = new BluetoothLeAudioCodecStatus(
++                    status.getInputCodecConfig(), status.getOutputCodecConfig(),
++                    Collections.emptyList(), Collections.emptyList(),
++                    enabled(status.getInputCodecSelectableCapabilities()),
++                    enabled(status.getOutputCodecSelectableCapabilities()));
++            return filtered.isInputCodecConfigSelectable(inputFor(output))
++                    && filtered.isOutputCodecConfigSelectable(output);
++        }
++
++        static int rateHz(int rate) {
++            return switch (rate) {
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_8000 -> 8000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_11025 -> 11025;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_16000 -> 16000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_22050 -> 22050;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_24000 -> 24000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_32000 -> 32000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_44100 -> 44100;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_48000 -> 48000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_88200 -> 88200;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_96000 -> 96000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_176400 -> 176400;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_192000 -> 192000;
++                case BluetoothLeAudioCodecConfig.SAMPLE_RATE_384000 -> 384000;
++                default -> 0;
++            };
++        }
++
++        static int frameUs(int frame) {
++            return switch (frame) {
++                case BluetoothLeAudioCodecConfig.FRAME_DURATION_7500 -> 7500;
++                case BluetoothLeAudioCodecConfig.FRAME_DURATION_10000 -> 10000;
++                default -> 0;
++            };
++        }
++
++        static int value(BluetoothLeAudioCodecConfig config, LeParameter parameter) {
++            return switch (parameter) {
++                case CODEC -> config.getCodecType();
++                case RATE -> config.getSampleRate();
++                case FRAME -> config.getFrameDuration();
++                case OCTETS -> config.getOctetsPerFrame();
++            };
++        }
++
++        static List<BluetoothLeAudioCodecConfig> of(
++                BluetoothLeAudioCodecStatus status, LeParameter parameter) {
++            List<BluetoothLeAudioCodecConfig> result = new ArrayList<>();
++            BluetoothLeAudioCodecConfig current = status == null ? null : status.getOutputCodecConfig();
++            if (current == null || !known(current.getCodecType())) return result;
++            List<Integer> values = new ArrayList<>();
++            switch (parameter) {
++                case CODEC -> values.addAll(List.of(
++                        BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_LC3,
++                        BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_OPUS,
++                        BluetoothLeAudioCodecConfig.SOURCE_CODEC_TYPE_OPUS_HI_RES));
++                case RATE -> {
++                    // The 13 rates are individual bits in the documented LE frequency mask.
++                    for (int bit = 0; bit < 13; bit++) values.add(1 << bit);
++                }
++                case FRAME -> values.addAll(List.of(
++                        BluetoothLeAudioCodecConfig.FRAME_DURATION_7500,
++                        BluetoothLeAudioCodecConfig.FRAME_DURATION_10000));
++                case OCTETS -> {
++                    if (rateHz(current.getSampleRate()) == 0
++                            || frameUs(current.getFrameDuration()) == 0) return result;
++                    for (BluetoothLeAudioCodecConfig capability :
++                            enabled(status.getOutputCodecSelectableCapabilities())) {
++                        int min = capability.getMinOctetsPerFrame();
++                        int max = capability.getMaxOctetsPerFrame();
++                        // Zero means unreported; native requests carry a uint16_t, not an int.
++                        if (min > 0 && max >= min && max <= 65535) {
++                            values.add(min);
++                            values.add(current.getOctetsPerFrame());
++                            values.add(max);
++                        }
++                    }
++                    values.sort(Integer::compare);
++                }
++            }
++            for (int value : values) {
++                if (parameter == LeParameter.OCTETS && value <= 0) continue;
++                int type = parameter == LeParameter.CODEC ? value : current.getCodecType();
++                int rate = parameter == LeParameter.RATE ? value
++                        : parameter == LeParameter.CODEC ? 0
++                        : rateHz(current.getSampleRate()) == 0 ? 0 : current.getSampleRate();
++                int frame = parameter == LeParameter.FRAME ? value
++                        : parameter == LeParameter.CODEC ? 0
++                        : frameUs(current.getFrameDuration()) == 0 ? 0 : current.getFrameDuration();
++                BluetoothLeAudioCodecConfig output = new BluetoothLeAudioCodecConfig.Builder()
++                        .setCodecType(type).setSampleRate(rate).setFrameDuration(frame)
++                        .setOctetsPerFrame(parameter == LeParameter.OCTETS ? value : 0)
++                        .setCodecPriority(BluetoothLeAudioCodecConfig.CODEC_PRIORITY_HIGHEST).build();
++                if (selectable(status, output) && !result.contains(output)) result.add(output);
++            }
++            return result;
++        }
++    }
 +}
 diff --git a/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java b/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java
 new file mode 100644
-index 00000000000..f157723bac2
+index 00000000000..31b7351a3e8
 --- /dev/null
 +++ b/src/com/android/settings/bluetooth/BluetoothCodecEntryPreferenceController.java
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,264 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -623,23 +1091,28 @@ index 00000000000..f157723bac2
 +import com.android.settingslib.bluetooth.BluetoothCallback;
 +import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 +import com.android.settingslib.bluetooth.LocalBluetoothManager;
++import com.android.settingslib.bluetooth.LeAudioProfile;
 +
 +/**
-+ * "Audio codec" entry on the Connected devices page for the active A2DP device.
++ * "Audio codec" entry on the Connected devices page for the active A2DP or LE group.
 + *
 + * <p>Device details cannot host this entry for every sink: dual-mode devices lose the A2DP row
 + * and vendor-configured detail layouts hide the profile list. This entry depends only on the
-+ * active A2DP device and reuses {@link BluetoothCodecDialogController}.
++ * active audio device and reuses {@link BluetoothCodecDialogController}.
 + */
 +public class BluetoothCodecEntryPreferenceController extends BasePreferenceController
 +        implements DefaultLifecycleObserver, BluetoothCallback {
 +    /** Sample-rate row below the codec entry; it has no controller of its own. */
 +    static final String KEY_SAMPLE_RATE = "bluetooth_audio_sample_rate_entry";
++    static final String KEY_FRAME_DURATION = "bluetooth_audio_frame_duration_entry";
++    static final String KEY_OCTETS = "bluetooth_audio_octets_entry";
 +
 +    @Nullable private final LocalBluetoothManager mManager;
 +    @Nullable private BluetoothCodecDialogController mCodecController;
 +    @Nullable private Preference mPreference;
 +    @Nullable private Preference mSampleRatePreference;
++    @Nullable private Preference mFrameDurationPreference;
++    @Nullable private Preference mOctetsPreference;
 +    @Nullable private CachedBluetoothDevice mTarget;
 +    private boolean mStarted;
 +
@@ -659,9 +1132,13 @@ index 00000000000..f157723bac2
 +        super.displayPreference(screen);
 +        mPreference = screen.findPreference(getPreferenceKey());
 +        mSampleRatePreference = screen.findPreference(KEY_SAMPLE_RATE);
++        mFrameDurationPreference = screen.findPreference(KEY_FRAME_DURATION);
++        mOctetsPreference = screen.findPreference(KEY_OCTETS);
 +        if (mSampleRatePreference != null) {
 +            mSampleRatePreference.setVisible(false);
 +        }
++        if (mFrameDurationPreference != null) mFrameDurationPreference.setVisible(false);
++        if (mOctetsPreference != null) mOctetsPreference.setVisible(false);
 +        if (mPreference == null || mManager == null) {
 +            return;
 +        }
@@ -699,6 +1176,18 @@ index 00000000000..f157723bac2
 +
 +    @Override
 +    public boolean handlePreferenceTreeClick(Preference preference) {
++        if (TextUtils.equals(preference.getKey(), KEY_FRAME_DURATION)) {
++            if (mCodecController != null && preference.isEnabled()) {
++                mCodecController.showFrameDurationDialog();
++            }
++            return true;
++        }
++        if (TextUtils.equals(preference.getKey(), KEY_OCTETS)) {
++            if (mCodecController != null && preference.isEnabled()) {
++                mCodecController.showOctetsDialog();
++            }
++            return true;
++        }
 +        if (TextUtils.equals(preference.getKey(), KEY_SAMPLE_RATE)) {
 +            if (mCodecController != null && preference.isEnabled()) {
 +                mCodecController.showSampleRateDialog();
@@ -760,14 +1249,22 @@ index 00000000000..f157723bac2
 +        if (mCodecController == null) {
 +            return;
 +        }
-+        mTarget = findActiveA2dpDevice();
++        mTarget = findActiveAudioDevice();
 +        mCodecController.setTarget(mTarget);
 +    }
 +
 +    @Nullable
-+    private CachedBluetoothDevice findActiveA2dpDevice() {
++    private CachedBluetoothDevice findActiveAudioDevice() {
 +        if (mManager == null) {
 +            return null;
++        }
++        LeAudioProfile leAudio = mManager.getProfileManager().getLeAudioProfile();
++        if (leAudio != null && leAudio.isProfileReady()) {
++            for (BluetoothDevice active : leAudio.getActiveDevices()) {
++                CachedBluetoothDevice cached = active == null ? null
++                        : mManager.getCachedDeviceManager().findDevice(active);
++                if (cached != null && cached.isActiveDevice(BluetoothProfile.LE_AUDIO)) return cached;
++            }
 +        }
 +        A2dpProfile a2dp = mManager.getProfileManager().getA2dpProfile();
 +        if (a2dp == null || !a2dp.isProfileReady()) {
@@ -791,12 +1288,13 @@ index 00000000000..f157723bac2
 +        if (mPreference == null || mCodecController == null) {
 +            return;
 +        }
-+        // Visible only for an active A2DP sink without LE Audio; the summary is the live codec.
++        // LE activation may remove the A2DP policy; the active LE group still has codec status.
 +        A2dpProfile a2dp = mManager == null ? null
 +                : mManager.getProfileManager().getA2dpProfile();
-+        boolean visible = mStarted && mTarget != null && a2dp != null
-+                && a2dp.getConnectionStatus(mTarget.getDevice()) == BluetoothProfile.STATE_CONNECTED
-+                && !isLeAudioActiveForTarget();
++        boolean a2dpConnected = mTarget != null && a2dp != null
++                && a2dp.getConnectionStatus(mTarget.getDevice()) == BluetoothProfile.STATE_CONNECTED;
++        boolean visible = mStarted && mTarget != null
++                && (a2dpConnected || isLeAudioActiveForTarget());
 +        mPreference.setVisible(visible);
 +        // The rate row follows the codec entry and only appears when the codec offers rates.
 +        boolean rateVisible = visible && mCodecController.canShowSampleRateDialog();
@@ -805,6 +1303,18 @@ index 00000000000..f157723bac2
 +            if (rateVisible) {
 +                mSampleRatePreference.setSummary(mCodecController.getSampleRateSummary());
 +            }
++        }
++        boolean frameVisible = visible && mCodecController.canShowFrameDurationDialog();
++        if (mFrameDurationPreference != null) {
++            mFrameDurationPreference.setVisible(frameVisible);
++            if (frameVisible) {
++                mFrameDurationPreference.setSummary(mCodecController.getFrameDurationSummary());
++            }
++        }
++        boolean octetsVisible = visible && mCodecController.canShowOctetsDialog();
++        if (mOctetsPreference != null) {
++            mOctetsPreference.setVisible(octetsVisible);
++            if (octetsVisible) mOctetsPreference.setSummary(mCodecController.getOctetsSummary());
 +        }
 +        if (!visible) {
 +            return;
