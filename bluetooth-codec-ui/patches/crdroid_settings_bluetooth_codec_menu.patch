@@ -223,7 +223,7 @@ index 756de1f6522..4be7f400361 100644
              TwoStatePreference highQualityPref =
                      mProfilesContainer.findPreference(HIGH_QUALITY_AUDIO_PREF_TAG);
              if (highQualityPref != null) {
-@@ -244,6 +303,137 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -244,6 +303,153 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
          }
      }
  
@@ -232,11 +232,27 @@ index 756de1f6522..4be7f400361 100644
 +        List<CachedBluetoothDevice> devices = mProfileDeviceMap.get(profile.toString());
 +        if (!profile.isProfileReady() || !profile.isEnabled(device)
 +                || profile.getConnectionStatus(device) != BluetoothProfile.STATE_CONNECTED
-+                || mCachedDevice.isBusy() || isLeAudioEnabled()
++                || mCachedDevice.isBusy() || isLeAudioRouteActive()
 +                || (devices != null && devices.stream().anyMatch(item -> item.isBusy()))) {
 +            return null;
 +        }
 +        return profile.getCodecStatus(device);
++    }
++
++    // Deliberately NOT isLeAudioEnabled(): that one reports the connection POLICY
++    // (BluetoothDetailsProfilesController#isLeAudioEnabled -> LocalBluetoothProfile#isEnabled)
++    // and is true as soon as LE Audio is merely permitted. A dual-mode receiver can have LE
++    // Audio allowed while media still runs over A2DP, and the Classic codec menu must stay
++    // usable in that case. Only an ACTIVE LE route may suppress it — same check the dashboard
++    // entry already performs.
++    private boolean isLeAudioRouteActive() {
++        LocalBluetoothProfile leAudio = mProfileManager.getLeAudioProfile();
++        if (leAudio == null) {
++            return false;
++        }
++        List<CachedBluetoothDevice> leAudioDeviceList = mProfileDeviceMap.get(leAudio.toString());
++        return leAudioDeviceList != null && leAudioDeviceList.stream()
++                .anyMatch(item -> item.isActiveDevice(BluetoothProfile.LE_AUDIO));
 +    }
 +
 +    private List<BluetoothCodecType> getSelectableCodecTypes(

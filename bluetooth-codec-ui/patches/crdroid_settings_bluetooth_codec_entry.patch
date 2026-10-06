@@ -148,7 +148,7 @@ new file mode 100644
 index 00000000000..689170129f6
 --- /dev/null
 +++ b/src/com/android/settings/bluetooth/BluetoothCodecDialogController.java
-@@ -0,0 +1,904 @@
+@@ -0,0 +1,913 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -567,7 +567,16 @@ index 00000000000..689170129f6
 +    }
 +
 +    public void refresh() {
-+        if (mResumed) registerDeviceCallbacks();
++        if (mResumed) {
++            registerDeviceCallbacks();
++            // The LE Audio service can disappear at runtime (stack restart, profile toggle).
++            // onServiceDisconnected() closes our proxy and clears the callback; without this
++            // call nothing would ever ask for a new one while the dashboard stays open, so LE
++            // stayed dead until the page was left and reopened. requestLeProxy() returns early
++            // unless we are resumed and no proxy or request is outstanding, so asking on every
++            // refresh is idempotent.
++            requestLeProxy();
++        }
 +        if (mLeDialog != null) refreshLeDialog();
 +        if (mDialog == null) return;
 +        BluetoothCodecStatus status = getCodecStatus();

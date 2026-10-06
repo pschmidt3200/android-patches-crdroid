@@ -35,7 +35,7 @@ index cc1bba7999c..d558cd243a5 100644
  import com.android.settingslib.core.instrumentation.MetricsFeatureProvider;
  import com.android.settingslib.utils.ThreadUtils;
  
-@@ -493,6 +500,83 @@ public final class BluetoothDevicePreference extends GearPreference {
+@@ -493,6 +500,87 @@ public final class BluetoothDevicePreference extends GearPreference {
          if (mCachedDevice.getBondState() != BluetoothDevice.BOND_NONE) {
              summary = mCachedDevice.getConnectionSummary();
          }
@@ -65,11 +65,15 @@ index cc1bba7999c..d558cd243a5 100644
 +            return null;
 +        }
 +
-+        // Check LE Audio first
++        // Check LE Audio first. Only the ACTIVE route may decide the badge: a device can
++        // have LE Audio connected and allowed while media still runs over A2DP, and then a
++        // "LC3" badge would contradict the codec actually in use.
 +        LeAudioProfile leAudioProfile = profileManager.getLeAudioProfile();
 +        if (leAudioProfile != null && leAudioProfile.isEnabled(mCachedDevice.getDevice())
-+                && (mCachedDevice.isActiveDevice(BluetoothProfile.LE_AUDIO)
-+                        || mCachedDevice.isConnectedLeAudioDevice())) {
++                && mCachedDevice.isActiveDevice(BluetoothProfile.LE_AUDIO)) {
++            // LC3 is the only LE Audio codec this stack negotiates; LC3Q and aptX Adaptive LE
++            // have no negotiation code here. Should that change, read the real codec status
++            // via BluetoothLeAudio.getCodecStatus(groupId) instead of this constant.
 +            return "LC3";
 +        }
 +
