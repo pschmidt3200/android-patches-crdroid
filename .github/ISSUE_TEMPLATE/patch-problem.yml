@@ -37,6 +37,7 @@ body:
         - aptx-adaptive
         - bluetooth-codec-ui
         - le-audio-fixes
+        - oplus-hardware-fixes
         - gms-fixes
         - gps-servers
         - donation-disable

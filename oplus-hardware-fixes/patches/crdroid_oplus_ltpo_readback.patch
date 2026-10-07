@@ -1,0 +1,165 @@
+# Target repository: hardware/oplus
+# LTPO: display current config; persist only after successful write and exact readback.
+diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java
+--- a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java
++++ b/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java
+@@ -51,40 +51,84 @@
+     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+         addPreferencesFromResource(R.xml.ltpo_settings);
+ 
+-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
++        mLTPOSwitch = (SwitchPreferenceCompat) findPreference(KEY_LTPO_SWITCH);
++        // The persisted choice is for boot restore, not the current hardware state.
++        mLTPOSwitch.setPersistent(false);
++        mLTPOSwitch.setOnPreferenceChangeListener(this);
++        refreshLTPOState();
++    }
+ 
+-        mLTPOSwitch = (SwitchPreferenceCompat) findPreference(KEY_LTPO_SWITCH);
+-        if (Utils.fileWritable(FILE_LTPO)) {
+-            mLTPOSwitch.setEnabled(true);
+-            String current = Utils.getFileValue(FILE_LTPO, "0x0");
+-            boolean enabled = !"0x0".equals(current != null ? current.trim() : null);
+-            mLTPOSwitch.setChecked(sharedPrefs.getBoolean(KEY_LTPO_SWITCH, enabled));
+-            mLTPOSwitch.setOnPreferenceChangeListener(this);
+-        } else {
+-            mLTPOSwitch.setEnabled(false);
++    @Override
++    public void onResume() {
++        super.onResume();
++        refreshLTPOState();
++    }
++
++    private static Long readLTPOConfig() {
++        String current = Utils.readLine(FILE_LTPO);
++        if (current != null) {
++            current = current.trim();
++            // adfr_config show emits an unsigned 32-bit value as "0x%x\n".
++            if (current.matches("0[xX][0-9a-fA-F]{1,8}")) {
++                return Long.parseLong(current.substring(2), 16);
++            }
+         }
++        Log.e(TAG, "LTPO config is unreadable or malformed");
++        return null;
++    }
++
++    private void refreshLTPOState() {
++        Long current = readLTPOConfig();
++        mLTPOSwitch.setChecked(current != null && current.longValue() != 0);
++        mLTPOSwitch.setEnabled(current != null && Utils.fileWritable(FILE_LTPO));
++    }
++
++    private static boolean writeLTPOSetting(boolean enabled) {
++        String value = enabled ? "0x109f" : "0x0";
++        if (!Utils.fileWritable(FILE_LTPO) || !Utils.writeValue(FILE_LTPO, value)) {
++            Log.e(TAG, "Failed to write LTPO config");
++            return false;
++        }
++        Long current = readLTPOConfig();
++        long expected = enabled ? 0x109fL : 0L;
++        if (current == null || current.longValue() != expected) {
++            Log.e(TAG, "LTPO config readback does not match " + value);
++            return false;
++        }
++        return true;
+     }
+ 
+     @Override
+     public boolean onPreferenceChange(Preference preference, Object newValue) {
+         if (preference == mLTPOSwitch) {
++            // Revalidate availability if the node changed since create/resume.
++            refreshLTPOState();
++            if (!mLTPOSwitch.isEnabled()) {
++                return false;
++            }
+             boolean enabled = (Boolean) newValue;
+-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+-            sharedPrefs.edit().putBoolean(KEY_LTPO_SWITCH, enabled).apply();
+-    	    Utils.writeValue(FILE_LTPO, enabled ? "0x109f" : "0x0");
+-            return true;
++            boolean confirmed = writeLTPOSetting(enabled);
++            if (confirmed) {
++                SharedPreferences sharedPrefs =
++                        PreferenceManager.getDefaultSharedPreferences(getContext());
++                sharedPrefs.edit().putBoolean(KEY_LTPO_SWITCH, enabled).apply();
++                mLTPOSwitch.setChecked(enabled);
++            } else {
++                // Failed writes can still change hardware; show its readable state.
++                refreshLTPOState();
++            }
++            return confirmed;
+         }
+ 
+         return false;
+     }
+ 
+     public static void restoreLTPOSetting(Context context) {
+-        if (Utils.fileWritable(FILE_LTPO)) {
+-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+-            String current = Utils.getFileValue(FILE_LTPO, "0x0");
+-            boolean enabled = !"0x0".equals(current != null ? current.trim() : null);
+-            boolean value = sharedPrefs.getBoolean(KEY_LTPO_SWITCH, enabled);
+-            Utils.writeValue(FILE_LTPO, value ? "0x109f" : "0x0");
++        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
++        if (!sharedPrefs.contains(KEY_LTPO_SWITCH)) {
++            return;
+         }
++        // Failure is logged by the writer; retain the choice for a later retry.
++        writeLTPOSetting(sharedPrefs.getBoolean(KEY_LTPO_SWITCH, false));
+     }
+ }
+diff --git a/ltpo/src/com/crdroid/ltpo/oplus/Utils.java b/ltpo/src/com/crdroid/ltpo/oplus/Utils.java
+--- a/ltpo/src/com/crdroid/ltpo/oplus/Utils.java
++++ b/ltpo/src/com/crdroid/ltpo/oplus/Utils.java
+@@ -17,11 +17,11 @@
+ package com.crdroid.ltpo.oplus;
+ 
+ import java.io.File;
+-import java.io.FileNotFoundException;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.io.BufferedReader;
+ import java.io.FileReader;
++import java.nio.charset.StandardCharsets;
+ 
+ public class Utils {
+ 
+@@ -30,20 +30,19 @@
+      * @param filename      The filename
+      * @param value         The value
+      */
+-    public static void writeValue(String filename, String value) {
+-        if (filename == null) {
+-            return;
++    public static boolean writeValue(String filename, String value) {
++        if (filename == null || value == null) {
++            return false;
+         }
+-        try {
+-            FileOutputStream fos = new FileOutputStream(new File(filename));
+-            fos.write(value.getBytes());
++        try (FileOutputStream fos = new FileOutputStream(new File(filename))) {
++            fos.write(value.getBytes(StandardCharsets.UTF_8));
+             fos.flush();
+-            fos.close();
+-        } catch (FileNotFoundException e) {
++        } catch (IOException | SecurityException e) {
+             e.printStackTrace();
+-        } catch (IOException e) {
+-            e.printStackTrace();
++            return false;
+         }
++        // Reaching this point also confirms that close() succeeded.
++        return true;
+     }
+ 
+     public static String readLine(String filename) {
+@@ -55,7 +54,7 @@
+         try {
+             br = new BufferedReader(new FileReader(filename), 1024);
+             line = br.readLine();
+-        } catch (IOException e) {
++        } catch (IOException | SecurityException e) {
+             return null;
+         } finally {
+             if (br != null) {

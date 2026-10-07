@@ -13,6 +13,7 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 ### Hardware & Medien
 * **[aptx-adaptive](aptx-adaptive/):** Bluetooth-Audio-Integration. Technische Details und Voraussetzungen im Modulordner.
 * **[le-audio-fixes](le-audio-fixes/):** LE-Audio-Korrekturen: Empfänger, die die gesammelte Attributabfrage des Stacks nie beantworten, können verbinden, eine gewählte Abtastrate oder Frame-Dauer kommt im Stream an, und 32 kHz sowie 24 kHz / 7,5 ms stehen für Medien bereit. Technische Details und Voraussetzungen im Modulordner.
+* **[oplus-hardware-fixes](oplus-hardware-fixes/):** Die LTPO-Einstellung zeigt die tatsächliche Panel-Konfiguration statt der letzten gespeicherten Auswahl, und die Touch-HAL prüft Treiber- und Binder-Antworten statt Erfolg anzunehmen. Technische Details im Modulordner.
 
 ### Benutzeroberfläche & Einstellungen
 * **[bluetooth-codec-ui](bluetooth-codec-ui/):** Bluetooth-Audio-Codec-Auswahlmenü und Statusanzeige in den Einstellungen. Technische Details im Modulordner.

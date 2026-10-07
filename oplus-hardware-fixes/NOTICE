@@ -1,0 +1,45 @@
+Oplus hardware fixes for crDroid
+Source snapshot: 2026-10-07.
+
+UPSTREAM SOURCES AND COMPATIBILITY
+
+This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+Other ROMs are outside the current scope. It is not a ROM image and contains no
+vendor binaries, firmware or driver source. Both patches only add validation and
+read-back logic to code that already exists in the tree: the Lineage touch HAL
+implementation for Oplus devices and the LTPO settings activity. No kernel node,
+driver, panel configuration or touch sampling rate is changed, and no feature is
+enabled that was not enabled before.
+
+The affected files in hardware/oplus retain their upstream Apache License,
+Version 2.0, terms and attribution notices, including those of The Android Open
+Source Project, LineageOS and crDroid. Retain the actual copyright and attribution
+notices of each affected source file. This overview does not replace the upstream
+per-file notices or license an entire ROM tree.
+
+Reference repository, commit and public source (as used by crDroid branch 16.0):
+  hardware/oplus                2c423457fffc1eea6d1eeb21abf26af66e541186  https://github.com/crdroidandroid/android_hardware_oplus
+
+WHAT THE PATCHES DO
+
+crdroid_oplus_ltpo_readback.patch
+  The LTPO settings screen reads the panel's current adfr_config mask when it is
+  opened and on resume, instead of showing the last stored preference. A missing
+  or malformed response disables the toggle rather than presenting a stored wish
+  as the current state. Writing, flushing, closing and an exact read-back of the
+  mask must all succeed before a selection is stored; on failure the screen shows
+  the actual configuration value where it can be read.
+
+crdroid_oplus_touch_error_handling.patch
+  GloveMode checks the Binder status, negative driver write responses and the read
+  format; empty or malformed answers are reported as an error. The existing
+  "status:counter" format stays valid and only the first field determines the
+  reported on/off state. TouchscreenGesture accepts only configured keycodes,
+  bounded before subtraction and shifting, and parses the full hexadecimal mask
+  response without throwing. The resulting decimal mask must fit into eight bytes
+  before any write, because longer values are ignored by the driver while it still
+  reports success. Both touch write steps check the Binder status and a negative
+  driver result; after the first failure no second write is attempted. The power
+  double-tap path additionally validates the vendor proxy.
+
+  No gesture node, gesture list or touch sampling rate is modified.

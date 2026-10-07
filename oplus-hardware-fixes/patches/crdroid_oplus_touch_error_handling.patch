@@ -1,0 +1,249 @@
+# Target repository: hardware/oplus (crDroid 16.0, base 2c423457fffc1eea6d1eeb21abf26af66e541186)
+# Validate touch responses and stop on Binder/driver failures. No feature/rate toggles.
+#
+diff --git a/aidl/touch/GloveMode.cpp b/aidl/touch/GloveMode.cpp
+index 2ca4e13..c15a574 100644
+--- a/aidl/touch/GloveMode.cpp
++++ b/aidl/touch/GloveMode.cpp
+@@ -9,10 +9,14 @@
+ 
+ #include <android-base/file.h>
+ #include <android-base/logging.h>
++#include <android-base/strings.h>
++#include <charconv>
++#include <cstdint>
+ 
+ #include <OplusTouchConstants.h>
+ 
+ using ::android::base::ReadFileToString;
++using ::android::base::Trim;
+ using ::android::base::WriteStringToFile;
+ 
+ namespace {
+@@ -33,23 +37,45 @@ ndk::ScopedAStatus GloveMode::getEnabled(bool* _aidl_return) {
+     std::string value;
+ 
+     if (mOplusTouch) {
+-        mOplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                       OplusTouchConstants::GLOVE_MODE_ENABLE_NODE, &value);
++        auto status = mOplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                    OplusTouchConstants::GLOVE_MODE_ENABLE_NODE,
++                                                    &value);
++        if (!status.isOk()) return status;
+     } else if (!ReadFileToString(kGloveModeEnablePath, &value)) {
+         LOG(ERROR) << "Failed to read current GloveMode state";
+         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+     }
+ 
+-    *_aidl_return = value[0] != '0';
++    value = Trim(value);
++    // The driver reports status plus a decimal glove-entry counter: "0:0".
++    if (value.empty() || ((value[0] != '0') && (value[0] != '1'))) {
++        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++    }
++    if (value.size() > 1) {
++        if (value[1] != ':') {
++            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++        }
++        int64_t counter = 0;
++        const auto end = value.data() + value.size();
++        const auto result = std::from_chars(value.data() + 2, end, counter, 10);
++        if ((result.ec != std::errc{}) || (result.ptr != end)) {
++            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++        }
++    }
++    *_aidl_return = value[0] == '1';
+     return ndk::ScopedAStatus::ok();
+ }
+ 
+ ndk::ScopedAStatus GloveMode::setEnabled(bool enable) {
+     if (mOplusTouch) {
+         int aidl_return = 0;
+-        mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                        OplusTouchConstants::GLOVE_MODE_ENABLE_NODE,
+-                                        enable ? "1" : "0", &aidl_return);
++        auto status = mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                     OplusTouchConstants::GLOVE_MODE_ENABLE_NODE,
++                                                     enable ? "1" : "0", &aidl_return);
++        if (!status.isOk()) return status;
++        if (aidl_return < 0) {
++            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++        }
+     } else if (!WriteStringToFile(enable ? "1" : "0", kGloveModeEnablePath, true)) {
+         LOG(ERROR) << "Failed to write GloveMode state";
+         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+diff --git a/aidl/touch/TouchscreenGesture.cpp b/aidl/touch/TouchscreenGesture.cpp
+index 8dc8cf2..bdfd64c 100644
+--- a/aidl/touch/TouchscreenGesture.cpp
++++ b/aidl/touch/TouchscreenGesture.cpp
+@@ -43,33 +43,56 @@ ndk::ScopedAStatus TouchscreenGesture::getSupportedGestures(std::vector<Gesture>
+ }
+ 
+ ndk::ScopedAStatus TouchscreenGesture::setGestureEnabled(const Gesture& gesture, bool enabled) {
++    // Bound before subtracting/shifting, and accept only configured gestures.
++    if ((gesture.keycode < kGestureStartKey) || (gesture.keycode >= kGestureStartKey + 31)) {
++        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
++    }
++    const int bit = gesture.keycode - kGestureStartKey;
++    if ((kGestureNames.count(bit) == 0) || ((kSupportedGestures & (1 << bit)) == 0)) {
++        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
++    }
+     int contents = 0;
++    std::string tmp;
+ 
+-    if (std::string tmp; mOplusTouch) {
+-        mOplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                       OplusTouchConstants::DOUBLE_TAP_INDEP_NODE, &tmp);
+-        contents = std::stoi(tmp, nullptr, 16);
+-    } else if (ReadFileToString(kGestureEnableIndepPath, &tmp)) {
+-        contents = std::stoi(Trim(tmp), nullptr, 16);
+-    } else {
++    if (mOplusTouch) {
++        auto status = mOplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                    OplusTouchConstants::DOUBLE_TAP_INDEP_NODE, &tmp);
++        if (!status.isOk()) return status;
++    } else if (!ReadFileToString(kGestureEnableIndepPath, &tmp)) {
++        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++    }
++    if (!OplusTouchConstants::ParseGestureMask(tmp, &contents)) {
+         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+     }
+ 
+     if (enabled) {
+-        contents |= (1 << (gesture.keycode - kGestureStartKey));
++        contents |= (1 << bit);
+     } else {
+-        contents &= ~(1 << (gesture.keycode - kGestureStartKey));
++        contents &= ~(1 << bit);
++    }
++
++    const std::string mask = std::to_string(contents);
++    if (mask.size() > OplusTouchConstants::GESTURE_MASK_MAX_BYTES) {
++        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+     }
+ 
+     if (mOplusTouch) {
+         int aidl_return = 0;
+-        mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                        OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE, "1",
+-                                        &aidl_return);
+-        mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                        OplusTouchConstants::DOUBLE_TAP_INDEP_NODE,
+-                                        std::to_string(contents), &aidl_return);
+-    } else if (!WriteStringToFile(std::to_string(contents), kGestureEnableIndepPath, true)) {
++        auto status = mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                     OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE,
++                                                     "1", &aidl_return);
++        if (!status.isOk()) return status;
++        if (aidl_return < 0) {
++            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++        }
++        status = mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                               OplusTouchConstants::DOUBLE_TAP_INDEP_NODE,
++                                               mask, &aidl_return);
++        if (!status.isOk()) return status;
++        if (aidl_return < 0) {
++            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++        }
++    } else if (!WriteStringToFile(mask, kGestureEnableIndepPath, true)) {
+         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+     }
+ 
+diff --git a/aidl/touch/touch-headers/OplusTouchConstants.h b/aidl/touch/touch-headers/OplusTouchConstants.h
+index 2fe4918..ea60e74 100644
+--- a/aidl/touch/touch-headers/OplusTouchConstants.h
++++ b/aidl/touch/touch-headers/OplusTouchConstants.h
+@@ -5,6 +5,9 @@
+ 
+ #pragma once
+ 
++#include <charconv>
++#include <string>
++
+ namespace OplusTouchConstants {
+ 
+ // Device IDs
+@@ -21,4 +24,24 @@ constexpr int GAME_SWITCH_ENABLE_NODE = 26;
+ constexpr int REPORT_RATE_NODE = 182;
+ constexpr int GLOVE_MODE_ENABLE_NODE = 192;
+ 
++// proc_gesture_control_indep_write silently ignores longer decimal strings.
++constexpr size_t GESTURE_MASK_MAX_BYTES = 8;
++
++// The driver reports the gesture mask as hex; keep the existing decimal writer.
++inline bool ParseGestureMask(const std::string& value, int* mask) {
++    auto first = value.find_first_not_of(" \t\r\n");
++    if (first == std::string::npos) return false;
++    const auto end = value.find_last_not_of(" \t\r\n") + 1;
++    if (value[first] == '-') return false;
++    if ((end - first >= 2) && (value[first] == '0') &&
++        ((value[first + 1] == 'x') || (value[first + 1] == 'X'))) {
++        first += 2;
++    }
++    int parsed = 0;
++    const auto result = std::from_chars(value.data() + first, value.data() + end, parsed, 16);
++    if ((result.ec != std::errc{}) || (result.ptr != value.data() + end)) return false;
++    *mask = parsed;
++    return true;
++}
++
+ }  // namespace OplusTouchConstants
+diff --git a/power/power-mode.cpp b/power/power-mode.cpp
+index d1281e2..9ac6eac 100644
+--- a/power/power-mode.cpp
++++ b/power/power-mode.cpp
+@@ -41,9 +41,17 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
+                     ndk::SpAIBinder(AServiceManager_waitForService(instance.c_str())));
+             LOG(INFO) << "Power mode: " << toString(type) << " isDoubleTapEnabled: " << enabled;
+ 
+-            oplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                          OplusTouchConstants::DOUBLE_TAP_INDEP_NODE, &tmp);
+-            contents = std::stoi(tmp, nullptr, 16);
++            if (!oplusTouch) {
++                LOG(ERROR) << "Oplus touch service unavailable";
++                return false;
++            }
++            auto status = oplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                       OplusTouchConstants::DOUBLE_TAP_INDEP_NODE,
++                                                       &tmp);
++            if (!status.isOk() || !OplusTouchConstants::ParseGestureMask(tmp, &contents)) {
++                LOG(ERROR) << "Failed to read valid double-tap gesture mask";
++                return false;
++            }
+ 
+             if (enabled) {
+                 contents |= OplusTouchConstants::DOUBLE_TAP_GESTURE;
+@@ -51,13 +59,27 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
+                 contents &= ~OplusTouchConstants::DOUBLE_TAP_GESTURE;
+             }
+ 
++            const std::string mask = std::to_string(contents);
++            if (mask.size() > OplusTouchConstants::GESTURE_MASK_MAX_BYTES) {
++                LOG(ERROR) << "Double-tap gesture mask exceeds driver write limit";
++                return false;
++            }
++
+             int aidl_return = 0;
+-            oplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                           OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE, "1",
+-                                           &aidl_return);
+-            oplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
+-                                           OplusTouchConstants::DOUBLE_TAP_INDEP_NODE,
+-                                           std::to_string(contents), &aidl_return);
++            status = oplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                   OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE,
++                                                   "1", &aidl_return);
++            if (!status.isOk() || (aidl_return < 0)) {
++                LOG(ERROR) << "Failed to write double-tap enable node";
++                return false;
++            }
++            status = oplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                                   OplusTouchConstants::DOUBLE_TAP_INDEP_NODE,
++                                                   mask, &aidl_return);
++            if (!status.isOk() || (aidl_return < 0)) {
++                LOG(ERROR) << "Failed to write double-tap gesture mask";
++                return false;
++            }
+             return true;
+         }
+         default:

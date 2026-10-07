@@ -1,0 +1,16 @@
+{
+  "title": "Oplus Hardware Fixes",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "hardware/oplus",
+      "file": "crdroid_oplus_ltpo_readback.patch",
+      "description": "LTPO: show the current panel config, persist only after a verified write"
+    },
+    {
+      "repository": "hardware/oplus",
+      "file": "crdroid_oplus_touch_error_handling.patch",
+      "description": "Touch HAL: validate driver and Binder responses, stop on failure"
+    }
+  ]
+}
