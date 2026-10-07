@@ -86,8 +86,8 @@ ANDROID_ROOT="$(cd "$1" && pwd)"
 
 # Module patches and their target repositories.
 PATCHES=(
-    "hardware/oplus:crdroid_oplus_ltpo_readback.patch:LTPO: show current config, verified write"
-    "hardware/oplus:crdroid_oplus_touch_error_handling.patch:Touch HAL: validate responses, stop on failure"
+    "hardware/oplus:crdroid_oplus_ltpo_readback.patch:LTPO: show the current panel config, persist only after a verified write"
+    "hardware/oplus:crdroid_oplus_touch_error_handling.patch:Touch HAL: validate driver and Binder responses, stop on failure"
 )
 
 # Empty requires every target; otherwise this one repository may be absent.

@@ -1,4 +1,5 @@
-# Target repository: hardware/oplus (crDroid 16.0, base 2c423457fffc1eea6d1eeb21abf26af66e541186)
+# Target repository: hardware/oplus
+# Prepared against hardware/oplus 2c423457fffc1eea6d1eeb21abf26af66e541186 (crDroid 16.0).
 # Validate touch responses and stop on Binder/driver failures. No feature/rate toggles.
 #
 diff --git a/aidl/touch/GloveMode.cpp b/aidl/touch/GloveMode.cpp
