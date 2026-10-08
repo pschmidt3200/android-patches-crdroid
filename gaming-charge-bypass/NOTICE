@@ -9,11 +9,10 @@ vendor binaries, firmware or driver source.
 
 The two patches work as a pair and are not useful separately:
 
-  frameworks/base          GameStateDispatcher pauses charging while a game is in
-                           the foreground and restores the previous charging state
-                           when it leaves.
-  packages/apps/GameSpace  Adds the user-visible threshold option to the in-game
-                           panel.
+  * In frameworks/base, GameStateDispatcher pauses charging while a game is in
+    the foreground and restores the previous charging state when it leaves.
+  * In packages/apps/GameSpace, the user-visible threshold option is added to
+    the in-game panel.
 
 Both only build on mechanisms that already exist in the tree: the LineageOS
 charging-control feature (HealthInterface / ChargingControlController) and the
