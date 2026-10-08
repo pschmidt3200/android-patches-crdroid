@@ -1,0 +1,377 @@
+# Target repository: frameworks/base
+# Clean-Room Implementation: Gaming Lade-Bypass & Touch Game-Mode (MODE_GAME)
+# Saves and restores full charging mode, limit, and enabled state via HealthInterface.
+# Dynamic ContentObserver enables instant toggle during active game sessions.
+# Automatically toggles /proc/touchpanel/game_switch_enable (MODE_GAME).
+# The charging state before bypass is kept in Settings.Global and restored at boot
+# (or before the next bypass) if a game session was interrupted by a reboot.
+#
+# Setter acknowledgements and settings readback are checked; this is not a hardware-current measurement.
+# Failed restoration retains its recovery record and blocks a new bypass session.
+# Settings.System bypass_charge_limit: 0 = game-start level (minimum 70), 70..100 = fixed limit.
+diff --git a/services/core/java/com/android/server/wm/GameStateDispatcher.java b/services/core/java/com/android/server/wm/GameStateDispatcher.java
+index f78e211..c50d20a 100644
+--- a/services/core/java/com/android/server/wm/GameStateDispatcher.java
++++ b/services/core/java/com/android/server/wm/GameStateDispatcher.java
+@@ -15,17 +15,28 @@
+  */
+ package com.android.server.wm;
+
++import android.content.BroadcastReceiver;
+ import android.content.Context;
++import android.content.Intent;
++import android.content.IntentFilter;
++import android.database.ContentObserver;
++import android.database.Cursor;
+ import android.os.BatteryManager;
++import android.os.Bundle;
++import android.os.FileUtils;
+ import android.os.SystemProperties;
+ import android.os.UserHandle;
+ import android.provider.Settings;
++import android.text.TextUtils;
+ import android.util.Slog;
+
++import com.android.server.UiThread;
+ import lineageos.health.HealthInterface;
+
+ import com.android.internal.app.IGameSpaceCallback;
+
++import java.io.File;
++import java.io.IOException;
+ import java.util.List;
+
+ class GameStateDispatcher {
+@@ -33,21 +44,160 @@ class GameStateDispatcher {
+     private static final String TAG = "GameStateDispatcher";
+     private static final String KEY_GAMING_MODE_ACTIVE = "ax_gaming_mode_active";
+     private static final String KEY_BYPASS_CHARGE_ENABLED = "bypass_charge_enabled";
++    // LineageSettings.CHARGING_CONTROL_LIMIT_VALIDATOR accepts 70..100.
++    private static final int MIN_BYPASS_CHARGE_LIMIT = 70;
++    // 0 uses the game-start level with that minimum; 70..100 is a fixed limit.
++    private static final String KEY_BYPASS_CHARGE_LIMIT = "bypass_charge_limit";
+     private static final String KEY_POWER_MODE_PERF = "persist.sys.power_mode_perf";
+     private static final String KEY_POWER_MODE_PERF_BY_USER = "persist.sys.power_mode_perf_by_user";
++    // "mode:limit:enabled" of the charging control before bypass. HealthInterface
++    // persists its settings, so without this a reboot or system_server restart
++    // during a game would leave the battery limited to the game-start level.
++    private static final String KEY_BYPASS_RESTORE = "gamespace_bypass_restore";
++
++    private static final String[] TOUCH_GAME_SWITCH_NODES = {
++        "/proc/touchpanel/game_switch_enable",
++        "/proc/touchpanel1/game_switch_enable"
++    };
+
+     private final Context mContext;
+     private final List<IGameSpaceCallback> mCallbacks;
+
+-    private int mChargeControlLimit = 100;
++    private int mSavedChargingLimit = 100;
++    private int mSavedChargingMode = HealthInterface.MODE_LIMIT;
+     private boolean mWasChargingControlEnabled = false;
++    private boolean mIsBypassActive = false;
++    private int mBypassLimitPreference = 0;
++    private boolean mIsGameActive = false;
++    private int mGameStartBatteryLevel = -1;
+
+     GameStateDispatcher(Context context, List<IGameSpaceCallback> callbacks) {
+         mContext = context;
+         mCallbacks = callbacks;
++
++        mContext.getContentResolver().registerContentObserver(
++                Settings.System.getUriFor(KEY_BYPASS_CHARGE_ENABLED),
++                false,
++                new ContentObserver(UiThread.getHandler()) {
++                    @Override
++                    public void onChange(boolean selfChange) {
++                        onBypassSettingChanged(false);
++                    }
++                },
++                UserHandle.USER_ALL);
++
++        mContext.getContentResolver().registerContentObserver(
++                Settings.System.getUriFor(KEY_BYPASS_CHARGE_LIMIT), false,
++                new ContentObserver(UiThread.getHandler()) {
++                    @Override
++                    public void onChange(boolean selfChange) {
++                        onBypassSettingChanged(true);
++                    }
++                }, UserHandle.USER_ALL);
++
++        // Same UiThread as dispatchGameState() and the observer above.
++        mContext.registerReceiver(new BroadcastReceiver() {
++            @Override
++            public void onReceive(Context context, Intent intent) {
++                if (!mIsBypassActive) restoreInterruptedBypass();
++            }
++        }, new IntentFilter(Intent.ACTION_BOOT_COMPLETED), null, UiThread.getHandler());
++    }
++
++    private int readBypassSetting(String key) {
++        // The singleton SettingsProvider query path reads the calling user, not
++        // a user-tagged URI. LIST_SYSTEM accepts _user and retains NULL-valued
++        // rows, unlike GET_SYSTEM. Only a complete list proves choice absence.
++        Bundle args = new Bundle();
++        args.putInt(Settings.CALL_METHOD_USER_KEY, UserHandle.USER_CURRENT);
++        Bundle result = mContext.getContentResolver().call(Settings.System.CONTENT_URI,
++                Settings.CALL_METHOD_LIST_SYSTEM, null, args);
++        // SettingsProvider.RESULT_SETTINGS_LIST is a provider-side contract.
++        List<String> settings = result == null ? null
++                : result.getStringArrayList("result_settings_list");
++        if (settings == null) throw new IllegalStateException("Charging preferences unavailable");
++        String prefix = key + "=";
++        for (String setting : settings) {
++            if (setting == null) throw new IllegalStateException("Incomplete charging preferences");
++            if (setting.startsWith(prefix)) return Integer.parseInt(setting.substring(prefix.length()));
++        }
++        return 0;
++    }
++
++    // Puts back the charging control saved by an engageBypass() whose
++    // disengageBypass() never ran (reboot or system_server restart in a game).
++    private String readBypassRestore() {
++        // A null getString() result also means provider failure. Only an empty
++        // cursor proves row absence. A NULL value from a successful query is the
++        // legacy putString(null) clear tombstone, not a provider read failure.
++        try (Cursor cursor = mContext.getContentResolver().query(
++                Settings.Global.getUriFor(KEY_BYPASS_RESTORE),
++                new String[] {Settings.NameValueTable.VALUE}, null, null, null)) {
++            if (cursor == null) throw new IllegalStateException("Charging recovery provider unavailable");
++            if (!cursor.moveToFirst()) return null;
++            String saved = cursor.getString(0);
++            if (saved != null && saved.isEmpty()) throw new IllegalStateException("Empty charging recovery row");
++            return saved;
++        }
++    }
++
++    private boolean restoreInterruptedBypass() {
++        String saved;
++        try {
++            saved = readBypassRestore();
++        } catch (RuntimeException e) {
++            mIsBypassActive = false;
++            Slog.w(TAG, "Charging recovery state unavailable; bypass remains blocked", e);
++            return false;
++        }
++        if (saved == null) return true;
++        // A pending restoration must never become the next game's "before" state.
++        mIsBypassActive = false;
++        String[] parts = saved.split(":", -1);
++        if (parts.length == 3) {
++            try {
++                int mode = Integer.parseInt(parts[0]);
++                int limit = Integer.parseInt(parts[1]);
++                if (mode >= HealthInterface.MODE_AUTO && mode <= HealthInterface.MODE_LIMIT
++                        && limit >= 0 && limit <= 100
++                        && ("true".equals(parts[2]) || "false".equals(parts[2]))) {
++                    mSavedChargingMode = mode;
++                    mSavedChargingLimit = limit;
++                    mWasChargingControlEnabled = Boolean.parseBoolean(parts[2]);
++                    return disengageBypass();
++                }
++            } catch (NumberFormatException e) {
++                Slog.w(TAG, "Invalid saved charging state; preserving it for recovery", e);
++                return false;
++            }
++        }
++        Slog.w(TAG, "Invalid saved charging state; bypass remains blocked");
++        return false;
++    }
++
++    private void onBypassSettingChanged(boolean limitChanged) {
++        if (!mIsGameActive) return;
++        try {
++            if (readBypassSetting(KEY_BYPASS_CHARGE_ENABLED) != 1) {
++                restoreInterruptedBypass();
++            } else if (!mIsBypassActive) {
++                engageBypass();
++            } else if (limitChanged) {
++                int selected = readBypassSetting(KEY_BYPASS_CHARGE_LIMIT);
++                if (selected == mBypassLimitPreference) return;
++                // Restore first: a changed limit must never replace the original backup.
++                if (restoreInterruptedBypass()) engageBypass();
++            }
++        } catch (RuntimeException e) {
++            Slog.w(TAG, "Charging preference unavailable; keeping the recovery record", e);
++        }
+     }
+
+     void dispatchGameState(boolean active, String packageName) {
++        if (active && !mIsGameActive) mGameStartBatteryLevel = battLevel();
++        if (!active) mGameStartBatteryLevel = -1;
++        mIsGameActive = active;
++
+         Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                 KEY_GAMING_MODE_ACTIVE, active ? 1 : 0, UserHandle.USER_CURRENT);
+
+@@ -65,15 +215,27 @@ class GameStateDispatcher {
+         }
+
+         if (active) {
+-            if (bypassChargeEnabled()) {
+-                mChargeControlLimit = getChargingLimit();
+-                setBypassActive(true);
+-                setSmartChargeLvl(battLevel());
++            updateTouchGameMode(true);
++            if (bypassChargeEnabled() && !mIsBypassActive) {
++                engageBypass();
+             }
+         } else {
+-            if (bypassChargeEnabled()) {
+-                setBypassActive(false);
+-                setSmartChargeLvl(mChargeControlLimit);
++            updateTouchGameMode(false);
++            restoreInterruptedBypass();
++        }
++    }
++
++    private void updateTouchGameMode(boolean active) {
++        String val = active ? "1" : "0";
++        for (String path : TOUCH_GAME_SWITCH_NODES) {
++            File node = new File(path);
++            if (node.exists()) {
++                try {
++                    FileUtils.stringToFile(node, val);
++                    Slog.i(TAG, "Touch game mode set to " + (active ? "1 (MODE_GAME)" : "0") + " at " + path);
++                } catch (IOException e) {
++                    Slog.w(TAG, "Failed to write touch game mode to " + path + ": " + e.getMessage());
++                }
+             }
+         }
+     }
+@@ -91,14 +253,11 @@ class GameStateDispatcher {
+     }
+
+     void setBypassCharge(boolean enable) {
+-        if (!bypassChargeEnabled()) return;
+-
+         if (enable) {
+-            mChargeControlLimit = getChargingLimit();
++            if (!mIsBypassActive) engageBypass();
++        } else {
++            restoreInterruptedBypass();
+         }
+-
+-        setBypassActive(enable);
+-        setSmartChargeLvl(enable ? battLevel() : mChargeControlLimit);
+     }
+
+     private boolean bypassChargeEnabled() {
+@@ -106,40 +265,94 @@ class GameStateDispatcher {
+                 KEY_BYPASS_CHARGE_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
+     }
+
+-    private int getChargingLimit() {
++    private void engageBypass() {
++        if (!restoreInterruptedBypass()) {
++            Slog.w(TAG, "Not engaging bypass: previous charging state is still pending");
++            return;
++        }
++        int level = mIsGameActive ? mGameStartBatteryLevel : battLevel();
++        if (level < 0 || level > 100) {
++            Slog.w(TAG, "Not engaging bypass: battery level is unavailable");
++            return;
++        }
+         try {
++            int selected = readBypassSetting(KEY_BYPASS_CHARGE_LIMIT);
++            if (selected != 0 && (selected < MIN_BYPASS_CHARGE_LIMIT || selected > 100)) {
++                Slog.w(TAG, "Not engaging bypass: selected charging limit is invalid");
++                return;
++            }
++            int targetLimit = selected == 0
++                    ? Math.max(MIN_BYPASS_CHARGE_LIMIT, level) : selected;
+             HealthInterface health = HealthInterface.getInstance(mContext);
++            if (!health.isChargingControlSupported()) return;
++            int mode = health.getMode();
++            int limit = health.getLimit();
++            if (mode < HealthInterface.MODE_AUTO || mode > HealthInterface.MODE_LIMIT
++                    || limit < 0 || limit > 100) {
++                Slog.w(TAG, "Not engaging bypass: original charging settings are unavailable");
++                return;
++            }
+             mWasChargingControlEnabled = health.getEnabled();
+-            if (mWasChargingControlEnabled) {
+-                return health.getLimit();
++            mSavedChargingMode = mode;
++            mSavedChargingLimit = limit;
++            String saved = mode + ":" + limit + ":" + mWasChargingControlEnabled;
++            if (!Settings.Global.putString(mContext.getContentResolver(), KEY_BYPASS_RESTORE, saved)
++                    || !saved.equals(readBypassRestore())) {
++                Slog.w(TAG, "Not engaging bypass: charging state could not be saved");
++                return;
+             }
+-        } catch (Exception e) {
+-            Slog.w(TAG, "Failed to get charging limit", e);
++            // Configure the target before enabling the controller. Its settings
++            // acknowledgement is not proof of battery current or hardware bypass.
++            if (!health.setMode(HealthInterface.MODE_LIMIT) || !health.setLimit(targetLimit)
++                    || !health.setEnabled(true) || health.getMode() != HealthInterface.MODE_LIMIT
++                    || health.getLimit() != targetLimit || !health.getEnabled()) {
++                Slog.w(TAG, "Charging bypass request rejected; restoring original settings");
++                restoreInterruptedBypass();
++                return;
++            }
++            mIsBypassActive = true;
++            mBypassLimitPreference = selected;
++            Slog.i(TAG, "Bypass charging settings accepted at " + targetLimit + "%");
++        } catch (RuntimeException e) {
++            Slog.w(TAG, "Failed to engage charging bypass; saved state retained", e);
++            restoreInterruptedBypass();
+         }
+-        return 100;
+-    }
+-
+-    private int battLevel() {
+-        BatteryManager bm = mContext.getSystemService(BatteryManager.class);
+-        return bm != null ? bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) : -1;
+     }
+
+-    private void setSmartChargeLvl(int value) {
++    private boolean disengageBypass() {
++        mIsBypassActive = false;
+         try {
+             HealthInterface health = HealthInterface.getInstance(mContext);
+-            health.setMode(HealthInterface.MODE_LIMIT);
+-            health.setLimit(value);
+-        } catch (Exception e) {
+-            Slog.w(TAG, "Failed to set charging limit", e);
++            if (!health.isChargingControlSupported()) return false;
++            // Every setter runs, even if another is rejected. Retain the saved
++            // state until all settings and removal of the recovery record agree.
++            boolean accepted = health.setMode(mSavedChargingMode)
++                    & health.setLimit(mSavedChargingLimit)
++                    & health.setEnabled(mWasChargingControlEnabled);
++            if (!accepted || health.getMode() != mSavedChargingMode
++                    || health.getLimit() != mSavedChargingLimit
++                    || health.getEnabled() != mWasChargingControlEnabled) {
++                Slog.w(TAG, "Charging restoration pending; saved state retained");
++                return false;
++            }
++            if (mContext.getContentResolver().delete(
++                    Settings.Global.getUriFor(KEY_BYPASS_RESTORE), null, null) < 0
++                    || readBypassRestore() != null) {
++                Slog.w(TAG, "Charging settings restored; recovery record cleanup pending");
++                return false;
++            }
++            Slog.i(TAG, "Charging settings restored: mode=" + mSavedChargingMode
++                    + " limit=" + mSavedChargingLimit + " enabled=" + mWasChargingControlEnabled);
++            return true;
++        } catch (RuntimeException e) {
++            Slog.w(TAG, "Failed to restore charging settings; saved state retained", e);
++            return false;
+         }
+     }
+
+-    private void setBypassActive(boolean value) {
+-        try {
+-            HealthInterface health = HealthInterface.getInstance(mContext);
+-            health.setEnabled(value || mWasChargingControlEnabled);
+-        } catch (Exception e) {
+-            Slog.w(TAG, "Failed to set charging bypass", e);
+-        }
++    private int battLevel() {
++        BatteryManager bm = mContext.getSystemService(BatteryManager.class);
++        int level = bm != null ? bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) : -1;
++        return level;
+     }
+ }

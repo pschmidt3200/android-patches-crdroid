@@ -1,0 +1,16 @@
+{
+  "title": "Gaming Charge Bypass",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "frameworks/base",
+      "file": "crdroid_framework_gaming_bypass.patch",
+      "description": "Pause charging while a game runs, restore the previous state on exit"
+    },
+    {
+      "repository": "packages/apps/GameSpace",
+      "file": "crdroid_gamespace_charging_limit.patch",
+      "description": "GameSpace option for the charge-pause threshold (battery level at game start, or 70-100%)"
+    }
+  ]
+}

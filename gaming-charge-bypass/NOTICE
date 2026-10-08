@@ -1,0 +1,54 @@
+Gaming charge bypass for crDroid
+Source snapshot: 2026-10-08.
+
+UPSTREAM SOURCES AND COMPATIBILITY
+
+This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+Other ROMs are outside the current scope. It is not a ROM image and contains no
+vendor binaries, firmware or driver source.
+
+The two patches work as a pair and are not useful separately:
+
+  frameworks/base          GameStateDispatcher pauses charging while a game is in
+                           the foreground and restores the previous charging state
+                           when it leaves.
+  packages/apps/GameSpace  Adds the user-visible threshold option to the in-game
+                           panel.
+
+Both only build on mechanisms that already exist in the tree: the LineageOS
+charging-control feature (HealthInterface / ChargingControlController) and the
+GameSpace in-game options. No kernel node is written directly, no charging driver
+is modified, and no vendor interface is added. The charge pause uses the same
+LineageOS setter a user would reach through Settings.
+
+The affected files retain their upstream Apache License, Version 2.0, terms and
+attribution notices, including those of The Android Open Source Project,
+LineageOS and crDroid. Retain the actual copyright and attribution headers of the
+files you patch.
+
+Upstream repositories and the tree state the diffs were generated against:
+
+  crdroidandroid/android_frameworks_base              68d3d80589e4cc8dd34c470db3aa9c027f610674
+  crdroidandroid/android_packages_apps_GameSpace      2fecfaa6e963a288048dceedc6520f12b0116cd2
+
+DEVICE VERIFICATION, AND ITS LIMITS
+
+Verified on a OnePlus 13 (dodge) running crDroid 16.0, in eight charge-pause
+cycles across four games, plus a reboot while a game was in the foreground:
+
+  threshold 70 %            engaged and applied, eight cycles
+  charge stop at threshold  battery status 2 (charging) -> 4 (not charging),
+                            current -2976 mA -> 0 mA at exactly level 70
+  restore on game exit      eight cycles, always to the stored original state
+  restore after reboot      stored state replayed and cleared 82 s after boot
+  rapid game switching      stable down to 0.5 s between cycles
+  no game running           charging is never touched
+
+The thresholds 80, 90 and 100 % were NOT verified on a device. That the
+LineageOS provider accepts them was measured separately (values below 70 are
+rejected by its validator), which is not the same as a device test of the
+GameSpace path.
+
+The "battery level at game start" option raises a start level below 70 to 70,
+because the LineageOS validator rejects anything lower. This was verified on the
+device at 69 % battery: the log reports the threshold as 70, not 69.

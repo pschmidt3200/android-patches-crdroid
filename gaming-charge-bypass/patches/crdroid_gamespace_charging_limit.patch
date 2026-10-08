@@ -1,0 +1,86 @@
+# Target repository: packages/apps/GameSpace
+# Settings.System bypass_charge_limit: 0 = game-start level (minimum 70), otherwise 70..100 percent.
+diff --git a/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt b/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt
+--- a/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt
++++ b/app/src/main/java/io/chaldeaprjkt/gamespace/settings/SettingsFragment.kt
+@@ -81,8 +81,13 @@
+             SystemProperties.getBoolean("persist.sys.battery_bypass_supported", false)
+ 
+         if (!isBypassSupported) {
+-            findPreference<PreferenceCategory>("in_game_preferences")
+-                ?.removePreference(findPreference("bypass_charge_enabled")!!)
++            val inGamePreferences = findPreference<PreferenceCategory>("in_game_preferences")
++            findPreference<Preference>("bypass_charge_limit")?.let {
++                inGamePreferences?.removePreference(it)
++            }
++            findPreference<Preference>("bypass_charge_enabled")?.let {
++                inGamePreferences?.removePreference(it)
++            }
+         }
+ 
+         if (!hasVibrator()) {
+diff --git a/app/src/main/res/values/charging_limit.xml b/app/src/main/res/values/charging_limit.xml
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/res/values/charging_limit.xml
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="bypass_charge_limit_title">Pause charging at</string>
++    <string name="bypass_charge_limit_game_start">Battery level at game start (minimum 70 %)</string>
++    <string name="bypass_charge_gaming_summary">While playing, charge up to the selected battery level, then pause charging. After the game, restore normal charging settings.</string>
++    <string-array name="bypass_charge_limit_entries">
++        <item>@string/bypass_charge_limit_game_start</item>
++        <item>70 %</item>
++        <item>80 %</item>
++        <item>90 %</item>
++        <item>100 %</item>
++    </string-array>
++    <string-array name="bypass_charge_limit_values" translatable="false">
++        <item>0</item>
++        <item>70</item>
++        <item>80</item>
++        <item>90</item>
++        <item>100</item>
++    </string-array>
++</resources>
+diff --git a/app/src/main/res/values-de-rDE/charging_limit.xml b/app/src/main/res/values-de-rDE/charging_limit.xml
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/res/values-de-rDE/charging_limit.xml
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="bypass_charge_limit_title">Ladepause ab</string>
++    <string name="bypass_charge_limit_game_start">Akkustand bei Spielstart (mindestens 70 %)</string>
++    <string name="bypass_charge_gaming_summary">Während des Spiels bis zum gewählten Akkustand laden, dann das Laden pausieren. Nach dem Spiel gelten wieder die normalen Ladeeinstellungen.</string>
++    <string-array name="bypass_charge_limit_entries">
++        <item>@string/bypass_charge_limit_game_start</item>
++        <item>70 %</item>
++        <item>80 %</item>
++        <item>90 %</item>
++        <item>100 %</item>
++    </string-array>
++</resources>
+diff --git a/app/src/main/res/xml/root_preferences.xml b/app/src/main/res/xml/root_preferences.xml
+--- a/app/src/main/res/xml/root_preferences.xml
++++ b/app/src/main/res/xml/root_preferences.xml
+@@ -113,8 +113,17 @@
+         <com.crdroid.settings.preferences.SystemSettingSwitchPreference
+             android:key="bypass_charge_enabled"
+             android:title="@string/bypass_charge_enabled_title"
+-            android:summary="@string/bypass_charge_enabled_summary"
++            android:summary="@string/bypass_charge_gaming_summary"
+             android:defaultValue="false" />
++
++        <com.crdroid.settings.preferences.SystemSettingListPreference
++            android:key="bypass_charge_limit"
++            android:dependency="bypass_charge_enabled"
++            android:title="@string/bypass_charge_limit_title"
++            android:summary="%s"
++            android:entries="@array/bypass_charge_limit_entries"
++            android:entryValues="@array/bypass_charge_limit_values"
++            android:defaultValue="0" />
+ 
+         <com.crdroid.settings.preferences.CustomSeekBarPreference
+             android:key="gamespace_icon_idle_alpha"
