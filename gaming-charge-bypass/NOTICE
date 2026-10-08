@@ -28,8 +28,8 @@ files you patch.
 
 Upstream repositories and the tree state the diffs were generated against:
 
-  crdroidandroid/android_frameworks_base              68d3d80589e4cc8dd34c470db3aa9c027f610674
-  crdroidandroid/android_packages_apps_GameSpace      2fecfaa6e963a288048dceedc6520f12b0116cd2
+  frameworks/base          68d3d80589e4cc8dd34c470db3aa9c027f610674  https://github.com/crdroidandroid/android_frameworks_base
+  packages/apps/GameSpace  2fecfaa6e963a288048dceedc6520f12b0116cd2  https://github.com/crdroidandroid/android_packages_apps_GameSpace
 
 DEVICE VERIFICATION, AND ITS LIMITS
 
