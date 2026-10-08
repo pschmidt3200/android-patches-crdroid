@@ -12,6 +12,7 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 
 ### Hardware & Medien
 * **[aptx-adaptive](aptx-adaptive/):** Bluetooth-Audio-Integration. Technische Details und Voraussetzungen im Modulordner.
+* **[gaming-charge-bypass](gaming-charge-bypass/):** Das Laden pausiert, solange ein Spiel läuft, und der vorherige Ladezustand wird bei Spielende wiederhergestellt; die Schwelle ist im GameSpace-Panel einstellbar. Technische Details und die Grenzen der Geräteprüfung im Modulverzeichnis.
 * **[le-audio-fixes](le-audio-fixes/):** LE-Audio-Korrekturen: Empfänger, die die gesammelte Attributabfrage des Stacks nie beantworten, können verbinden, eine gewählte Abtastrate oder Frame-Dauer kommt im Stream an, und 32 kHz sowie 24 kHz / 7,5 ms stehen für Medien bereit. Technische Details und Voraussetzungen im Modulordner.
 * **[oplus-hardware-fixes](oplus-hardware-fixes/):** Die LTPO-Einstellung zeigt die tatsächliche Panel-Konfiguration statt der letzten gespeicherten Auswahl, und die Touch-HAL prüft Treiber- und Binder-Antworten statt Erfolg anzunehmen. Technische Details im Modulordner.
 

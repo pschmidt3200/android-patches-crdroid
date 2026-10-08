@@ -12,6 +12,7 @@ Each module is self-contained and focuses on a single feature:
 
 ### Hardware & Media
 * **[aptx-adaptive](aptx-adaptive/):** Bluetooth audio integration. See the module directory for technical details and prerequisites.
+* **[gaming-charge-bypass](gaming-charge-bypass/):** Charging pauses while a game runs and the previous charging state is restored on exit, with a threshold option in the GameSpace in-game panel. See the module directory for technical details and the limits of the device verification.
 * **[le-audio-fixes](le-audio-fixes/):** LE Audio fixes: receivers that never answer the stack's grouped attribute read can connect, a chosen sample rate or frame duration reaches the stream, and 32 kHz and 24 kHz / 7.5 ms become available for media. See the module directory for technical details and prerequisites.
 * **[oplus-hardware-fixes](oplus-hardware-fixes/):** LTPO settings show the panel's real configuration instead of the last stored preference, and the touch HAL validates driver and Binder responses instead of assuming success. See the module directory for technical details.
 
