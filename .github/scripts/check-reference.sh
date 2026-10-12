@@ -31,6 +31,24 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "${WORK}"' EXIT
 TREE="${WORK}/tree"
 
+# Network steps against the public upstream hosts are retried: a single refused or
+# overloaded response (e.g. "unable to handle this request due to load") must not
+# fail the check. Only fetching and the lazy blob download of the checkout are
+# retried; the patch checks below run exactly once.
+NETWORK_ATTEMPTS=4
+retry_network() {
+    local attempt
+    for ((attempt = 1; attempt <= NETWORK_ATTEMPTS; attempt++)); do
+        "$@" && return 0
+        if ((attempt < NETWORK_ATTEMPTS)); then
+            echo "   network step failed (attempt ${attempt}/${NETWORK_ATTEMPTS}), retrying in $((attempt * 20)) s" >&2
+            sleep $((attempt * 20))
+        fi
+    done
+    echo "ERROR: network step failed after ${NETWORK_ATTEMPTS} attempts: $*" >&2
+    return 1
+}
+
 mapfile -t ENTRIES < <(sed -n '/^PATCHES=(/,/^)/p' "${MOD}/apply-patches.sh" | grep -oE '"[^"]+"' | tr -d '"')
 mapfile -t REPOS < <(printf '%s\n' "${ENTRIES[@]}" | cut -d: -f1 | awk '!seen[$0]++')
 
@@ -56,14 +74,14 @@ for repo in "${REPOS[@]}"; do
 
     git -c init.defaultBranch=check init -q "${dir}"
     git -C "${dir}" remote add origin "${url}"
-    git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}"
+    retry_network git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}"
     git -C "${dir}" config core.sparseCheckout true
     for entry in "${ENTRIES[@]}"; do
         IFS=":" read -r entry_repo patch _ <<< "${entry}"
         [[ "${entry_repo}" == "${repo}" ]] || continue
         git apply --numstat "${MOD}/patches/${patch}" | cut -f3 | sed 's|^|/|'
     done > "${dir}/.git/info/sparse-checkout"
-    git -C "${dir}" checkout -q FETCH_HEAD
+    retry_network git -C "${dir}" checkout -q FETCH_HEAD
     echo "   ${repo}: $(git -C "${dir}" rev-parse --short=12 HEAD) (${target})"
 done
 
