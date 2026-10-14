@@ -1,13 +1,13 @@
 SUSFS core patch-file context corrections for crDroid 16.0 / OnePlus sm8750.
-Prepared 2026-10-03. Only our rebase delta; full upstream core is not included.
+Prepared 2026-10-14. Only our rebase delta; full upstream core is not included.
 
 Reference checkout (place under the build root as external/susfs4ksu):
-  external/susfs4ksu a0f9c59e2243f8a5db955f4ad1686d5e0ad26e1a https://gitlab.com/simonpunk/susfs4ksu branch=gki-android15-6.6
+  external/susfs4ksu 2d11d711de80f0f749b3055f8da8f7b9682454e4 https://gitlab.com/simonpunk/susfs4ksu branch=gki-android15-6.6
 
 Corrected upstream path: kernel_patches/50_add_susfs_in_gki-android15-6.6.patch
-Original SHA256: 1425ac2d1e68d0049d0a62d034325a026d39a80a02135b4126c59e392e09cd6b
-Corrected SHA256: 17d0e86e625afab0bbe2a3e3a4f46d326aeec641930d8a922bd747e5955b9c4a
-Context delta SHA256: 0a24f002b842896f54fd3d3558c8c506a224593ae64c624c97da5d51a69ce832
+Original SHA256: 15587d2d46f5cdf9d707d46604cbdd57f9da865477c84545d7c4b6427a67a67c
+Corrected SHA256: e4a8d393105611dd09d1aa8d74907ea3611fe0e2b7c34fa08a694694aa127433
+Context delta SHA256: f7f8e94632e2203e4638a59d686044fc70e0df26e8cc796d89e9c5bb9110ad84
 Target kernel for the corrected patch: https://github.com/crdroidandroid/android_kernel_oneplus_sm8750
 Branch16.0 commit b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35 (Android15 Linux6.6).
 

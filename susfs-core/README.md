@@ -20,7 +20,7 @@ build root. Prepare it from the exact upstream revision if it is not already the
 ```bash
 cd /path/to/crdroid
 git clone --branch gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git external/susfs4ksu
-git -C external/susfs4ksu checkout --detach a0f9c59e2243f8a5db955f4ad1686d5e0ad26e1a
+git -C external/susfs4ksu checkout --detach 2d11d711de80f0f749b3055f8da8f7b9682454e4
 ```
 
 From this patch collection, with all module files from the same edition:
@@ -32,7 +32,7 @@ sha256sum /path/to/crdroid/external/susfs4ksu/kernel_patches/50_add_susfs_in_gki
 ```
 
 Expected corrected SHA256:
-`17d0e86e625afab0bbe2a3e3a4f46d326aeec641930d8a922bd747e5955b9c4a`.
+`e4a8d393105611dd09d1aa8d74907ea3611fe0e2b7c34fa08a694694aa127433`.
 The original input SHA256 and upstream attribution are in [NOTICE](NOTICE).
 The installer rejects an already modified target checkout by default.
 `--check --reverse` followed by `--reverse` restores **that patch file**;

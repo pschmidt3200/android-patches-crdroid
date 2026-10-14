@@ -20,7 +20,7 @@ crDroid-Baum. Falls noch nicht vorhanden, den genauen Upstream-Stand vorbereiten
 ```bash
 cd /pfad/zu/crdroid
 git clone --branch gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git external/susfs4ksu
-git -C external/susfs4ksu checkout --detach a0f9c59e2243f8a5db955f4ad1686d5e0ad26e1a
+git -C external/susfs4ksu checkout --detach 2d11d711de80f0f749b3055f8da8f7b9682454e4
 ```
 
 In der Patchsammlung alle Moduldateien aus derselben Fassung verwenden:
@@ -32,7 +32,7 @@ sha256sum /pfad/zu/crdroid/external/susfs4ksu/kernel_patches/50_add_susfs_in_gki
 ```
 
 Erwartete SHA256 der korrigierten vollständigen Upstream-Patchdatei:
-`17d0e86e625afab0bbe2a3e3a4f46d326aeec641930d8a922bd747e5955b9c4a`.
+`e4a8d393105611dd09d1aa8d74907ea3611fe0e2b7c34fa08a694694aa127433`.
 [NOTICE](NOTICE) nennt Originalhash, Quellen und Autoren.
 Ein bereits veränderter Checkout wird standardmäßig abgelehnt.
 `--check --reverse` und danach `--reverse` nehmen nur diese Patchdatei-Korrektur
