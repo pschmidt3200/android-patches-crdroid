@@ -24,6 +24,12 @@ Eigene Tests auf abweichender Hardware oder geänderten Quellständen bleiben de
 - R2.2-Property und gegenstellenabhängige Aushandlung bei **44,1 kHz** für den
   vorhandenen Lossless-Offload-Pfad. v39 bevorzugt bei passender R2.2-Gegenstelle
   Lossless im Alltag; eine explizite Nutzerwahl bleibt vorrangig.
+- Moduswechsel in Stream-Reihenfolge (v41): Der erste Modus eines Streams geht erst
+  nach der Startmeldung an die Audio-HAL raus und nicht, solange der Stream schon
+  pausiert oder stoppt. Spätere Moduswünsche (Latenz, Spielstart/-ende) laufen über
+  die Zustandsmaschine des Bluetooth-Stacks für das aktive Gerät.
+- Kanalmodus Stereo; Joint Stereo wird nur angeboten, wenn
+  `persist.bluetooth.aptx_adaptive.offer_joint_stereo` auf `true` steht.
 - Nach einem Reconnect stehen die auswählbaren Codecs sofort wieder vollständig
   bereit.
 
@@ -294,6 +300,10 @@ Die dokumentierten Referenzläufe umfassen GameSpace-Umschaltungen aus 44,1-kHz-
 Lossless und HQ nach 48-kHz-LL und zurück. Eine Vergleichsmessung des
 dokumentierten Nutzerpfads ergab **117,55 ms gegenüber 348,47 ms**; diese Werte
 sind keine universelle Latenzgarantie für andere Anwendungen oder Senken.
+
+v41 (13.10.2026) wurde in crDroid 16.0 gebaut und am selben Referenzgerät geprüft:
+Ton bei 44,1 kHz Lossless und 96 kHz sowie der Wechsel zwischen beiden. Der
+Low-Latency-Wechsel wurde für v41 nicht erneut gemessen.
 
 Für den produktiven v39-Stand wurden vom 20.09. bis 01.10.2026 **181 Logstunden
 in einem 249-Stunden-Fenster** ausgewertet, einschließlich eines Neustarts:

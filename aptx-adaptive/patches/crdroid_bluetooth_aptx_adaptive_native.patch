@@ -1787,7 +1787,7 @@ index 95c8539e7f..90e7932dba 100644
      default:
        break;
 diff --git a/system/bta/av/bta_av_aact.cc b/system/bta/av/bta_av_aact.cc
-index e3366236e1..5a9a51e657 100644
+index e3366236e1..00f892ea85 100644
 --- a/system/bta/av/bta_av_aact.cc
 +++ b/system/bta/av/bta_av_aact.cc
 @@ -35,11 +35,16 @@
@@ -1807,7 +1807,7 @@ index e3366236e1..5a9a51e657 100644
  #include "a2dp_sbc_constants.h"
  #include "avdt_api.h"
  #include "avrc_api.h"
-@@ -3054,11 +3059,151 @@ static uint8_t bta_av_get_coex_opcode(void) {
+@@ -3054,11 +3059,175 @@ static uint8_t bta_av_get_coex_opcode(void) {
              kA2dpCoexOpcodeDefault);
  }
  
@@ -1825,6 +1825,9 @@ index e3366236e1..5a9a51e657 100644
 +// Runtime mode updates use a single controller command and do not require AVDTP
 +// reconfiguration. Keep confirmed and pending modes separate for reliable deduplication.
 +static uint16_t vsqc_last_confirmed_mode = 0;
++// Session whose initial mode is still due. The START callback only marks it; BTIF publishes
++// the mode after the start response has reached the audio HAL and no suspend is pending.
++static tBTA_AV_HNDL vsqc_mode_publish_hndl = BTA_AV_INVALID_HANDLE;
 +struct tVSQC_PENDING_MODE {
 +  tBTA_AV_HNDL hndl;
 +  uint16_t mode;
@@ -1888,6 +1891,12 @@ index e3366236e1..5a9a51e657 100644
 +    log::info("Step 2b: active offload session is not a QTI aptX Adaptive session, no UPDATE_MODE");
 +    return;
 +  }
++  // The initial mode of this session is still due; it is read when it is published.
++  if (vsqc_mode_publish_hndl != BTA_AV_INVALID_HANDLE &&
++      vsqc_mode_publish_hndl == bta_av_cb.offload_started_hndl) {
++    log::info("Step 2b: initial mode of the session not yet published, UPDATE_MODE left to it");
++    return;
++  }
 +  int32_t prop_mode = osi_property_get_int32("bluetooth.aptx_adaptive.mode.runtime", 0);
 +  if (prop_mode == 0) {
 +    prop_mode = osi_property_get_int32("persist.bluetooth.aptx_adaptive.mode", 0x1000);
@@ -1908,6 +1917,21 @@ index e3366236e1..5a9a51e657 100644
 +    return;
 +  }
 +  vsqc_send_update_mode("change during active stream");
++}
++
++void bta_av_aptx_publish_session_mode(tBTA_AV_HNDL hndl) {
++  if (vsqc_mode_publish_hndl == BTA_AV_INVALID_HANDLE) {
++    return;  // Not a QTI aptX Adaptive start, or mode updates are disabled.
++  }
++  const tBTA_AV_HNDL due_hndl = vsqc_mode_publish_hndl;
++  vsqc_mode_publish_hndl = BTA_AV_INVALID_HANDLE;
++  // A late response for an earlier session must not address the current one.
++  if (hndl != due_hndl || bta_av_cb.offload_started_hndl != due_hndl || !vsqc_offload_via_qti) {
++    log::info("Initial aptX Adaptive mode not sent: response 0x{:x}, due 0x{:x}, active 0x{:x}",
++              hndl, due_hndl, bta_av_cb.offload_started_hndl);
++    return;
++  }
++  vsqc_send_update_mode("Offload-START");
 +}
 +
 +static void update_mode_vendor_callback(tBTM_VSC_CMPL* param) {
@@ -1960,17 +1984,18 @@ index e3366236e1..5a9a51e657 100644
      value.status = static_cast<tBTA_AV_STATUS>(param->p_param_buf[0]);
    }
    if (value.status == 0) {
-@@ -3067,6 +3212,9 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
+@@ -3067,6 +3236,10 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
      switch (sub_opcode) {
        case VS_HCI_A2DP_OFFLOAD_STOP:
        case VS_HCI_A2DP_OFFLOAD_STOP_V2:
 +      case VSQC_SUB_OPCODE_STOP:
 +        vsqc_last_confirmed_mode = 0;
 +        vsqc_pending_modes.clear();
++        vsqc_mode_publish_hndl = BTA_AV_INVALID_HANDLE;
          log::verbose("VS_HCI_STOP_A2DP_MEDIA successful");
          l2c_link_set_br_coex_buf_cap(0, base::BindOnce([](bool success) {
            if (!success) {
-@@ -3076,10 +3224,31 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
+@@ -3076,10 +3249,32 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
          break;
        case VS_HCI_A2DP_OFFLOAD_START:
        case VS_HCI_A2DP_OFFLOAD_START_V2:
@@ -1994,8 +2019,9 @@ index e3366236e1..5a9a51e657 100644
 +            if (send_update) {
 +              // Controller and DSP modes are independent. The DSP remains at its fixed
 +              // AIDL profile while VSQC follows the runtime latency request. A fresh
-+              // controller session has no confirmed mode, so START always publishes it.
-+              vsqc_send_update_mode("Offload-START");
++              // controller session has no confirmed mode, so its mode is always published,
++              // but only after the start response below has been handled by BTIF.
++              vsqc_mode_publish_hndl = static_cast<tBTA_AV_HNDL>(bta_av_cb.offload_started_hndl);
 +            } else {
 +              log::info("FastConnect 7900 VSQC UPDATE_MODE disabled by property");
 +            }
@@ -2003,7 +2029,7 @@ index e3366236e1..5a9a51e657 100644
          } else {
            log::info("No pending start command due to AVDTP suspend immediately");
          }
-@@ -3093,7 +3262,36 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
+@@ -3093,7 +3288,36 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
      if (param->opcode == bta_av_get_coex_opcode()) {
        return;
      }
@@ -2041,7 +2067,7 @@ index e3366236e1..5a9a51e657 100644
        bta_av_cb.offload_start_pending_hndl = BTA_AV_INVALID_HANDLE;
        (*bta_av_cb.p_cback)(BTA_AV_OFFLOAD_START_RSP_EVT, &value);
      } else {
-@@ -3111,7 +3309,222 @@ static uint8_t bta_av_get_coex_buffer_count(void) {
+@@ -3111,7 +3335,224 @@ static uint8_t bta_av_get_coex_buffer_count(void) {
    return osi_property_get_int32("persist.bluetooth.a2dp_offload.coex_buf_count", 0);
  }
  
@@ -2052,6 +2078,8 @@ index e3366236e1..5a9a51e657 100644
 +}
 +
  static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* offload_start) {
++  // A new start supersedes any mode publication still due for an earlier session.
++  vsqc_mode_publish_hndl = BTA_AV_INVALID_HANDLE;
 +  // Default to AOSP ownership; the QTI branch below overrides it after sending START.
 +  vsqc_offload_via_qti = false;
 +  // Optional diagnostic: route SBC through VSQC to distinguish a transport failure
@@ -2264,7 +2292,7 @@ index e3366236e1..5a9a51e657 100644
    uint8_t* param = reinterpret_cast<uint8_t*>(osi_malloc(sizeof(tBT_A2DP_OFFLOAD)));
    log::verbose("");
  
-@@ -3138,6 +3551,11 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
+@@ -3138,6 +3579,11 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
            offload_start->codec_type, offload_start->sample_rate, offload_start->bits_per_sample,
            offload_start->ch_mode, offload_start->encoded_audio_bitrate, offload_start->acl_hdl,
            offload_start->l2c_rcid, offload_start->mtu);
@@ -2276,7 +2304,7 @@ index e3366236e1..5a9a51e657 100644
    uint8_t coex_buf_count = bta_av_get_coex_buffer_count();
    l2c_link_set_br_coex_buf_cap(coex_buf_count, base::BindOnce([](uint8_t* param, uint8_t* p_param,
                                                                   uint8_t coex_buf_count, bool success) {
-@@ -3157,6 +3575,7 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
+@@ -3157,6 +3603,7 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
  
  static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigExt* offload_codec) {
    log::verbose("");
@@ -2284,7 +2312,7 @@ index e3366236e1..5a9a51e657 100644
  
    uint16_t connection_handle = get_btm_client_interface().peer.BTM_GetHCIConnHandle(
            p_scb->PeerAddress(), BT_TRANSPORT_BR_EDR);
-@@ -3200,6 +3619,10 @@ static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigEx
+@@ -3200,6 +3647,10 @@ static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigEx
    bta_av_cb.offload_start_pending_hndl = p_scb->hndl;
    bta_av_cb.offload_start_v2 = true;
  
@@ -2295,7 +2323,7 @@ index e3366236e1..5a9a51e657 100644
    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(HCI_CONTROLLER_A2DP, p_param - param,
                                                                param, offload_vendor_callback);
  }
-@@ -3210,6 +3633,19 @@ void bta_av_vendor_offload_stop() {
+@@ -3210,6 +3661,19 @@ void bta_av_vendor_offload_stop() {
  
    log::verbose("");
  
@@ -2315,7 +2343,7 @@ index e3366236e1..5a9a51e657 100644
    if (bta_av_cb.offload_start_v2) {
      tBTA_AV_SCB* p_scb = bta_av_hndl_to_scb(bta_av_cb.offload_start_pending_hndl);
      if (p_scb == nullptr) {
-@@ -3236,6 +3672,10 @@ void bta_av_vendor_offload_stop() {
+@@ -3236,6 +3700,10 @@ void bta_av_vendor_offload_stop() {
      *p_param++ = VS_HCI_A2DP_OFFLOAD_STOP;
    }
  
@@ -2326,7 +2354,7 @@ index e3366236e1..5a9a51e657 100644
    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(HCI_CONTROLLER_A2DP, p_param - param,
                                                                param, offload_vendor_callback);
  }
-@@ -3271,7 +3711,15 @@ void bta_av_offload_req(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* /*p_data*/) {
+@@ -3271,7 +3739,15 @@ void bta_av_offload_req(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* /*p_data*/) {
    A2dpCodecConfig* codec_config = bta_av_get_a2dp_current_codec();
    log::assert_that(codec_config != nullptr, "assert failed: codec_config != nullptr");
  
@@ -2343,7 +2371,7 @@ index e3366236e1..5a9a51e657 100644
      bta_av_vendor_offload_start_v2(p_scb, static_cast<A2dpCodecConfigExt*>(codec_config));
    } else {
      bta_av_offload_codec_builder(p_scb, &offload_start);
-@@ -3329,6 +3777,9 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
+@@ -3329,6 +3805,9 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
      case BTAV_A2DP_CODEC_INDEX_SOURCE_APTX_HD:
        codec_type = BTA_AV_CODEC_TYPE_APTXHD;
        break;
@@ -2353,7 +2381,7 @@ index e3366236e1..5a9a51e657 100644
      case BTAV_A2DP_CODEC_INDEX_SOURCE_LDAC:
        codec_type = BTA_AV_CODEC_TYPE_LDAC;
        break;
-@@ -3367,10 +3818,12 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
+@@ -3367,10 +3846,12 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
        p_a2dp_offload->sample_rate = BTAV_A2DP_CODEC_SAMPLE_RATE_96000;
        break;
    }
@@ -2370,10 +2398,10 @@ index e3366236e1..5a9a51e657 100644
    switch (CodecConfig->getAudioBitsPerSample()) {
      case 16:
 diff --git a/system/bta/av/bta_av_api.cc b/system/bta/av/bta_av_api.cc
-index 1c816268e2..6318a848ba 100644
+index 1c816268e2..13af2e438a 100644
 --- a/system/bta/av/bta_av_api.cc
 +++ b/system/bta/av/bta_av_api.cc
-@@ -266,6 +266,23 @@ void BTA_AvOffloadStart(tBTA_AV_HNDL hndl) {
+@@ -266,6 +266,38 @@ void BTA_AvOffloadStart(tBTA_AV_HNDL hndl) {
    bta_sys_sendmsg(p_buf);
  }
  
@@ -2384,21 +2412,36 @@ index 1c816268e2..6318a848ba 100644
 + * Description      Applies the aptX Adaptive operating mode to a running stream
 + *                  instead of waiting for the next offload START.
 + *
-+ *                  Unlike other BTA_Av* calls, no event is queued: the caller
-+ *                  already runs on the main thread (btif_a2dp_source.cc posts via
-+ *                  do_in_main_thread), and the vendor command uses the same path
-+ *                  as the START callback.
++ *                  Unlike other BTA_Av* calls, no event is queued: the caller is
++ *                  the BTIF peer state machine on the main thread, which only
++ *                  forwards the request for a started stream that is not being
++ *                  suspended.
 + *
 + * Returns          void
 + *
 + ******************************************************************************/
 +void BTA_AvUpdateAptxAdaptiveMode(void) { bta_av_aptx_apply_mode_now(); }
 +
++/*******************************************************************************
++ *
++ * Function         BTA_AvPublishAptxAdaptiveMode
++ *
++ * Description      Sends the initial aptX Adaptive operating mode of the offload
++ *                  session that hndl started. BTIF calls it on the main thread
++ *                  after the start response has reached the audio HAL and no
++ *                  suspend or stop is pending. A response that belongs to an
++ *                  earlier session sends nothing.
++ *
++ * Returns          void
++ *
++ ******************************************************************************/
++void BTA_AvPublishAptxAdaptiveMode(tBTA_AV_HNDL hndl) { bta_av_aptx_publish_session_mode(hndl); }
++
  /*******************************************************************************
   *
   * Function         BTA_AvStop
 diff --git a/system/bta/av/bta_av_int.h b/system/bta/av/bta_av_int.h
-index a2c2dacc47..febdd9897c 100644
+index a2c2dacc47..f5c92ed150 100644
 --- a/system/bta/av/bta_av_int.h
 +++ b/system/bta/av/bta_av_int.h
 @@ -653,6 +653,9 @@ constexpr uint8_t kEnablingAttemptsCountMaximum = 5;
@@ -2411,13 +2454,15 @@ index a2c2dacc47..febdd9897c 100644
  
  #define VS_HCI_A2DP_OFFLOAD_START 0x01
  #define VS_HCI_A2DP_OFFLOAD_STOP 0x02
-@@ -791,6 +794,9 @@ void bta_av_open_at_inc(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data);
+@@ -791,6 +794,11 @@ void bta_av_open_at_inc(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data);
  void bta_av_offload_req(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data);
  void bta_av_offload_rsp(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data);
  void bta_av_vendor_offload_stop(void);
-+// Implemented in bta_av_aact.cc. BTIF calls BTA_AvUpdateAptxAdaptiveMode()
-+// (bta_av_api.cc) instead; this declaration is internal to BTA.
++// Implemented in bta_av_aact.cc. BTIF calls BTA_AvUpdateAptxAdaptiveMode() and
++// BTA_AvPublishAptxAdaptiveMode() (bta_av_api.cc) instead; these declarations are
++// internal to BTA.
 +void bta_av_aptx_apply_mode_now(void);
++void bta_av_aptx_publish_session_mode(tBTA_AV_HNDL hndl);
  void bta_av_st_rc_timer(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data);
  void bta_av_api_set_peer_sep(tBTA_AV_DATA* p_data);
  
@@ -2435,7 +2480,7 @@ index 54678f0802..94f60deafe 100644
        avdtp_stream_config.tsep = AVDT_TSEP_SNK;
        avdtp_stream_config.p_sink_data_cback = bta_av_sink_data_cback;
 diff --git a/system/bta/include/bta_av_api.h b/system/bta/include/bta_av_api.h
-index 26b893931c..01ec95ec0b 100644
+index 26b893931c..e86ea5bdcd 100644
 --- a/system/bta/include/bta_av_api.h
 +++ b/system/bta/include/bta_av_api.h
 @@ -140,8 +140,9 @@ typedef uint8_t tBTA_AV_ERR;
@@ -2481,7 +2526,7 @@ index 26b893931c..01ec95ec0b 100644
    tBTA_AV_STATUS status;
  } tBTA_AV;
  
-@@ -739,4 +749,13 @@ void bta_debug_av_dump(int fd);
+@@ -739,4 +749,21 @@ void bta_debug_av_dump(int fd);
   */
  void BTA_AvSetPeerSep(const RawAddress& bdaddr, uint8_t sep);
  
@@ -2493,6 +2538,14 @@ index 26b893931c..01ec95ec0b 100644
 + * Bluetooth main thread.
 + */
 +void BTA_AvUpdateAptxAdaptiveMode(void);
++
++/**
++ * Sends the initial aptX Adaptive controller mode of the offload session that
++ * hndl started, once its start response has been handled. A no-op when no mode
++ * is due or the response belongs to an earlier session. Must run on the
++ * Bluetooth main thread.
++ */
++void BTA_AvPublishAptxAdaptiveMode(tBTA_AV_HNDL hndl);
 +
  #endif /* BTA_AV_API_H */
 diff --git a/system/btif/include/btif_av.h b/system/btif/include/btif_av.h
@@ -2527,7 +2580,7 @@ index d2f9e5ea0b..f0bb8782bd 100644
  
  /* Interface methods for the A2DP sink stack. */
 diff --git a/system/btif/src/btif_a2dp_source.cc b/system/btif/src/btif_a2dp_source.cc
-index ae00fa4323..357a961974 100644
+index ae00fa4323..e6a73f6c6b 100644
 --- a/system/btif/src/btif_a2dp_source.cc
 +++ b/system/btif/src/btif_a2dp_source.cc
 @@ -47,6 +47,7 @@
@@ -2556,14 +2609,15 @@ index ae00fa4323..357a961974 100644
  static void btif_a2dp_source_encoder_user_config_update_event(
          const RawAddress& peer_address,
          const std::vector<btav_a2dp_codec_config_t>& codec_user_preferences,
-@@ -409,11 +414,67 @@ class A2dpStreamCallbacks : public bluetooth::audio::a2dp::StreamCallbacks {
+@@ -409,11 +414,68 @@ class A2dpStreamCallbacks : public bluetooth::audio::a2dp::StreamCallbacks {
  
    Status SetLatencyMode(bool low_latency) const override {
      invoke_switch_buffer_size_cb(low_latency);
 +
-+    // SetLatencyMode runs on a Binder thread. Queue the codec-mode update on the
-+    // Bluetooth main thread before the ACL latency update so both operations stay
-+    // ordered and no AV codec state is read from the Binder thread.
++    // SetLatencyMode runs on a Binder thread. Queue the codec-mode property update on
++    // the Bluetooth main thread before the ACL latency update so no AV codec state is
++    // read from the Binder thread. The controller mode command follows through the
++    // peer state machine, after the ACL latency request.
 +    do_in_main_thread(
 +            base::BindOnce(&btif_a2dp_source_aptx_mode_follows_latency, low_latency));
 +
@@ -2615,16 +2669,16 @@ index ae00fa4323..357a961974 100644
 +              low_latency ? 0x2000 : 0x1000);
 +  }
 +
-+  // Notify BTA as well because properties are otherwise consumed only at stream start.
-+  // BTA owns active-session, feature and duplicate-mode checks. The API boundary keeps
-+  // BTIF independent of BTA internals.
-+  BTA_AvUpdateAptxAdaptiveMode();
++  // Properties are otherwise consumed only at stream start. The request goes through
++  // the active peer's state machine, which forwards it to BTA only for a started stream
++  // that is not being suspended; BTA owns the active-session and duplicate-mode checks.
++  btif_av_source_update_aptx_adaptive_mode();
 +}
 +
  static const A2dpStreamCallbacks a2dp_stream_callbacks;
  
  static void btif_a2dp_source_init_delayed(void) {
-@@ -548,6 +609,10 @@ bool btif_a2dp_source_end_session(const RawAddress& peer_address) {
+@@ -548,6 +610,10 @@ bool btif_a2dp_source_end_session(const RawAddress& peer_address) {
      bluetooth::audio::a2dp::end_session();
    }
  
@@ -2635,7 +2689,7 @@ index ae00fa4323..357a961974 100644
    return true;
  }
  
-@@ -645,10 +710,25 @@ static void btif_a2dp_source_setup_codec(const RawAddress& peer_address) {
+@@ -645,10 +711,25 @@ static void btif_a2dp_source_setup_codec(const RawAddress& peer_address) {
      return;
    }
  
@@ -2663,7 +2717,7 @@ index ae00fa4323..357a961974 100644
    }
  
    A2dpCodecConfig* a2dp_codec_config = bta_av_get_a2dp_current_codec();
-@@ -657,13 +737,21 @@ static void btif_a2dp_source_setup_codec(const RawAddress& peer_address) {
+@@ -657,13 +738,21 @@ static void btif_a2dp_source_setup_codec(const RawAddress& peer_address) {
      return;
    }
  
@@ -2692,10 +2746,18 @@ index ae00fa4323..357a961974 100644
    if (bluetooth::audio::a2dp::is_hal_enabled()) {
      bluetooth::audio::a2dp::ahal_codec_configuration config = {
 diff --git a/system/btif/src/btif_av.cc b/system/btif/src/btif_av.cc
-index 1c1ad7f9e6..06d12472e0 100644
+index 1c1ad7f9e6..bac88c64e9 100644
 --- a/system/btif/src/btif_av.cc
 +++ b/system/btif/src/btif_av.cc
-@@ -912,6 +912,7 @@ static const char* dump_av_sm_event_name(btif_av_sm_event_t event) {
+@@ -142,6 +142,7 @@ typedef enum {
+   BTIF_AV_AVRCP_REMOTE_PLAY_EVT,
+   BTIF_AV_SET_LATENCY_REQ_EVT,
+   BTIF_AV_RECONFIGURE_REQ_EVT,
++  BTIF_AV_APTX_MODE_UPDATE_REQ_EVT,
+ } btif_av_sm_event_t;
+ 
+ class BtifAvEvent {
+@@ -912,6 +913,7 @@ static const char* dump_av_sm_event_name(btif_av_sm_event_t event) {
      CASE_RETURN_STR(BTA_AV_REJECT_EVT)
      CASE_RETURN_STR(BTA_AV_RC_FEAT_EVT)
      CASE_RETURN_STR(BTA_AV_RC_PSM_EVT)
@@ -2703,7 +2765,58 @@ index 1c1ad7f9e6..06d12472e0 100644
      CASE_RETURN_STR(BTA_AV_OFFLOAD_START_RSP_EVT)
      CASE_RETURN_STR(BTIF_AV_CONNECT_REQ_EVT)
      CASE_RETURN_STR(BTIF_AV_DISCONNECT_REQ_EVT)
-@@ -3299,6 +3300,19 @@ static void btif_av_handle_bta_av_event(uint8_t peer_sep, const BtifAvEvent& bti
+@@ -926,6 +928,7 @@ static const char* dump_av_sm_event_name(btif_av_sm_event_t event) {
+     CASE_RETURN_STR(BTIF_AV_AVRCP_REMOTE_PLAY_EVT)
+     CASE_RETURN_STR(BTIF_AV_SET_LATENCY_REQ_EVT)
+     CASE_RETURN_STR(BTIF_AV_RECONFIGURE_REQ_EVT)
++    CASE_RETURN_STR(BTIF_AV_APTX_MODE_UPDATE_REQ_EVT)
+     default:
+       return "UNKNOWN_EVENT";
+   }
+@@ -2447,6 +2450,12 @@ bool BtifAvStateMachine::StateOpened::ProcessEvent(uint32_t event, void* p_data)
+       BTA_AvSetLatency(peer_.BtaHandle(), p_set_latency_req->is_low_latency);
+     } break;
+ 
++    case BTIF_AV_APTX_MODE_UPDATE_REQ_EVT:
++      // No offload session exists yet; the start response publishes the current mode.
++      log::info("Peer {} : event={} : stream not started, aptX Adaptive mode follows the start",
++                peer_.PeerAddress(), BtifAvEvent::EventName(event));
++      break;
++
+     case BTIF_AV_RECONFIGURE_REQ_EVT: {
+       log::info("Peer {} : event={} flags={}", peer_.PeerAddress(), BtifAvEvent::EventName(event),
+                 peer_.FlagsToString());
+@@ -2682,6 +2691,29 @@ bool BtifAvStateMachine::StateStarted::ProcessEvent(uint32_t event, void* p_data
+ 
+     case BTA_AV_OFFLOAD_START_RSP_EVT:
+       btif_a2dp_on_offload_started(peer_.PeerAddress(), p_av->status);
++      // The aptX Adaptive operating mode follows the start response, after the audio HAL
++      // has been told about the started stream. A stream that is already being suspended
++      // or stopped gets no mode command; its controller session ends with the pending STOP.
++      if (p_av->status == BTA_AV_SUCCESS) {
++        if (peer_.CheckFlags(BtifAvPeer::kFlagLocalSuspendPending | BtifAvPeer::kFlagRemoteSuspend |
++                             BtifAvPeer::kFlagPendingStop)) {
++          log::info("Peer {} : event={} flags={} : stream is suspending, aptX Adaptive mode not sent",
++                    peer_.PeerAddress(), BtifAvEvent::EventName(event), peer_.FlagsToString());
++        } else {
++          BTA_AvPublishAptxAdaptiveMode(peer_.BtaHandle());
++        }
++      }
++      break;
++
++    case BTIF_AV_APTX_MODE_UPDATE_REQ_EVT:
++      if (peer_.CheckFlags(BtifAvPeer::kFlagLocalSuspendPending | BtifAvPeer::kFlagRemoteSuspend |
++                           BtifAvPeer::kFlagPendingStop)) {
++        log::info("Peer {} : event={} flags={} : stream is suspending, aptX Adaptive mode follows the "
++                  "next start",
++                  peer_.PeerAddress(), BtifAvEvent::EventName(event), peer_.FlagsToString());
++        break;
++      }
++      BTA_AvUpdateAptxAdaptiveMode();
+       break;
+ 
+     case BTIF_AV_SET_LATENCY_REQ_EVT: {
+@@ -3299,6 +3331,19 @@ static void btif_av_handle_bta_av_event(uint8_t peer_sep, const BtifAvEvent& bti
        peer_address = rc_psm.peer_addr;
        break;
      }
@@ -2723,10 +2836,22 @@ index 1c1ad7f9e6..06d12472e0 100644
    }
  
    if (!msg.empty()) {
-@@ -3679,6 +3693,19 @@ bt_status_t btif_av_source_set_codec_config_preference(
+@@ -3679,6 +3724,32 @@ bt_status_t btif_av_source_set_codec_config_preference(
    return status;
  }
  
++// Runs on the main thread: hands an aptX Adaptive mode request to the active peer's state
++// machine. Without an active sink there is no stream; the next start publishes the mode.
++static void btif_av_source_dispatch_aptx_mode_update() {
++  const RawAddress peer_address = btif_av_source.ActivePeer();
++  if (peer_address.IsEmpty()) {
++    log::info("No active A2DP sink, aptX Adaptive mode follows the next start");
++    return;
++  }
++  btif_av_handle_event(AVDT_TSEP_SNK, peer_address, kBtaHandleUnknown,
++                       BtifAvEvent(BTIF_AV_APTX_MODE_UPDATE_REQ_EVT, nullptr, 0));
++}
++
 +bt_status_t btif_av_source_update_aptx_adaptive_mode() {
 +  log::info("");
 +
@@ -2735,9 +2860,10 @@ index 1c1ad7f9e6..06d12472e0 100644
 +    return BT_STATUS_NOT_READY;
 +  }
 +
-+  // BTA owns the active-offload check and mode deduplication. Keep that work on
-+  // the Bluetooth main thread, just like the AudioFlinger latency callback.
-+  return do_in_main_thread(base::BindOnce(&BTA_AvUpdateAptxAdaptiveMode));
++  // The request goes through the active peer's state machine, so a mode command is only
++  // sent for a started stream that is not being suspended. BTA keeps the active-offload
++  // check and the mode deduplication.
++  return do_in_main_thread(base::BindOnce(&btif_av_source_dispatch_aptx_mode_update));
 +}
 +
  void btif_av_source_cleanup(void) {
@@ -2953,10 +3079,10 @@ index febfabb48d..f94e08e3da 100644
    return std::format("Unsupported codec vendor_id: 0x{:x} codec_id: 0x{:x}", vendor_id, codec_id);
 diff --git a/system/stack/a2dp/a2dp_vendor_aptx_adaptive.cc b/system/stack/a2dp/a2dp_vendor_aptx_adaptive.cc
 new file mode 100644
-index 0000000000..1618b8bfaa
+index 0000000000..91adb7dcd0
 --- /dev/null
 +++ b/system/stack/a2dp/a2dp_vendor_aptx_adaptive.cc
-@@ -0,0 +1,479 @@
+@@ -0,0 +1,478 @@
 +/*
 + * Licensed under the Apache License, Version 2.0 (the "License");
 + * you may not use this file except in compliance with the License.
@@ -3004,11 +3130,10 @@ index 0000000000..1618b8bfaa
 +  return osi_property_get_bool("persist.vendor.qcom.bluetooth.aptxadaptiver2_2_support", false);
 +}
 +
-+// Joint Stereo is supported by the Bose QC Ultra 2 and FiiO BTR17 (channel mask 0x0a). Offered by
-+// default since the live test on both sinks (FiiO 96 kHz and 44.1 kHz Lossless, Bose selecting 0x08
-+// itself). The property only remains as an off switch for diagnosis.
++// Joint Stereo is supported by the Bose QC Ultra 2 and FiiO BTR17 (channel mask 0x0a), but it is
++// not offered by default, so these sinks are configured for Stereo. The property enables the offer.
 +static bool A2dpAptxAdaptiveJointStereoEnabled() {
-+  return osi_property_get_bool("persist.bluetooth.aptx_adaptive.offer_joint_stereo", true);
++  return osi_property_get_bool("persist.bluetooth.aptx_adaptive.offer_joint_stereo", false);
 +}
 +
 +// Channel byte of the result element. Without the offer it stays Stereo, as before. With it, a
@@ -3541,7 +3666,7 @@ index 0000000000..083f34bc72
 +#endif  // A2DP_VENDOR_APTX_ADAPTIVE_H
 diff --git a/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h b/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h
 new file mode 100644
-index 0000000000..648ee93391
+index 0000000000..6d555a9064
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h
 @@ -0,0 +1,88 @@
@@ -3565,7 +3690,7 @@ index 0000000000..648ee93391
 +#include "a2dp_vendor.h"
 +
 +/* aptX-Adaptive codec specific settings */
-+#define APTX_VSQC_PATCH_VERSION "v40-negotiated-feature-byte"
++#define APTX_VSQC_PATCH_VERSION "v41-ordered-mode-stereo"
 +#define A2DP_APTX_ADAPTIVE_CODEC_LEN 42
 +
 +#define A2DP_APTX_ADAPTIVE_VENDOR_ID 0x000000D7
@@ -3601,8 +3726,8 @@ index 0000000000..648ee93391
 +// Channel mode
 +#define A2DP_APTX_ADAPTIVE_CHANNELS_MONO 0x01
 +#define A2DP_APTX_ADAPTIVE_CHANNELS_STEREO 0x02
-+// Joint Stereo uses bit 3 of the channel-mode field and is offered by default;
-+// persist.bluetooth.aptx_adaptive.offer_joint_stereo=false turns the offer off.
++// Joint Stereo uses bit 3 of the channel-mode field. It is not offered by default;
++// persist.bluetooth.aptx_adaptive.offer_joint_stereo=true turns the offer on.
 +#define A2DP_APTX_ADAPTIVE_CHANNELS_JOINT_STEREO 0x08
 +// Only the lower six bits carry channel capabilities; upper bits are unrelated
 +// to the channel-mode comparison performed by this implementation.

@@ -24,6 +24,11 @@ On 2026-10-01, it was built into crDroid 16.0 and verified on the reference devi
 dynamic switching to 44.1 kHz Lossless, and hardware DSP offload streaming with
 0 Bluetooth crashes.
 
+Revision v41 (2026-10-13) changes when mode commands are sent and makes Stereo the default
+channel mode (steps 1 and 2 under *How it works*). It was built into crDroid 16.0 and checked on
+the same reference device: playback at 44.1 kHz Lossless and 96 kHz, and switching between the
+two. Low-latency switching was not measured again for v41.
+
 | | |
 |---|---|
 | **aptX Adaptive, 48/96 kHz** | negotiated, confirmed by the controller, audible |
@@ -285,12 +290,16 @@ A codec claim is only complete once the whole path has been looked at. In order:
    configuration and the sink confirms it. For Lossless the relevant bits are the sample-rate mask
    and the vendor feature byte — the patch keeps the sink's own feature bits instead of overwriting
    them (a locally selected configuration confirms only the features both sides support), which is
-   what made the DSP produce sound rather than silence.
+   what made the DSP produce sound rather than silence. The channel mode is Stereo; Joint Stereo
+   is offered only when `persist.bluetooth.aptx_adaptive.offer_joint_stereo` is `true`.
 2. **Controller (vendor-specific commands).** Starting an offload stream on this controller needs a
    vendor command, and so does changing the mode of a *running* stream. The patch sends START/STOP
    around the session and `UPDATE_MODE` for changes in between, and only treats a mode as applied
    once the controller has acknowledged it. An unacknowledged state is reported as such in the UI
-   instead of being shown as success.
+   instead of being shown as success. The first mode of a stream is sent only after the start
+   has been reported to the audio HAL, and not at all while the stream is already being suspended
+   or stopped. Later mode requests (latency changes, game start/exit) pass through the Bluetooth
+   stack's per-device state machine, so they reach the controller only for a running stream.
 3. **HAL / DSP.** The offload container is 24-bit; at 16-bit the DSP stays silent. The sink's
    configuration has to reach the DSP intact, otherwise the stream runs but produces nothing.
    This container width is not evidence of 24-bit Lossless or end-to-end bit transparency.
