@@ -38,6 +38,7 @@ body:
         - bluetooth-codec-ui
         - le-audio-fixes
         - oplus-hardware-fixes
+        - gaming-charge-bypass
         - gms-fixes
         - gps-servers
         - donation-disable
