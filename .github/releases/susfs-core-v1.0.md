@@ -1,5 +1,8 @@
 # SUSFS Core v1.0 — our patch-file context delta only
 
+> **Superseded.** This is an older release. The current edition is [SUSFS Core v1.1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/susfs-core-v1.1);
+> use it unless you need exactly this revision. Deutsch: Ältere Version, aktuell ist SUSFS Core v1.1.
+
 **Only our maintenance changes are included.** No complete upstream SUSFS core
 patch, companion source, KernelSU hooks, userspace tools or binaries are bundled.
 The tag identifies the reviewed patch-collection commit.
