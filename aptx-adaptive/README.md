@@ -29,6 +29,12 @@ channel mode (steps 1 and 2 under *How it works*). It was built into crDroid 16.
 the same reference device: playback at 44.1 kHz Lossless and 96 kHz, and switching between the
 two. Low-latency switching was not measured again for v41.
 
+Revision v42 (2026-10-18) changes the order of a suspend: for a running aptX Adaptive stream, the
+AVDTP SUSPEND is sent to the sink before the controller offload is stopped (step 2 under *How it
+works*). It was built into crDroid 16.0 and checked on the same reference device: 300 pause/resume
+cycles at 96 kHz with the new order in the HCI log, and playback at 44.1 kHz. Low-latency switching
+was not measured again for v42.
+
 | | |
 |---|---|
 | **aptX Adaptive, 48/96 kHz** | negotiated, confirmed by the controller, audible |
@@ -300,6 +306,10 @@ A codec claim is only complete once the whole path has been looked at. In order:
    has been reported to the audio HAL, and not at all while the stream is already being suspended
    or stopped. Later mode requests (latency changes, game start/exit) pass through the Bluetooth
    stack's per-device state machine, so they reach the controller only for a running stream.
+   When a running aptX Adaptive stream is suspended, the AVDTP SUSPEND goes to the sink first and
+   the controller offload is stopped right after it;
+   `persist.bluetooth.aptx_adaptive.suspend_before_offload_stop=false` restores the previous order.
+   Closing a stream and the other codecs keep their order.
 3. **HAL / DSP.** The offload container is 24-bit; at 16-bit the DSP stays silent. The sink's
    configuration has to reach the DSP intact, otherwise the stream runs but produces nothing.
    This container width is not evidence of 24-bit Lossless or end-to-end bit transparency.

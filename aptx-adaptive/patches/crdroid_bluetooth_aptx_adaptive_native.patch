@@ -1787,7 +1787,7 @@ index 95c8539e7f..90e7932dba 100644
      default:
        break;
 diff --git a/system/bta/av/bta_av_aact.cc b/system/bta/av/bta_av_aact.cc
-index e3366236e1..00f892ea85 100644
+index e3366236e1..9292b21fb9 100644
 --- a/system/bta/av/bta_av_aact.cc
 +++ b/system/bta/av/bta_av_aact.cc
 @@ -35,11 +35,16 @@
@@ -1807,7 +1807,65 @@ index e3366236e1..00f892ea85 100644
  #include "a2dp_sbc_constants.h"
  #include "avdt_api.h"
  #include "avrc_api.h"
-@@ -3054,11 +3059,175 @@ static uint8_t bta_av_get_coex_opcode(void) {
+@@ -1892,6 +1897,8 @@ void bta_av_do_start(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data) {
+             p_scb->PeerAddress(), bta_av_cb.sco_occupied, p_scb->role, p_scb->started, p_scb->wait);
+ }
+ 
++static bool bta_av_vsqc_stop_after_suspend();
++
+ /*******************************************************************************
+  *
+  * Function         bta_av_str_stopped
+@@ -1905,6 +1912,11 @@ void bta_av_str_stopped(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data) {
+   uint8_t start = p_scb->started;
+   bool sus_evt = true;
+   BT_HDR* p_buf;
++  // A suspend of a started stream sends AVDTP SUSPEND below. For an aptX Adaptive session started
++  // via 0xFC0A the controller offload stop follows that SUSPEND; every other stop keeps its order.
++  const bool suspend_request =
++          p_data && p_data->api_stop.suspend && start && p_scb->suspend_sup && !p_scb->suspending;
++  bool offload_stop_deferred = false;
+ 
+   log::info("peer {} bta_handle:0x{:x} audio_open_cnt:{}, p_data {} start:{}", p_scb->PeerAddress(),
+             p_scb->hndl, bta_av_cb.audio_open_cnt, std::format_ptr(p_data), start);
+@@ -1919,7 +1931,11 @@ void bta_av_str_stopped(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data) {
+ 
+   if (p_scb->co_started) {
+     if (bta_av_cb.offload_started_hndl == p_scb->hndl) {
+-      bta_av_vendor_offload_stop();
++      if (suspend_request && bta_av_vsqc_stop_after_suspend()) {
++        offload_stop_deferred = true;
++      } else {
++        bta_av_vendor_offload_stop();
++      }
+       bta_av_cb.offload_started_hndl = BTA_AV_INVALID_HANDLE;
+     } else if (bta_av_cb.offload_start_pending_hndl == p_scb->hndl) {
+       log::warn("Stop pending offload start command");
+@@ -1973,6 +1989,11 @@ void bta_av_str_stopped(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data) {
+       p_scb->suspending = true;
+       p_scb->l2c_bufs = 0;
+       AVDT_SuspendReq(&p_scb->avdt_handle, 1);
++      if (offload_stop_deferred) {
++        log::info("aptX Adaptive: offload stop after AVDTP SUSPEND, peer {}", p_scb->PeerAddress());
++        bta_av_vendor_offload_stop();
++        offload_stop_deferred = false;
++      }
+     }
+ 
+     /* send SUSPEND_EVT event only if not in reconfiguring state and sus_evt is
+@@ -1998,6 +2019,11 @@ void bta_av_str_stopped(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* p_data) {
+       (*bta_av_cb.p_cback)(BTA_AV_STOP_EVT, &bta_av_data);
+     }
+   }
++
++  // The deferred stop is sent with the SUSPEND above; never leave the controller offload running.
++  if (offload_stop_deferred) {
++    bta_av_vendor_offload_stop();
++  }
+ }
+ 
+ /*******************************************************************************
+@@ -3054,11 +3080,175 @@ static uint8_t bta_av_get_coex_opcode(void) {
              kA2dpCoexOpcodeDefault);
  }
  
@@ -1984,7 +2042,7 @@ index e3366236e1..00f892ea85 100644
      value.status = static_cast<tBTA_AV_STATUS>(param->p_param_buf[0]);
    }
    if (value.status == 0) {
-@@ -3067,6 +3236,10 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
+@@ -3067,6 +3257,10 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
      switch (sub_opcode) {
        case VS_HCI_A2DP_OFFLOAD_STOP:
        case VS_HCI_A2DP_OFFLOAD_STOP_V2:
@@ -1995,7 +2053,7 @@ index e3366236e1..00f892ea85 100644
          log::verbose("VS_HCI_STOP_A2DP_MEDIA successful");
          l2c_link_set_br_coex_buf_cap(0, base::BindOnce([](bool success) {
            if (!success) {
-@@ -3076,10 +3249,32 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
+@@ -3076,10 +3270,32 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
          break;
        case VS_HCI_A2DP_OFFLOAD_START:
        case VS_HCI_A2DP_OFFLOAD_START_V2:
@@ -2029,7 +2087,7 @@ index e3366236e1..00f892ea85 100644
          } else {
            log::info("No pending start command due to AVDTP suspend immediately");
          }
-@@ -3093,7 +3288,36 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
+@@ -3093,7 +3309,36 @@ static void offload_vendor_callback(tBTM_VSC_CMPL* param) {
      if (param->opcode == bta_av_get_coex_opcode()) {
        return;
      }
@@ -2067,7 +2125,7 @@ index e3366236e1..00f892ea85 100644
        bta_av_cb.offload_start_pending_hndl = BTA_AV_INVALID_HANDLE;
        (*bta_av_cb.p_cback)(BTA_AV_OFFLOAD_START_RSP_EVT, &value);
      } else {
-@@ -3111,7 +3335,224 @@ static uint8_t bta_av_get_coex_buffer_count(void) {
+@@ -3111,7 +3356,232 @@ static uint8_t bta_av_get_coex_buffer_count(void) {
    return osi_property_get_int32("persist.bluetooth.a2dp_offload.coex_buf_count", 0);
  }
  
@@ -2075,6 +2133,14 @@ index e3366236e1..00f892ea85 100644
 +// Default false preserves normal behavior.
 +static bool bta_av_aosp_offload_disabled() {
 +  return osi_property_get_int32("persist.bluetooth.aptx_adaptive.disable_aosp", 0) != 0;
++}
++
++// aptX Adaptive suspend order: for a session started via 0xFC0A, the AVDTP SUSPEND goes to the
++// sink before the controller offload stop (bta_av_str_stopped).
++// persist.bluetooth.aptx_adaptive.suspend_before_offload_stop=false selects the previous order.
++static bool bta_av_vsqc_stop_after_suspend() {
++  return vsqc_offload_via_qti &&
++         osi_property_get_bool("persist.bluetooth.aptx_adaptive.suspend_before_offload_stop", true);
 +}
 +
  static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* offload_start) {
@@ -2292,7 +2358,7 @@ index e3366236e1..00f892ea85 100644
    uint8_t* param = reinterpret_cast<uint8_t*>(osi_malloc(sizeof(tBT_A2DP_OFFLOAD)));
    log::verbose("");
  
-@@ -3138,6 +3579,11 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
+@@ -3138,6 +3608,11 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
            offload_start->codec_type, offload_start->sample_rate, offload_start->bits_per_sample,
            offload_start->ch_mode, offload_start->encoded_audio_bitrate, offload_start->acl_hdl,
            offload_start->l2c_rcid, offload_start->mtu);
@@ -2304,7 +2370,7 @@ index e3366236e1..00f892ea85 100644
    uint8_t coex_buf_count = bta_av_get_coex_buffer_count();
    l2c_link_set_br_coex_buf_cap(coex_buf_count, base::BindOnce([](uint8_t* param, uint8_t* p_param,
                                                                   uint8_t coex_buf_count, bool success) {
-@@ -3157,6 +3603,7 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
+@@ -3157,6 +3632,7 @@ static void bta_av_vendor_offload_start(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* of
  
  static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigExt* offload_codec) {
    log::verbose("");
@@ -2312,7 +2378,7 @@ index e3366236e1..00f892ea85 100644
  
    uint16_t connection_handle = get_btm_client_interface().peer.BTM_GetHCIConnHandle(
            p_scb->PeerAddress(), BT_TRANSPORT_BR_EDR);
-@@ -3200,6 +3647,10 @@ static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigEx
+@@ -3200,6 +3676,10 @@ static void bta_av_vendor_offload_start_v2(tBTA_AV_SCB* p_scb, A2dpCodecConfigEx
    bta_av_cb.offload_start_pending_hndl = p_scb->hndl;
    bta_av_cb.offload_start_v2 = true;
  
@@ -2323,7 +2389,7 @@ index e3366236e1..00f892ea85 100644
    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(HCI_CONTROLLER_A2DP, p_param - param,
                                                                param, offload_vendor_callback);
  }
-@@ -3210,6 +3661,19 @@ void bta_av_vendor_offload_stop() {
+@@ -3210,6 +3690,19 @@ void bta_av_vendor_offload_stop() {
  
    log::verbose("");
  
@@ -2343,7 +2409,7 @@ index e3366236e1..00f892ea85 100644
    if (bta_av_cb.offload_start_v2) {
      tBTA_AV_SCB* p_scb = bta_av_hndl_to_scb(bta_av_cb.offload_start_pending_hndl);
      if (p_scb == nullptr) {
-@@ -3236,6 +3700,10 @@ void bta_av_vendor_offload_stop() {
+@@ -3236,6 +3729,10 @@ void bta_av_vendor_offload_stop() {
      *p_param++ = VS_HCI_A2DP_OFFLOAD_STOP;
    }
  
@@ -2354,7 +2420,7 @@ index e3366236e1..00f892ea85 100644
    get_btm_client_interface().vendor.BTM_VendorSpecificCommand(HCI_CONTROLLER_A2DP, p_param - param,
                                                                param, offload_vendor_callback);
  }
-@@ -3271,7 +3739,15 @@ void bta_av_offload_req(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* /*p_data*/) {
+@@ -3271,7 +3768,15 @@ void bta_av_offload_req(tBTA_AV_SCB* p_scb, tBTA_AV_DATA* /*p_data*/) {
    A2dpCodecConfig* codec_config = bta_av_get_a2dp_current_codec();
    log::assert_that(codec_config != nullptr, "assert failed: codec_config != nullptr");
  
@@ -2371,7 +2437,7 @@ index e3366236e1..00f892ea85 100644
      bta_av_vendor_offload_start_v2(p_scb, static_cast<A2dpCodecConfigExt*>(codec_config));
    } else {
      bta_av_offload_codec_builder(p_scb, &offload_start);
-@@ -3329,6 +3805,9 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
+@@ -3329,6 +3834,9 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
      case BTAV_A2DP_CODEC_INDEX_SOURCE_APTX_HD:
        codec_type = BTA_AV_CODEC_TYPE_APTXHD;
        break;
@@ -2381,7 +2447,7 @@ index e3366236e1..00f892ea85 100644
      case BTAV_A2DP_CODEC_INDEX_SOURCE_LDAC:
        codec_type = BTA_AV_CODEC_TYPE_LDAC;
        break;
-@@ -3367,10 +3846,12 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
+@@ -3367,10 +3875,12 @@ static void bta_av_offload_codec_builder(tBTA_AV_SCB* p_scb, tBT_A2DP_OFFLOAD* p
        p_a2dp_offload->sample_rate = BTAV_A2DP_CODEC_SAMPLE_RATE_96000;
        break;
    }
@@ -3666,7 +3732,7 @@ index 0000000000..083f34bc72
 +#endif  // A2DP_VENDOR_APTX_ADAPTIVE_H
 diff --git a/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h b/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h
 new file mode 100644
-index 0000000000..6d555a9064
+index 0000000000..85c015a66a
 --- /dev/null
 +++ b/system/stack/include/a2dp_vendor_aptx_adaptive_constants.h
 @@ -0,0 +1,88 @@
@@ -3690,7 +3756,7 @@ index 0000000000..6d555a9064
 +#include "a2dp_vendor.h"
 +
 +/* aptX-Adaptive codec specific settings */
-+#define APTX_VSQC_PATCH_VERSION "v41-ordered-mode-stereo"
++#define APTX_VSQC_PATCH_VERSION "v42-suspend-before-stop"
 +#define A2DP_APTX_ADAPTIVE_CODEC_LEN 42
 +
 +#define A2DP_APTX_ADAPTIVE_VENDOR_ID 0x000000D7

@@ -28,6 +28,10 @@ Eigene Tests auf abweichender Hardware oder geänderten Quellständen bleiben de
   nach der Startmeldung an die Audio-HAL raus und nicht, solange der Stream schon
   pausiert oder stoppt. Spätere Moduswünsche (Latenz, Spielstart/-ende) laufen über
   die Zustandsmaschine des Bluetooth-Stacks für das aktive Gerät.
+- Pause-Reihenfolge (v42): Beim Pausieren eines laufenden aptX-Adaptive-Streams geht
+  zuerst AVDTP SUSPEND an die Senke, direkt danach wird der Offload im Controller
+  gestoppt. `persist.bluetooth.aptx_adaptive.suspend_before_offload_stop` auf `false`
+  stellt die bisherige Reihenfolge wieder her. Schließen und andere Codecs bleiben unverändert.
 - Kanalmodus Stereo; Joint Stereo wird nur angeboten, wenn
   `persist.bluetooth.aptx_adaptive.offer_joint_stereo` auf `true` steht.
 - Nach einem Reconnect stehen die auswählbaren Codecs sofort wieder vollständig
@@ -304,6 +308,10 @@ sind keine universelle Latenzgarantie für andere Anwendungen oder Senken.
 v41 (13.10.2026) wurde in crDroid 16.0 gebaut und am selben Referenzgerät geprüft:
 Ton bei 44,1 kHz Lossless und 96 kHz sowie der Wechsel zwischen beiden. Der
 Low-Latency-Wechsel wurde für v41 nicht erneut gemessen.
+
+v42 (18.10.2026) wurde in crDroid 16.0 gebaut und am selben Referenzgerät geprüft:
+300 Pause/Wiedergabe-Zyklen bei 96 kHz mit der neuen Reihenfolge im HCI-Mitschnitt sowie
+Ton bei 44,1 kHz. Der Low-Latency-Wechsel wurde für v42 nicht erneut gemessen.
 
 Für den produktiven v39-Stand wurden vom 20.09. bis 01.10.2026 **181 Logstunden
 in einem 249-Stunden-Fenster** ausgewertet, einschließlich eines Neustarts:
