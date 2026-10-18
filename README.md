@@ -23,6 +23,7 @@ Each module is self-contained and focuses on a single feature:
 ### System Services & Networking
 * **[gps-servers](gps-servers/):** Alternative SUPL and NTP server configuration. See the module directory for technical details.
 * **[gms-fixes](gms-fixes/):** Compatibility adjustments for Google services. See the module directory for technical details.
+* **[morphe-runtime](morphe-runtime/):** Morphe runtime compatibility for crDroid in libc. See the module directory for technical details.
 
 ### Kernel Subsystems
 * **[bbrv3](bbrv3/):** TCP congestion-control patch. See the module directory for technical details.

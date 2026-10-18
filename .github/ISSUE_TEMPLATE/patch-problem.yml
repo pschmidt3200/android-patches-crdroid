@@ -45,6 +45,7 @@ body:
         - bbrv3
         - bbrv3-experimental
         - susfs-core
+        - morphe-runtime
     validations:
       required: true
   - type: dropdown

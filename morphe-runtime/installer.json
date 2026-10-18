@@ -1,0 +1,11 @@
+{
+  "title": "Morphe Runtime Compatibility",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "bionic",
+      "file": "crdroid_bionic_morphe_runtime.patch",
+      "description": "Allow Morphe framework resources and defer caching of temporary app_process names."
+    }
+  ]
+}

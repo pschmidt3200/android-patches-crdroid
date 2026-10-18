@@ -23,6 +23,7 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 ### Systemdienste & Netzwerk
 * **[gps-servers](gps-servers/):** Alternative SUPL- und NTP-Serverkonfiguration. Technische Details im Modulordner.
 * **[gms-fixes](gms-fixes/):** Kompatibilitätsanpassungen für Google-Dienste. Technische Details im Modulordner.
+* **[morphe-runtime](morphe-runtime/):** Morphe-Runtime-Kompatibilität für crDroid in libc. Technische Details im Modulordner.
 
 ### Kernel-Subsysteme
 * **[bbrv3](bbrv3/):** TCP-Congestion-Control-Patch. Technische Details im Modulordner.

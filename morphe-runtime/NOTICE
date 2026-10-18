@@ -1,0 +1,25 @@
+Morphe runtime compatibility source patch for crDroid 16.0 (Android 16)
+Prepared 2026-10-18; no ROM/device acceptance or publication yet.
+
+Reference repositories, commits and public sources:
+  bionic fcfacc3e0ba78b59de4bdd46b8bec3676e5c305c https://github.com/crdroidandroid/android_bionic
+
+Affected source: libc/bionic/custom_rom_hide.cpp.
+Retain its Apache 2.0 notices from AxionOS (2025-2026), VoltageOS (2026)
+and the crDroid Android Project (2026). The compatibility patch and this
+documentation are provided under Apache License, Version 2.0; see LICENSE.
+No Morphe code, binary, device log or proprietary material is included.
+
+Morphe launcher inspected at public source commit
+da8545c92c94b83e23adf7b573b46b282fa2b062:
+https://github.com/MorpheApp/morphe-manager
+It sets --nice-name=<package>:Patcher before its Java runtime entry point.
+
+Validation boundary: native host execution of the actual libc filter;
+source apply/reverse and installer checks. New ROM build and on-device
+Morphe Process runtime acceptance remain pending. ART heap sizing is outside
+this change. A pre-rename cache lookup is a tested sequence, not a proven
+observation of a particular device crash.
+
+Patch inventory:
+  crdroid_bionic_morphe_runtime.patch
