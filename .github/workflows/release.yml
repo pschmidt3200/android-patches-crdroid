@@ -25,7 +25,8 @@ jobs:
     # All three must hold: this repository, its main branch, and public visibility.
     if: ${{ github.repository == 'pschmidt3200/android-patches-crdroid' && github.ref == 'refs/heads/main' && toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The preflight runs check-reference.sh, whose network retries wait up to ~12 minutes.
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:

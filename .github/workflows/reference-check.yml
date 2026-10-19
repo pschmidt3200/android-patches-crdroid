@@ -40,7 +40,9 @@ jobs:
     # A missing or private repository flag also skips allocation of a runner.
     if: ${{ toJSON(github.event.repository.private) == 'false' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Room for check-reference.sh's ~12-minute network retries during an upstream
+    # outage; normal runs take about a minute. Standard runners are free here.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
 

@@ -31,21 +31,26 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "${WORK}"' EXIT
 TREE="${WORK}/tree"
 
-# Network steps against the public upstream hosts are retried: a single refused or
+# Network steps against the public upstream hosts are retried: a refused or
 # overloaded response (e.g. "unable to handle this request due to load") must not
-# fail the check. Only fetching and the lazy blob download of the checkout are
-# retried; the patch checks below run exactly once.
-NETWORK_ATTEMPTS=4
+# fail the check. gitlab.com is regularly overloaded for minutes (12 and 19 October
+# 2026), so the waits grow to about 12 minutes in total before the step gives up.
+# Retried are fetching, the lazy blob download of the checkout and the final
+# `git status`, which in this partial clone may download objects as well (it failed
+# with "could not fetch ... from promisor remote" on 19 October 2026). The patch
+# checks run exactly once. CHECK_REFERENCE_NETWORK_DELAYS shortens the waits for
+# local tests.
+read -r -a NETWORK_DELAYS <<< "${CHECK_REFERENCE_NETWORK_DELAYS:-30 60 120 240 300}"
 retry_network() {
-    local attempt
-    for ((attempt = 1; attempt <= NETWORK_ATTEMPTS; attempt++)); do
+    local attempt=1 attempts=$((${#NETWORK_DELAYS[@]} + 1)) delay
+    "$@" && return 0
+    for delay in "${NETWORK_DELAYS[@]}"; do
+        echo "   network step failed (attempt ${attempt}/${attempts}), retrying in ${delay} s" >&2
+        sleep "${delay}"
+        attempt=$((attempt + 1))
         "$@" && return 0
-        if ((attempt < NETWORK_ATTEMPTS)); then
-            echo "   network step failed (attempt ${attempt}/${NETWORK_ATTEMPTS}), retrying in $((attempt * 20)) s" >&2
-            sleep $((attempt * 20))
-        fi
     done
-    echo "ERROR: network step failed after ${NETWORK_ATTEMPTS} attempts: $*" >&2
+    echo "ERROR: upstream host unreachable after ${attempts} attempts — a network outage, not a patch problem; re-run the check later: $*" >&2
     return 1
 }
 
@@ -96,7 +101,7 @@ run --check --reverse
 run --reverse
 
 for repo in "${REPOS[@]}"; do
-    changes="$(git -C "${TREE}/${repo}" status --porcelain --untracked-files=all)"
+    changes="$(retry_network git -C "${TREE}/${repo}" status --porcelain --untracked-files=all)"
     if [[ -n "${changes}" ]]; then
         echo "ERROR: ${repo} was not restored after reversing the patches:" >&2
         printf '%s\n' "${changes}" >&2
