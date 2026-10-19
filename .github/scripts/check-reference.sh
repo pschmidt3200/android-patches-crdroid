@@ -54,6 +54,48 @@ retry_network() {
     return 1
 }
 
+# Raw-file fallback (19 October 2026): gitlab.com refused every git fetch of
+# susfs4ksu ("unable to handle this request due to load" for an exact commit, a
+# partial clone and even a shallow branch fetch), while its HTTP raw-file endpoint
+# served the same commit's files reliably. When the git fetch fails, the files the
+# patches touch come from that endpoint of the original repository, at the same
+# commit or branch; the checks that follow are unchanged. CHECK_REFERENCE_FORCE_RAW=1
+# takes this path directly, for local tests.
+raw_url() { # <repository url> <commit or branch> <path>
+    local base="${1%.git}"
+    case "${base}" in
+        https://gitlab.com/*) echo "${base}/-/raw/$2/$3" ;;
+        https://github.com/*) echo "https://raw.githubusercontent.com/${base#https://github.com/}/$2/$3" ;;
+        *) return 1 ;;
+    esac
+}
+raw_get() { # <url> <file>: 200 keeps the file, 404 means the file does not exist upstream
+    local code
+    code="$(curl -sSL --max-time 60 -o "$2" -w '%{http_code}' "$1")" || return 1
+    case "${code}" in
+        200) return 0 ;;
+        404) rm -f "$2"; return 0 ;;
+        *) echo "   HTTP ${code} for $1" >&2; return 1 ;;
+    esac
+}
+fetch_raw() { # <dir> <repository url> <commit or branch> <path>...
+    local dir="$1" url="$2" target="$3" path found=0
+    shift 3
+    for path in "$@"; do
+        mkdir -p "$(dirname "${dir}/${path}")"
+        retry_network raw_get "$(raw_url "${url}" "${target}" "${path}")" "${dir}/${path}" || return 1
+        if [[ -e "${dir}/${path}" ]]; then
+            found=$((found + 1))
+        fi
+    done
+    if ((found == 0)); then
+        echo "ERROR: none of the patched files exists at ${target} in ${url} — wrong commit, branch or path" >&2
+        return 1
+    fi
+    git -C "${dir}" add -A
+    git -C "${dir}" -c user.name=check -c user.email=check@localhost commit -q -m "raw files of ${target}"
+}
+
 mapfile -t ENTRIES < <(sed -n '/^PATCHES=(/,/^)/p' "${MOD}/apply-patches.sh" | grep -oE '"[^"]+"' | tr -d '"')
 mapfile -t REPOS < <(printf '%s\n' "${ENTRIES[@]}" | cut -d: -f1 | awk '!seen[$0]++')
 
@@ -79,15 +121,42 @@ for repo in "${REPOS[@]}"; do
 
     git -c init.defaultBranch=check init -q "${dir}"
     git -C "${dir}" remote add origin "${url}"
-    retry_network git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}"
-    git -C "${dir}" config core.sparseCheckout true
-    for entry in "${ENTRIES[@]}"; do
+    mapfile -t paths < <(for entry in "${ENTRIES[@]}"; do
         IFS=":" read -r entry_repo patch _ <<< "${entry}"
         [[ "${entry_repo}" == "${repo}" ]] || continue
-        git apply --numstat "${MOD}/patches/${patch}" | cut -f3 | sed 's|^|/|'
-    done > "${dir}/.git/info/sparse-checkout"
-    retry_network git -C "${dir}" checkout -q FETCH_HEAD
-    echo "   ${repo}: $(git -C "${dir}" rev-parse --short=12 HEAD) (${target})"
+        git apply --numstat "${MOD}/patches/${patch}" | cut -f3
+    done | awk '!seen[$0]++')
+    fetch=(git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}")
+    if raw_url "${url}" x x > /dev/null; then
+        # A raw-file endpoint exists: two git attempts, then the raw files.
+        fetched=0
+        if [[ -z "${CHECK_REFERENCE_FORCE_RAW:-}" ]]; then
+            if "${fetch[@]}"; then
+                fetched=1
+            else
+                sleep 30
+                if "${fetch[@]}"; then
+                    fetched=1
+                fi
+            fi
+        fi
+    else
+        retry_network "${fetch[@]}"
+        fetched=1
+    fi
+    if ((fetched)); then
+        git -C "${dir}" config core.sparseCheckout true
+        printf '/%s\n' "${paths[@]}" > "${dir}/.git/info/sparse-checkout"
+        retry_network git -C "${dir}" checkout -q FETCH_HEAD
+        echo "   ${repo}: $(git -C "${dir}" rev-parse --short=12 HEAD) (${target})"
+    else
+        echo "   ${repo}: git fetch refused, taking the patched files from the raw-file endpoint" >&2
+        fetch_raw "${dir}" "${url}" "${target}" "${paths[@]}" || {
+            echo "ERROR: upstream host unreachable for ${repo} — a network outage, not a patch problem; re-run the check later" >&2
+            exit 1
+        }
+        echo "   ${repo}: ${#paths[@]} file(s) at ${target}, raw from ${url}"
+    fi
 done
 
 run() {
