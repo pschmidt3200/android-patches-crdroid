@@ -1,5 +1,8 @@
 # Bluetooth Codec UI v1.2
 
+> **Superseded.** This is an older release, replaced by [Bluetooth Codec UI v1.3](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/bluetooth-codec-ui-v1.3).
+> Use the newest `bluetooth-codec-ui` release unless you need exactly this revision. Deutsch: Ältere Version, ersetzt durch Bluetooth Codec UI v1.3.
+
 LE Audio release for **crDroid 16.0 / Android 16**.
 Reference platform: **OnePlus 13** (`dodge`, CPH2653) with **FiiO BTR17** (LC3 over LE Audio; aptX Adaptive, AAC, SBC over A2DP).
 
