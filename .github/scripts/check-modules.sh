@@ -117,12 +117,13 @@ for module in "${MODULES[@]}"; do
             err "${notes}: ${module}-v${versions[-1]} exists — add a '> **Superseded.**' line under the heading linking to a newer ${module} release"
             continue
         fi
-        target="$(grep -oE "/releases/tag/${module}-v[0-9][^) ]*\)" <<< "${block}" | head -n 1 || true)"
-        target="${target#/releases/tag/"${module}"-v}"
-        target="${target%)}"
-        if [[ -z "${target}" || "${target}" == "${version}" \
-                || "$(printf '%s\n' "${version}" "${target}" | sort -V | tail -n 1)" != "${target}" \
-                || ! -f ".github/releases/${module}-v${target}.md" ]]; then
+        # Not "target": the module loop above uses that name for an associative array.
+        successor="$(grep -oE "/releases/tag/${module}-v[0-9][^) ]*\)" <<< "${block}" | head -n 1 || true)"
+        successor="${successor#/releases/tag/"${module}"-v}"
+        successor="${successor%)}"
+        if [[ -z "${successor}" || "${successor}" == "${version}" \
+                || "$(printf '%s\n' "${version}" "${successor}" | sort -V | tail -n 1)" != "${successor}" \
+                || ! -f ".github/releases/${module}-v${successor}.md" ]]; then
             err "${notes}: the Superseded line must link to a newer ${module} release with notes"
         fi
     done
