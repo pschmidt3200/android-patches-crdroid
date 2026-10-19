@@ -14,6 +14,10 @@
 #        default: the reference commits from NOTICE, module aptx-adaptive
 set -euo pipefail
 export LC_ALL=C.UTF-8
+# A busy host may also accept the connection and then stall (19 October 2026: a fetch
+# hung for minutes without output). Git aborts transfers slower than 1 KB/s for 60 s,
+# lazy blob downloads included; each fetch below has a hard limit as well.
+export GIT_HTTP_LOW_SPEED_LIMIT=1000 GIT_HTTP_LOW_SPEED_TIME=60
 
 BRANCH=""
 if [[ "${1:-}" == "--branch" ]]; then
@@ -126,7 +130,7 @@ for repo in "${REPOS[@]}"; do
         [[ "${entry_repo}" == "${repo}" ]] || continue
         git apply --numstat "${MOD}/patches/${patch}" | cut -f3
     done | awk '!seen[$0]++')
-    fetch=(git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}")
+    fetch=(timeout 180 git -c credential.helper= -C "${dir}" fetch -q --depth 1 --filter=blob:none origin "${target}")
     if raw_url "${url}" x x > /dev/null; then
         # A raw-file endpoint exists: two git attempts, then the raw files.
         fetched=0
