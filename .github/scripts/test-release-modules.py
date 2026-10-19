@@ -28,8 +28,8 @@ class ReleaseTests(unittest.TestCase):
         self.env = dict(os.environ, GH_REPO="fixture/repository", EVENT_LOG=str(self.events),
                         GIT_AUTHOR_NAME="ci", GIT_AUTHOR_EMAIL="ci@localhost",
                         GIT_COMMITTER_NAME="ci", GIT_COMMITTER_EMAIL="ci@localhost",
-                        PUBLISHED="", ASSETS="{}", API_FAIL="", CREATE_FAIL="", UPLOAD_FAIL="",
-                        FAIL_GATE="")
+                        PUBLISHED="", ASSETS="{}", RELEASES="{}", API_FAIL="", CREATE_FAIL="",
+                        UPLOAD_FAIL="", EDIT_FAIL="", FAIL_GATE="")
         # Gate stubs record calls; the real gates have their own behavioural tests.
         for name in ("check-modules.sh", "test-apply-script.sh", "check-reference.sh"):
             (scripts / name).write_text(
@@ -46,8 +46,9 @@ class ReleaseTests(unittest.TestCase):
         bin_dir = self.root / "bin"
         bin_dir.mkdir()
         gh = bin_dir / "gh"
-        # ASSETS maps an existing release tag to its asset names. Every uploaded .zip is
-        # logged with its entries and contents, so tests can see what users would get.
+        # ASSETS maps an existing release tag to its asset names, RELEASES to its GitHub
+        # title and body. Every uploaded .zip is logged with its entries and contents, and
+        # every edited release with its new notes, so tests can see what users would get.
         gh.write_text(
             '#!/usr/bin/env python3\nimport json,os,sys,zipfile\n'
             'args=sys.argv[1:]\n'
@@ -63,8 +64,14 @@ class ReleaseTests(unittest.TestCase):
             '    if os.environ.get("API_FAIL"): sys.exit(1)\n'
             '    if "/releases/tags/" in args[1]:\n'
             '        tag=args[1].rsplit("/",1)[1]\n'
-            '        print("\\n".join(json.loads(os.environ.get("ASSETS","{}")).get(tag, [])))\n'
+            '        info=json.loads(os.environ.get("RELEASES","{}")).get(tag, {})\n'
+            '        print(json.dumps({"name": info.get("name", tag), "body": info.get("body", ""),\n'
+            '                          "assets": json.loads(os.environ.get("ASSETS","{}")).get(tag, [])}))\n'
             '    else: print(os.environ.get("PUBLISHED", ""))\n'
+            'elif args[:2] == ["release", "edit"]:\n'
+            '    if args[2] == os.environ.get("EDIT_FAIL"): sys.exit(1)\n'
+            '    with open(args[args.index("--notes-file")+1]) as notes, open(os.environ["EVENT_LOG"],"a") as log:\n'
+            '        log.write("notes "+json.dumps([args[2], notes.read()])+"\\n")\n'
             'elif args[:2] == ["release", "create"]:\n'
             '    if args[2] == os.environ.get("CREATE_FAIL"): sys.exit(1)\n'
             '    log_zips(args[2])\n'
@@ -113,8 +120,36 @@ class ReleaseTests(unittest.TestCase):
         """[tag, asset name, {entry: content}] for every archive handed to GitHub."""
         return [json.loads(line[4:]) for line in self.calls() if line.startswith("zip ")]
 
+    def edits(self):
+        return [json.loads(line[3:]) for line in self.calls() if line.startswith('gh ["release", "edit"')]
+
+    def notes_written(self):
+        """[tag, notes] for every existing release whose notes were replaced."""
+        return [json.loads(line[6:]) for line in self.calls() if line.startswith("notes ")]
+
     def writes(self):
-        return self.creations() + self.uploads()
+        return self.creations() + self.uploads() + self.edits()
+
+    def successor(self, link="gms-fixes-v1.1"):
+        """gms-fixes v1.1 at HEAD; the v1.0 notes carry the Superseded line pointing to `link`."""
+        notes = self.root / ".github/releases"
+        (notes / "gms-fixes-v1.1.md").write_text("# gms-fixes v1.1\n\nSecond edition\n")
+        (notes / "gms-fixes-v1.0.md").write_text(
+            "# gms-fixes v1.0\n\n"
+            "> **Superseded.** This is an older release, replaced by "
+            f"[gms-fixes v1.1](https://github.com/fixture/repository/releases/tag/{link}).\n"
+            "> Use the newest gms-fixes release unless you need exactly this revision.\n\n"
+            "Release notes for gms-fixes\n")
+        self.git("add", ".github/releases")
+        self.git("commit", "-qm", "gms-fixes successor")
+        if not (self.root / ".git/refs/tags/gms-fixes-v1.1").exists():
+            self.git("tag", "gms-fixes-v1.1")
+
+    def published(self, *extra, gms_title="gms-fixes v1.0", gms_body="# gms-fixes v1.0\n\nRelease notes for gms-fixes\n"):
+        """Every v1.0 (plus `extra`) is on GitHub with its archive; gms-fixes-v1.0 shows the given title/body."""
+        tags = [f"{mod}-v1.0" for mod in MODULES] + list(extra)
+        return dict(PUBLISHED="\n".join(tags), ASSETS=json.dumps({tag: [f"{tag}.zip"] for tag in tags}),
+                    RELEASES=json.dumps({"gms-fixes-v1.0": {"name": gms_title, "body": gms_body}}))
 
     def module_files(self, module):
         return {f"{module}/{name}" for name in ("installer.json", "NOTICE", "apply-patches.sh")}
@@ -302,6 +337,56 @@ class ReleaseTests(unittest.TestCase):
         self.release("v1.0", PUBLISHED="v1.0")
         self.assertEqual(self.creations(), [])
         self.assertEqual(len(self.calls()), 1)
+
+    # Pascal 2026-10-19: older module releases must be recognisable. The only later change to
+    # an existing release besides a missing archive is this one-time "superseded" mark.
+    def test_superseded_release_is_marked_once_after_its_successor(self):
+        self.successor()
+        self.release(**self.published())
+        self.assertEqual([call[2] for call in self.creations()], ["gms-fixes-v1.1"])
+        [edit] = self.edits()
+        self.assertEqual(edit[2], "gms-fixes-v1.0")
+        self.assertEqual(edit[edit.index("--title") + 1], "gms-fixes v1.0 (superseded by v1.1)")
+        events = self.calls()
+        self.assertLess(next(i for i, e in enumerate(events) if e.startswith('gh ["release", "create"')),
+                        next(i for i, e in enumerate(events) if e.startswith('gh ["release", "edit"')))
+        # The Superseded block goes under the existing heading; the rest of the body stays as published.
+        [(tag, body)] = self.notes_written()
+        self.assertEqual(body.split("\n")[:3], ["# gms-fixes v1.0", "", body.split("\n")[2]])
+        self.assertTrue(body.split("\n")[2].startswith("> **Superseded.**"), body)
+        self.assertIn("/releases/tag/gms-fixes-v1.1)", body)
+        self.assertTrue(body.rstrip().endswith("Release notes for gms-fixes"), body)
+        # GitHub now shows the mark: a second run edits nothing.
+        self.events.unlink()
+        self.release(**self.published("gms-fixes-v1.1", gms_title="gms-fixes v1.0 (superseded by v1.1)",
+                                      gms_body=body))
+        self.assertEqual(self.writes(), [])
+
+    def test_release_without_superseded_line_is_not_edited(self):
+        (self.root / ".github/releases/gms-fixes-v1.1.md").write_text("# gms-fixes v1.1\n")
+        self.git("add", ".github/releases")
+        self.git("commit", "-qm", "gms-fixes v1.1")
+        self.git("tag", "gms-fixes-v1.1")
+        self.release(**self.published())
+        self.assertEqual([call[2] for call in self.creations()], ["gms-fixes-v1.1"])
+        self.assertEqual(self.edits(), [])
+
+    def test_invalid_superseded_link_aborts_before_any_write(self):
+        # Older, the release itself, another module, and a newer edition that does not exist.
+        for link in ("gms-fixes-v0.9", "gms-fixes-v1.0", "gps-servers-v1.0", "gms-fixes-v2.0"):
+            with self.subTest(link=link):
+                self.successor(link)
+                if self.events.exists():
+                    self.events.unlink()
+                result = self.release(success=False, **self.published())
+                self.assertIn("Superseded line", result.stderr)
+                self.assertEqual(self.writes(), [])
+
+    def test_check_mode_reports_superseded_mark_without_writing(self):
+        self.successor()
+        result = self.release("--check", **self.published())
+        self.assertIn("Would mark gms-fixes-v1.0 as superseded by gms-fixes-v1.1", result.stdout)
+        self.assertEqual(self.writes(), [])
 
 
 if __name__ == "__main__":

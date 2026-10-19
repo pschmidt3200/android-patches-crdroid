@@ -1,7 +1,7 @@
 # aptX Adaptive & Lossless v1.4
 
-> **Superseded.** This is an older release. The current edition is [aptX Adaptive v1.6](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.6);
-> use it unless you need exactly this revision. Deutsch: Ältere Version, aktuell ist aptX Adaptive v1.6.
+> **Superseded.** This is an older release, replaced by [aptX Adaptive v1.6](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v1.6).
+> Use the newest `aptx-adaptive` release unless you need exactly this revision. Deutsch: Ältere Version, ersetzt durch aptX Adaptive v1.6.
 
 Bug-fix release for **crDroid 16.0 / Android 16**.
 Reference platform: **OnePlus 13** (`dodge`, CPH2653), SM8750 / Qualcomm FastConnect 7900,

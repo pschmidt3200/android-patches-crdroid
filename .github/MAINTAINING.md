@@ -68,13 +68,24 @@ To keep releases clear and focused, module tags are created only when the distri
 ### How to Release a Module
 
 1. Prepare release notes under `.github/releases/<module>-v<version>.md`.
-2. Run the preflight checks for all affected modules (`check-modules.sh`, `test-markdown-links.sh`).
-3. Commit release notes to `main`.
-4. Create an annotated git tag:
+2. If the module already has a release, add this line under the heading of the previous
+   edition's notes so readers recognise it as old:
+   ```markdown
+   > **Superseded.** This is an older release, replaced by [<Module> v<version>](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/<module>-v<version>).
+   > Use the newest `<module>` release unless you need exactly this revision. Deutsch: Ältere Version, ersetzt durch <Module> v<version>.
+   ```
+   `check-modules.sh` rejects an older edition without it. After the new release exists,
+   the release workflow marks the previous GitHub release once: `(superseded by v<version>)`
+   in its title and the same line under its heading. Its tag, archive and remaining text
+   stay unchanged.
+3. Run the preflight checks for all affected modules (`check-modules.sh`, `test-markdown-links.sh`,
+   `test-release-notes.sh`).
+4. Commit release notes to `main`.
+5. Create an annotated git tag:
    ```bash
    git tag -a <module>-v<version> -m "<module> v<version>"
    ```
-5. Push `main` and the tag:
+6. Push `main` and the tag:
    ```bash
    git push origin main --tags
    ```

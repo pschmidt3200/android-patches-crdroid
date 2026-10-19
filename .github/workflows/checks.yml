@@ -40,6 +40,9 @@ jobs:
       - name: Markdown link validation behaviour
         run: bash .github/scripts/test-markdown-links.sh
 
+      - name: Superseded release notes behaviour
+        run: bash .github/scripts/test-release-notes.sh
+
       - name: apply-patches.sh behaviour
         run: |
           for script in */apply-patches.sh; do

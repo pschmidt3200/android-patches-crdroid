@@ -98,6 +98,36 @@ for module in "${MODULES[@]}"; do
     unset target
 done
 
+# Release notes of a module with several editions: every older edition carries the
+# "> **Superseded.**" line linking to a newer edition of the same module, so readers can
+# tell old releases apart (Pascal 2026-10-19). release-modules.sh then marks the published
+# release once.
+for module in "${MODULES[@]}"; do
+    mapfile -t versions < <(
+        for notes in .github/releases/"${module}"-v[0-9]*.md; do
+            [[ -e "${notes}" ]] || continue
+            name="$(basename "${notes}" .md)"
+            echo "${name#"${module}-v"}"
+        done | sort -V)
+    [[ ${#versions[@]} -gt 1 ]] || continue
+    for version in "${versions[@]:0:${#versions[@]}-1}"; do
+        notes=".github/releases/${module}-v${version}.md"
+        block="$(sed -n '/^> \*\*Superseded\.\*\*/,/^[^>]/p' "${notes}")"
+        if [[ -z "${block}" ]]; then
+            err "${notes}: ${module}-v${versions[-1]} exists — add a '> **Superseded.**' line under the heading linking to a newer ${module} release"
+            continue
+        fi
+        target="$(grep -oE "/releases/tag/${module}-v[0-9][^) ]*\)" <<< "${block}" | head -n 1 || true)"
+        target="${target#/releases/tag/"${module}"-v}"
+        target="${target%)}"
+        if [[ -z "${target}" || "${target}" == "${version}" \
+                || "$(printf '%s\n' "${version}" "${target}" | sort -V | tail -n 1)" != "${target}" \
+                || ! -f ".github/releases/${module}-v${target}.md" ]]; then
+            err "${notes}: the Superseded line must link to a newer ${module} release with notes"
+        fi
+    done
+done
+
 # Relative links in Markdown files must resolve (external links and anchors are not checked).
 while IFS= read -r markdown; do
     dir="$(dirname "${markdown}")"
