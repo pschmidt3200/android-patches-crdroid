@@ -61,7 +61,7 @@ und Rücknahme auf dem Upstream-Referenzstand (der aktuelle Stand des Branches
 `gki-android15-6.6` passt seit dessen Umbau am 18./19.10.2026 nicht mehr) und die exakte
 Ergebnisprüfsumme. Die entstandene vollständige
 Upstream-Patchdatei wird separat mit BBRv3 im isolierten Referenz-Kernelindex geprüft.
-**Dokumentierte Kernel- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+**Dokumentierte Kernel- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13**
 unter Linux 6.6 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:
 SUSFS `v2.3.0` (GKI) ist im Kernel initialisiert (`susfs is initialized! version: v2.3.0`), KSU-Integration
 und Userspace-Werkzeuge (`/data/adb/ksu/bin/susfs`) sind aktiv und alle Kernelfeatures (`SUS_PATH`,

@@ -1,7 +1,7 @@
 # aptX Adaptive & aptX Lossless for crDroid 17.0 on the OnePlus 13 & OnePlus Pad 3
 
 Patches that bring working **aptX Adaptive** — including **aptX Lossless** at 44.1 kHz and a
-**low-latency mode for games** — to crDroid 17.0 (Android 17) on SM8750 devices (OnePlus 13 / `dodge`, CPH2653
+**low-latency mode for games** — to crDroid 17.0 (Android 17) on SM8750 devices (OnePlus 13
 and OnePlus Pad 3 / Pad 2 Pro / `erhai`, OPD2415) with a Qualcomm FastConnect 7900 controller.
 
 The Android Bluetooth stack can negotiate aptX Adaptive, but on this platform the parts that
@@ -11,14 +11,14 @@ sample-rate switch — need this integration in the reference crDroid source tre
 **ROM scope:** This package is currently intended only for **crDroid 17.0**.
 Support for other ROMs has not been established.
 
-> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
-> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
-> A ROM build and device verification on 17.0 are pending; the results described below were
-> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
->
-> In Android 17, legacy codec slot 7 belongs to LHDC. The 17.0 edition therefore carries aptX
-> Adaptive in extension slot 8 (vendor codec ID `0x00ad00d7ff`) through the native stack, both
-> Java codec factories and the framework; LHDC keeps slot 7.
+> **crDroid 17.0 edition:** source apply/reverse checks pass at the [`NOTICE`](NOTICE)
+> reference commits. On 2026-10-20, the maintainer reported a running 17.0 ROM with
+> working Bluetooth playback. This is basic device feedback; it does not revalidate
+> every codec, rate, frame duration or gaming transition. Detailed results below refer
+> to crDroid 16.0 unless explicitly labelled otherwise. The frozen 16.0 edition is on
+> branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
+> Android 17 reserves legacy codec slot 7 for LHDC; aptX Adaptive uses extension slot 8
+> (vendor codec ID `0x00ad00d7ff`) across the native stack, Java factories and framework.
 
 > 🇩🇪 Diese Datei auf Deutsch: [README.de.md](README.de.md)
 
@@ -88,7 +88,7 @@ Being explicit about the limits is the point of this section.
 
 ## Requirements
 
-* Reference devices: OnePlus 13 (`dodge`, CPH2653) and OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415), Qualcomm **FastConnect 7900**.
+* Reference devices: OnePlus 13 and OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415), Qualcomm **FastConnect 7900**.
   Other devices need separate integration and validation; sharing the controller is not sufficient.
 * A crDroid tree on branch **`17.0`** (Android 17); for 16.0, use branch `16.0` of this repository. The exact
   reference commits are listed in [`NOTICE`](NOTICE).
@@ -105,7 +105,7 @@ and the vendor-offload requirements still apply.
 
 | Layer | Component | Status / Notes |
 |---|---|---|
-| **Reference Devices** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Verified reference platforms with crDroid 16.0 (SM8750 / FastConnect 7900); 17.0 not yet tested on the device. |
+| **Reference Devices** | **OnePlus 13**<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Verified reference platforms with crDroid 16.0 (SM8750 / FastConnect 7900); 17.0 not yet tested on the device. |
 | **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
 | **Other Devices** | — | **Untested.** The patches target crDroid 17.0; patch 1 sends FastConnect 7900 vendor commands and patch 4 is device-specific. A port is your own integration and validation work. |
 | **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181) | Reference sink: 44.1 kHz Lossless, 48 / 96 kHz, 48 kHz low latency. |

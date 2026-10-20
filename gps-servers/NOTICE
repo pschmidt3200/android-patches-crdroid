@@ -18,7 +18,7 @@ The NTP hostname refers to the German pool, not a guaranteed dedicated server.
 NTP Pool documentation: https://www.ntppool.org/en/zone/de
 These service references are not an endorsement or availability guarantee.
 
-Reference configuration: OnePlus SM8750 common tree; OnePlus 13 (dodge) context.
+Reference configuration: OnePlus SM8750 common tree; OnePlus 13 context.
 Source apply/reverse checks do not establish effective modem server selection,
 SUPL privacy properties, fix time or GNSS accuracy on a running device.
 

@@ -88,7 +88,7 @@ ANDROID_ROOT="$(cd "$1" && pwd)"
 PATCHES=(
     "frameworks/base:gms_query_visibility.patch:Make only com.google.android.gms queryable through PackageManager."
     "vendor/gms:gms_google_clock_permission.patch:Allow the privileged Google Clock package to schedule exact alarms."
-    "vendor/gms:gms_uses_libraries.patch:Limit uses-library exceptions to three prebuilts and correct one optional-library declaration."
+    "vendor/gms:gms_uses_libraries.patch:Align required and optional uses-library declarations with the prebuilt manifests, retaining the two existing build-check exceptions."
     "vendor/gms:gms_oneplus_package_selection.patch:Exclude ten incompatible Pixel package prefixes from the OnePlus product lists."
 )
 

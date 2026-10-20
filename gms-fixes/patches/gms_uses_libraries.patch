@@ -1,7 +1,7 @@
 # Target repository: vendor/gms
 # Checked against Evolution-X vendor_gms d5490a1323f348fff1cc35f091b29ba583c67a84 (branch cnb, crDroid 17.0).
-# Limit uses-library exceptions to two prebuilts and correct the CrossDevice optional-library
-# declaration. PersistentBackgroundServices no longer exists in branch cnb.
+# Align required and optional uses-library declarations with the APK manifests in 18 build files.
+# Retain the two existing module-local exceptions. PersistentBackgroundServices is absent in cnb.
 
 diff --git a/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk b/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
 index 553169f..ca20867 100644
@@ -40,4 +40,192 @@ index 4a6befa..9c537c9 100644
 -LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar org.apache.http.legacy
 +LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
  LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/apps/GoogleContacts/Android.mk b/product/packages/apps/GoogleContacts/Android.mk
+index f0d2e73..3f8f5e7 100644
+--- a/product/packages/apps/GoogleContacts/Android.mk
++++ b/product/packages/apps/GoogleContacts/Android.mk
+@@ -26,7 +26,7 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_OVERRIDES_PACKAGES := Contacts Contacts2
+ LOCAL_MODULE_CLASS := APPS
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+ 
+diff --git a/product/packages/apps/Maps/Android.mk b/product/packages/apps/Maps/Android.mk
+index 2567fe4..a4cb134 100644
+--- a/product/packages/apps/Maps/Android.mk
++++ b/product/packages/apps/Maps/Android.mk
+@@ -25,7 +25,7 @@ LOCAL_SRC_FILES := Maps.apk
+ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_MODULE_CLASS := APPS
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy android.ext.adservices androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := com.android.extensions.xr android.ext.adservices androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+ 
+diff --git a/product/packages/apps/Photos/Android.mk b/product/packages/apps/Photos/Android.mk
+index 71f14cb..b2f4c51 100644
+--- a/product/packages/apps/Photos/Android.mk
++++ b/product/packages/apps/Photos/Android.mk
+@@ -26,6 +26,6 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_OVERRIDES_PACKAGES := Gallery Gallery2 Gallery3D GalleryNew3D Glimpse PhotoTable
+ LOCAL_MODULE_CLASS := APPS
+-LOCAL_OPTIONAL_USES_LIBRARIES := com.google.android.chromeos org.apache.http.legacy wear-sdk androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy com.google.android.chromeos wear-sdk androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/apps/arcore/Android.mk b/product/packages/apps/arcore/Android.mk
+index 6a56137..ccf7d7e 100644
+--- a/product/packages/apps/arcore/Android.mk
++++ b/product/packages/apps/arcore/Android.mk
+@@ -25,7 +25,6 @@ LOCAL_SRC_FILES := arcore.apk
+ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_MODULE_CLASS := APPS
+-LOCAL_OPTIONAL_USES_LIBRARIES := android.ext.adservices
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+ 
+diff --git a/product/packages/privileged_apps/GoogleDialer/Android.mk b/product/packages/privileged_apps/GoogleDialer/Android.mk
+index 715a959..8269b91 100644
+--- a/product/packages/privileged_apps/GoogleDialer/Android.mk
++++ b/product/packages/privileged_apps/GoogleDialer/Android.mk
+@@ -27,7 +27,7 @@ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+ LOCAL_OVERRIDES_PACKAGES := Dialer
+-LOCAL_OPTIONAL_USES_LIBRARIES := wear-sdk org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := wear-sdk androidx.window.extensions androidx.window.sidecar org.apache.http.legacy
+ LOCAL_USES_LIBRARIES := com.google.android.dialer.support
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/privileged_apps/PixelLiveWallpaperPrebuilt-27000055/Android.mk b/product/packages/privileged_apps/PixelLiveWallpaperPrebuilt-27000055/Android.mk
+index 00e0e59..260cc9b 100644
+--- a/product/packages/privileged_apps/PixelLiveWallpaperPrebuilt-27000055/Android.mk
++++ b/product/packages/privileged_apps/PixelLiveWallpaperPrebuilt-27000055/Android.mk
+@@ -26,6 +26,5 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/privileged_apps/PrebuiltDeskClockGoogle_76060331/Android.mk b/product/packages/privileged_apps/PrebuiltDeskClockGoogle_76060331/Android.mk
+index 34b75e3..0ac00ab 100644
+--- a/product/packages/privileged_apps/PrebuiltDeskClockGoogle_76060331/Android.mk
++++ b/product/packages/privileged_apps/PrebuiltDeskClockGoogle_76060331/Android.mk
+@@ -27,7 +27,7 @@ LOCAL_PRODUCT_MODULE := true
+ LOCAL_OVERRIDES_PACKAGES := DeskClock
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := wear-sdk org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := wear-sdk androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+ 
+diff --git a/product/packages/privileged_apps/PrebuiltGmsCore/Android.mk b/product/packages/privileged_apps/PrebuiltGmsCore/Android.mk
+index 0c36073..0b512c3 100644
+--- a/product/packages/privileged_apps/PrebuiltGmsCore/Android.mk
++++ b/product/packages/privileged_apps/PrebuiltGmsCore/Android.mk
+@@ -79,7 +79,6 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy
+ LOCAL_MODULE_RELATIVE_PATH := PrebuiltGmsCore/app_chimera/m
+ LOCAL_NO_STANDARD_LIBRARIES := true
+ LOCAL_MULTILIB := both
+@@ -160,6 +159,7 @@ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+ LOCAL_MODULE_RELATIVE_PATH := PrebuiltGmsCore/m/optional
+ LOCAL_NO_STANDARD_LIBRARIES := true
++LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
+ include $(BUILD_PREBUILT)
+ 
+ include $(CLEAR_VARS)
+diff --git a/product/packages/privileged_apps/PulsePrebuilt/Android.mk b/product/packages/privileged_apps/PulsePrebuilt/Android.mk
+index 383c7b0..ba31aae 100644
+--- a/product/packages/privileged_apps/PulsePrebuilt/Android.mk
++++ b/product/packages/privileged_apps/PulsePrebuilt/Android.mk
+@@ -26,6 +26,5 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/privileged_apps/SCONE-v77459/Android.mk b/product/packages/privileged_apps/SCONE-v77459/Android.mk
+index 2b986cf..ed9e56d 100644
+--- a/product/packages/privileged_apps/SCONE-v77459/Android.mk
++++ b/product/packages/privileged_apps/SCONE-v77459/Android.mk
+@@ -27,7 +27,7 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := android.telephony.satellite org.apache.http.legacy wear-sdk androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := android.telephony.satellite wear-sdk androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+ 
+diff --git a/product/packages/privileged_apps/SettingsIntelligenceGooglePrebuilt/Android.mk b/product/packages/privileged_apps/SettingsIntelligenceGooglePrebuilt/Android.mk
+index 8b41c1f..8ce33e9 100644
+--- a/product/packages/privileged_apps/SettingsIntelligenceGooglePrebuilt/Android.mk
++++ b/product/packages/privileged_apps/SettingsIntelligenceGooglePrebuilt/Android.mk
+@@ -27,6 +27,6 @@ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+ LOCAL_OVERRIDES_PACKAGES := SettingsIntelligence
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/privileged_apps/TurboPrebuilt/Android.mk b/product/packages/privileged_apps/TurboPrebuilt/Android.mk
+index 8676360..b943e18 100644
+--- a/product/packages/privileged_apps/TurboPrebuilt/Android.mk
++++ b/product/packages/privileged_apps/TurboPrebuilt/Android.mk
+@@ -26,6 +26,6 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/privileged_apps/VerifierPrebuiltClassic/Android.mk b/product/packages/privileged_apps/VerifierPrebuiltClassic/Android.mk
+index a228f5f..0bed948 100644
+--- a/product/packages/privileged_apps/VerifierPrebuiltClassic/Android.mk
++++ b/product/packages/privileged_apps/VerifierPrebuiltClassic/Android.mk
+@@ -26,6 +26,5 @@ LOCAL_CERTIFICATE := platform
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/product/packages/privileged_apps/WellbeingPrebuilt/Android.mk b/product/packages/privileged_apps/WellbeingPrebuilt/Android.mk
+index e631fe0..2d301be 100644
+--- a/product/packages/privileged_apps/WellbeingPrebuilt/Android.mk
++++ b/product/packages/privileged_apps/WellbeingPrebuilt/Android.mk
+@@ -26,6 +26,6 @@ LOCAL_CERTIFICATE := PRESIGNED
+ LOCAL_MODULE_CLASS := APPS
+ LOCAL_PRODUCT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+-LOCAL_OPTIONAL_USES_LIBRARIES := org.apache.http.legacy com.android.extensions.appfunctions androidx.window.extensions androidx.window.sidecar
++LOCAL_OPTIONAL_USES_LIBRARIES := com.android.extensions.appfunctions androidx.window.extensions androidx.window.sidecar
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+ include $(BUILD_PREBUILT)
+diff --git a/system_ext/packages/privileged_apps/YourWidgetsStub/Android.mk b/system_ext/packages/privileged_apps/YourWidgetsStub/Android.mk
+index b40abd4..951a7fb 100644
+--- a/system_ext/packages/privileged_apps/YourWidgetsStub/Android.mk
++++ b/system_ext/packages/privileged_apps/YourWidgetsStub/Android.mk
+@@ -27,5 +27,4 @@ LOCAL_MODULE_CLASS := APPS
+ LOCAL_SYSTEM_EXT_MODULE := true
+ LOCAL_PRIVILEGED_MODULE := true
+ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+-LOCAL_OPTIONAL_USES_LIBRARIES := androidx.window.extensions androidx.window.sidecar
  include $(BUILD_PREBUILT)

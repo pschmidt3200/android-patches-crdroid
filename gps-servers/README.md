@@ -67,7 +67,7 @@ bash .github/scripts/check-reference.sh gps-servers
 bash .github/scripts/check-reference.sh --branch 17.0 gps-servers
 ```
 
-**Documented ROM and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+**Documented ROM and device acceptance:** Validated live on the **OnePlus 13**
 running crDroid 16.0 (build `Sat Oct 3 23:45:41 CEST 2026`):
 `/odm/etc/gps.conf` actively configures `SUPL_HOST=supl.grapheneos.org`, `SUPL_PORT=7275`, and
 `NTP_SERVER=0.de.pool.ntp.org`. The GNSS location service (`GnssService`) is operational and

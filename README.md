@@ -2,12 +2,12 @@
 
 A collection of modular source patches, framework enhancements, and hardware integrations for **crDroid 17.0 (Android 17)**.
 
-> **crDroid 17.0 status:** the patches on `main` are ported to crDroid 17.0 and pass the
-> source checks: each module applies and reverts cleanly at its NOTICE reference commits.
-> A ROM build and device verification on 17.0 are still pending, so treat the 17.0 editions
-> as untested on hardware. The crDroid 16.0 editions stay frozen on branch
-> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0), each with the
-> verification status stated in its module README.
+> **crDroid 17.0 status:** all module editions are checked for source application and
+> reversal at their NOTICE reference commits. The maintainer reported a running 17.0
+> ROM with Bluetooth playback and LC3 connection on 2026-10-20; this is not individual
+> acceptance of every module or codec configuration. Read the module-specific limits,
+> especially the pinned SUSFS source requirement. The crDroid 16.0 editions remain on
+> branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0).
 
 All functional changes are distributed as source patches without proprietary binaries, designed to be applied directly to a crDroid source tree.
 

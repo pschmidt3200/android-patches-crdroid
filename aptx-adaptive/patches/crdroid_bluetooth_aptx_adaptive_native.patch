@@ -1575,27 +1575,9 @@ index dd63131f60e..68d6068ec55 100644
              return new BluetoothCodecType(
                      BluetoothCodecConfig.SOURCE_CODEC_TYPE_INVALID, CODEC_ID_LHDCV5, "LHDCV5");
 diff --git a/system/audio_hal_interface/aidl/a2dp/a2dp_provider_info.cc b/system/audio_hal_interface/aidl/a2dp/a2dp_provider_info.cc
-index 29684b5ca57..86ed905423b 100644
+index 29684b5ca57..97d0f263479 100644
 --- a/system/audio_hal_interface/aidl/a2dp/a2dp_provider_info.cc
 +++ b/system/audio_hal_interface/aidl/a2dp/a2dp_provider_info.cc
-@@ -16,7 +16,7 @@
- 
- #define LOG_TAG "bluetooth-a2dp-aidl"
- 
--#include "a2dp_provider_info.h"
-+#include "stack/include/a2dp_provider_info.h"
- 
- #include <android/binder_manager.h>
- #include <bluetooth/log.h>
-@@ -25,7 +25,7 @@
- #include <optional>
- #include <vector>
- 
--#include "a2dp_encoding_aidl_utils.h"
-+#include "stack/include/a2dp_encoding_aidl_utils.h"
- #include "client_interface_aidl.h"
- #include "stack/include/a2dp_codec_api.h"
- #include "stack/include/a2dp_constants.h"
 @@ -132,15 +132,23 @@ static std::optional<btav_a2dp_codec_index_t> assignSourceCodecIndex(
          return BTAV_A2DP_CODEC_INDEX_SOURCE_OPUS;
        }
@@ -1712,7 +1694,7 @@ index d57a886b169..2d886d00ac7 100644
          return opus_offloading_capability_match(opus_capability, opus_config);
        }
 +      // Reserved for providers that list aptX Adaptive in their capability list. On
-+      // dodge this branch is currently unreachable because the QTI provider omits the
++      // On this device this branch is currently unreachable because the QTI provider omits the
 +      // codec. Unlike SBC/AAC there is no field-by-field match against
 +      // aptxAdaptiveCapabilities: the combinations the provider accepts are not
 +      // measured. Only the offer itself is checked; the provider decides at
@@ -2847,10 +2829,10 @@ index d9a14021e89..701fbc55f12 100644
  }
  
 diff --git a/system/btif/src/btif_av.cc b/system/btif/src/btif_av.cc
-index 323af5320cb..6f530bb5d34 100644
+index 323af5320cb5c9f65b298a858c0be21451906a8c..cc88bbbe700ea9ae9cee1a6d0fd2e688a2a614ab 100644
 --- a/system/btif/src/btif_av.cc
 +++ b/system/btif/src/btif_av.cc
-@@ -138,6 +138,7 @@ typedef enum {
+@@ -138,6 +138,7 @@
    BTIF_AV_AVRCP_REMOTE_PLAY_EVT,
    BTIF_AV_SET_LATENCY_REQ_EVT,
    BTIF_AV_RECONFIGURE_REQ_EVT,
@@ -2858,7 +2840,7 @@ index 323af5320cb..6f530bb5d34 100644
  } btif_av_sm_event_t;
  
  class BtifAvEvent {
-@@ -954,6 +955,7 @@ static const char* dump_av_sm_event_name(btif_av_sm_event_t event) {
+@@ -954,6 +955,7 @@
      CASE_RETURN_STR(BTA_AV_REJECT_EVT)
      CASE_RETURN_STR(BTA_AV_RC_FEAT_EVT)
      CASE_RETURN_STR(BTA_AV_RC_PSM_EVT)
@@ -2866,7 +2848,7 @@ index 323af5320cb..6f530bb5d34 100644
      CASE_RETURN_STR(BTA_AV_OFFLOAD_START_RSP_EVT)
      CASE_RETURN_STR(BTIF_AV_CONNECT_REQ_EVT)
      CASE_RETURN_STR(BTIF_AV_DISCONNECT_REQ_EVT)
-@@ -968,6 +970,7 @@ static const char* dump_av_sm_event_name(btif_av_sm_event_t event) {
+@@ -968,6 +970,7 @@
      CASE_RETURN_STR(BTIF_AV_AVRCP_REMOTE_PLAY_EVT)
      CASE_RETURN_STR(BTIF_AV_SET_LATENCY_REQ_EVT)
      CASE_RETURN_STR(BTIF_AV_RECONFIGURE_REQ_EVT)
@@ -2874,20 +2856,35 @@ index 323af5320cb..6f530bb5d34 100644
      default:
        return "UNKNOWN_EVENT";
    }
-@@ -2535,6 +2538,12 @@ bool BtifAvStateMachine::StateOpened::ProcessEvent(uint32_t event, void* p_data)
+@@ -2522,6 +2525,14 @@
+         return false;
+       }
+ 
++      // Adaptive latency is handled by VSQC and the GameSpace mode/rate transition.
++      // A metadata-only request must not replace its explicit rate preference or
++      // tear down an unchanged HAL session while AudioFlinger is still playing.
++      if (current_codec->codecIndex() == BTAV_A2DP_CODEC_INDEX_SOURCE_EXT_MIN) {
++        log::info("aptX Adaptive: keep codec configuration on audio context change");
++        break;
++      }
++
+       btav_a2dp_codec_config_t codec_config{
+               .codec_type = current_codec->codecIndex(),
+               .codec_priority = BTAV_A2DP_CODEC_PRIORITY_HIGHEST,
+@@ -2534,6 +2545,12 @@
+       btif_av_source.UpdateCodecConfig(peer_.PeerAddress(), codec_preferences,
                                         std::move(peer_ready_promise));
      } break;
- 
++
 +    case BTIF_AV_APTX_MODE_UPDATE_REQ_EVT:
 +      // No offload session exists yet; the start response publishes the current mode.
 +      log::info("Peer {} : event={} : stream not started, aptX Adaptive mode follows the start",
 +                peer_.PeerAddress(), BtifAvEvent::EventName(event));
 +      break;
-+
+ 
      case BTIF_AV_RECONFIGURE_REQ_EVT: {
        log::info("Peer {} : event={} flags={}", peer_.PeerAddress(), BtifAvEvent::EventName(event),
-                 peer_.FlagsToString());
-@@ -2770,6 +2779,29 @@ bool BtifAvStateMachine::StateStarted::ProcessEvent(uint32_t event, void* p_data
+@@ -2770,6 +2787,29 @@
  
      case BTA_AV_OFFLOAD_START_RSP_EVT:
        btif_a2dp_on_offload_started(peer_.PeerAddress(), p_av->status);
@@ -2917,7 +2914,22 @@ index 323af5320cb..6f530bb5d34 100644
        break;
  
      case BTIF_AV_SET_LATENCY_REQ_EVT: {
-@@ -3408,6 +3440,19 @@ static void btif_av_handle_bta_av_event(uint8_t peer_sep, const BtifAvEvent& bti
+@@ -2793,6 +2833,14 @@
+         A2dpCodecConfig* current_codec = bta_av_get_a2dp_current_codec();
+         if (current_codec == nullptr) {
+           return false;
++        }
++
++        // Adaptive latency is handled by VSQC and the GameSpace mode/rate transition.
++        // A metadata-only request must not replace its explicit rate preference or
++        // tear down an unchanged HAL session while AudioFlinger is still playing.
++        if (current_codec->codecIndex() == BTAV_A2DP_CODEC_INDEX_SOURCE_EXT_MIN) {
++          log::info("aptX Adaptive: keep codec configuration on audio context change");
++          break;
+         }
+ 
+         btav_a2dp_codec_config_t codec_config{
+@@ -3408,6 +3456,19 @@
        peer_address = rc_psm.peer_addr;
        break;
      }
@@ -2937,7 +2949,7 @@ index 323af5320cb..6f530bb5d34 100644
    }
  
    if (!msg.empty()) {
-@@ -3785,6 +3830,32 @@ void btif_av_source_set_low_latency_codec(bool is_low_latency) {
+@@ -3785,6 +3846,32 @@
            base::BindOnce(&btif_av_source_set_low_latency_codec_handler_delayed, is_low_latency));
  }
  

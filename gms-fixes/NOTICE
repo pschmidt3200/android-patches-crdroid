@@ -18,7 +18,7 @@ Source Project; retain those per-file notices. This module's changes and
 documentation are provided under Apache License, Version 2.0 (see LICENSE).
 This notice grants no additional rights in upstream proprietary components.
 
-Reference setup of the 16.0 edition: OnePlus 13 (dodge), crDroid 16.0 with vendor/gms
+Reference setup of the 16.0 edition: OnePlus 13, crDroid 16.0 with vendor/gms
 branch bka (89c3940a77298c204c55a21efded92ddafb59fe9).
 The GMS visibility change follows a locally used fix. The public edition as a
 whole has source apply/reverse checks only; no new ROM build or device test.

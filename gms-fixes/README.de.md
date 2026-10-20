@@ -19,7 +19,7 @@ keine GApps und enthalten keine Google-APKs. Andere GApps-Vendors sind nicht abg
 |---|---|---|
 | [gms_query_visibility.patch](patches/gms_query_visibility.patch) | `frameworks/base` | Ergänzt ausschließlich `com.google.android.gms` in `config_forceQueryablePackages` für Apps mit Paketsichtbarkeitsproblemen; ursprünglicher Anlass: Net Analyzer. Keine zusätzlichen Rechte oder weiteren global sichtbaren Pakete. |
 | [gms_google_clock_permission.patch](patches/gms_google_clock_permission.patch) | `vendor/gms` | Ergänzt ausschließlich für die Google-Uhr `SCHEDULE_EXACT_ALARM` in der privilegierten Berechtigungsliste. Die Berechtigungsprüfung bleibt aktiv. |
-| [gms_uses_libraries.patch](patches/gms_uses_libraries.patch) | `vendor/gms` | Setzt die uses-library-Buildprüfung nur für `CustomizationBundlePrebuiltFullVersion` und `SafetyHubPrebuilt` aus (`PersistentBackgroundServices`, in der 16.0-Fassung ebenfalls enthalten, gibt es im Branch `cnb` nicht mehr); entfernt eine überzählige `org.apache.http.legacy`-Deklaration bei `CrossDeviceAccessServicePrimary`. |
+| [gms_uses_libraries.patch](patches/gms_uses_libraries.patch) | `vendor/gms` | Gleicht erforderliche/optionale uses-library-Metadaten in 18 Builddateien mit den APK-Manifesten ab; erhaelt die bestehenden gezielten Ausnahmen fuer `CustomizationBundlePrebuiltFullVersion` und `SafetyHubPrebuilt`. `PersistentBackgroundServices` fehlt im Branch `cnb`. |
 | [gms_oneplus_package_selection.patch](patches/gms_oneplus_package_selection.patch) | `vendor/gms` | Entfernt die zehn unten genannten Pixel-Paketpräfixe aus Full-, Tablet-, Mini- und Pico-Produktlisten. Dies ist eine ausdrückliche OnePlus-Buildauswahl. |
 
 Der uses-library-Patch ist eine gezielte Build-Ausnahme, **keine Implementierung
@@ -73,7 +73,7 @@ bash .github/scripts/check-reference.sh gms-fixes
 bash .github/scripts/check-reference.sh --branch 17.0 gms-fixes
 ```
 
-**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13**
 unter crDroid 16.0 (Build `v12.12-20261003`) live geprüft und abgenommen:
 Boot ohne Bootloop, Google Play Services (26.37) und Play Store (53.3) stabil ohne Abstürze,
 `com.google.android.gms` global abfragbar (`forceQueryable`), Google-Uhr-Wecker mit

@@ -80,7 +80,7 @@ Die Quelltests sind vollständig verifiziert:
   (20.10.2026); dieselbe Prüfung war vorher für 16.0 grün.
 - Fehlerfreie Dry-Run-Simulation gegen den lokalen crDroid-Quellbaum.
 
-**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
+**Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13**
 unter crDroid 16.0 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:
 `DonateActivity` ist vollständig aus dem System entfernt (Klasse existiert nicht mehr, Intent-Aufrufe
 schlagen mit `Activity class does not exist` fehl). `DonateReceiver` läuft ausschließlich im

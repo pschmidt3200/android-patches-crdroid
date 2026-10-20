@@ -1,14 +1,8 @@
 # Target repository: packages/modules/Bluetooth
-#
-# LE Audio: honour the user's codec preference when choosing the ASE configuration.
-# Absent preference fields and a channel count of 0 are treated as "any" instead of
-# rejecting every candidate, and the requested frame duration is compared with the
-# candidate instead of with itself. Candidate completeness and topology checks stay.
-#
-# Paths below are relative to the target repository, NOT to the Android
-# source root. Apply with:  git -C <target repository> apply <this file>
-#
-# Publication edition. Do not mix with another edition of these patches.
+# Target: crDroid 17.0
+# Preserve explicit LC3 preferences and restore the release-controlled grouped-read compatibility path.
+# Retains individual ASE and Volume Control reads when the flag is disabled.
+
 diff --git a/system/bta/le_audio/le_audio_utils.cc b/system/bta/le_audio/le_audio_utils.cc
 --- a/system/bta/le_audio/le_audio_utils.cc
 +++ b/system/bta/le_audio/le_audio_utils.cc
@@ -67,3 +61,66 @@ diff --git a/system/bta/le_audio/le_audio_utils.cc b/system/bta/le_audio/le_audi
        log::debug("Ase cfg: Octets per frame={}", ase_config.octets_per_codec_frame.value());
        log::debug("Req cfg: Octets per frame={}", req_config.octets_per_codec_frame.value());
        return false;
+diff --git a/flags/leaudio.aconfig b/flags/leaudio.aconfig
+--- a/flags/leaudio.aconfig
++++ b/flags/leaudio.aconfig
+@@ -94,6 +94,16 @@
+     namespace: "bluetooth"
+     description: "Allow LeAudio device with invalid CSIS when set size is 1 and sirk is ALL zeros"
+     bug: "447588233"
++    metadata {
++        purpose: PURPOSE_BUGFIX
++    }
++}
++
++flag {
++    name: "le_ase_read_multiple_variable"
++    namespace: "bluetooth"
++    description: "Use GATT read multiple variable length characteristic values"
++    bug: "352085435"
+     metadata {
+         purpose: PURPOSE_BUGFIX
+     }
+diff --git a/system/bta/le_audio/client.cc b/system/bta/le_audio/client.cc
+--- a/system/bta/le_audio/client.cc
++++ b/system/bta/le_audio/client.cc
+@@ -646,7 +646,7 @@
+         notify_flag_ptr = INT_TO_PTR(leAudioDevice->notify_connected_after_read_);
+       }
+ 
+-      if (!is_multiread_expected) {
++      if (!com_android_bluetooth_flags_le_ase_read_multiple_variable() || !is_multiread_expected) {
+         BtaGattQueue::ReadCharacteristic(leAudioDevice->conn_id_,
+                                          leAudioDevice->ases_[i].hdls.val_hdl, OnGattReadRspStatic,
+                                          notify_flag_ptr);
+@@ -663,7 +663,8 @@
+       }
+     }
+ 
+-    if (is_multiread_expected && (ases_num % GATT_MAX_READ_MULTI_HANDLES != 0)) {
++    if (com_android_bluetooth_flags_le_ase_read_multiple_variable() && is_multiread_expected &&
++        (ases_num % GATT_MAX_READ_MULTI_HANDLES != 0)) {
+       multi_read.num_attr = ases_num % GATT_MAX_READ_MULTI_HANDLES;
+       BtaGattQueue::ReadMultiCharacteristic(leAudioDevice->conn_id_, multi_read,
+                                             OnGattReadMultiRspStatic, notify_flag_ptr);
+@@ -2924,7 +2925,7 @@
+      *    it can change very often which, as we observed, might lead to not being sent by
+      *    remote devices
+      */
+-    if (!is_eatt_supported) {
++    if (!com_android_bluetooth_flags_le_ase_read_multiple_variable() || !is_eatt_supported) {
+       BtaGattQueue::ReadCharacteristic(leAudioDevice->conn_id_,
+                                        leAudioDevice->audio_avail_hdls_.val_hdl,
+                                        OnGattReadRspStatic, NULL);
+diff --git a/system/bta/vcp/vcp_controller_device.cc b/system/bta/vcp/vcp_controller_device.cc
+--- a/system/bta/vcp/vcp_controller_device.cc
++++ b/system/bta/vcp/vcp_controller_device.cc
+@@ -458,7 +458,7 @@
+   log::debug("{}, number of variable-size attribute handles={}", address,
+              handles_to_read_variable_length.size());
+ 
+-  if (is_eatt_supported) {
++  if (com_android_bluetooth_flags_le_ase_read_multiple_variable() && is_eatt_supported) {
+     const size_t payload_limit = this->mtu_ - 1;
+ 
+     auto pair_it = handles_to_read.begin();

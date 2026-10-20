@@ -18,7 +18,7 @@ install GApps or provide Google APKs. Other GApps vendors are outside this modul
 |---|---|---|
 | [gms_query_visibility.patch](patches/gms_query_visibility.patch) | `frameworks/base` | Adds only `com.google.android.gms` to `config_forceQueryablePackages`, for apps affected by package visibility (the original case was Net Analyzer). No additional permissions or other globally queryable packages. |
 | [gms_google_clock_permission.patch](patches/gms_google_clock_permission.patch) | `vendor/gms` | Adds `SCHEDULE_EXACT_ALARM` only to Google Clock's privileged permission list. Privileged-permission enforcement remains enabled. |
-| [gms_uses_libraries.patch](patches/gms_uses_libraries.patch) | `vendor/gms` | Disables the uses-library build check only for `CustomizationBundlePrebuiltFullVersion` and `SafetyHubPrebuilt` (`PersistentBackgroundServices`, also covered in the 16.0 edition, no longer exists in branch `cnb`); removes an extra `org.apache.http.legacy` declaration from `CrossDeviceAccessServicePrimary`. |
+| [gms_uses_libraries.patch](patches/gms_uses_libraries.patch) | `vendor/gms` | Aligns required/optional uses-library metadata with the APK manifests across 18 build files; retains the existing narrow exceptions for `CustomizationBundlePrebuiltFullVersion` and `SafetyHubPrebuilt`. `PersistentBackgroundServices` is absent from branch `cnb`. |
 | [gms_oneplus_package_selection.patch](patches/gms_oneplus_package_selection.patch) | `vendor/gms` | Removes the ten Pixel package prefixes below from the full, tablet, mini and pico product lists. This is an explicit OnePlus build selection. |
 
 The uses-library patch is a targeted build workaround, **not an implementation
@@ -73,7 +73,7 @@ bash .github/scripts/check-reference.sh gms-fixes
 bash .github/scripts/check-reference.sh --branch 17.0 gms-fixes
 ```
 
-**Documented ROM and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+**Documented ROM and device acceptance:** Validated live on the **OnePlus 13**
 running crDroid 16.0 (build `v12.12-20261003`): clean boot without bootloops, Google Play Services (26.37)
 and Play Store (53.3) running stable without crashes, `com.google.android.gms` globally queryable (`forceQueryable`),
 Google Clock alarms working with privileged `SCHEDULE_EXACT_ALARM`, and Launcher/PackageInstaller stable.

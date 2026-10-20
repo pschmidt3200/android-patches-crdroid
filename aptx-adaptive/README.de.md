@@ -1,20 +1,20 @@
 # aptX Adaptive für crDroid
 
 Stand: 2026-10-01. Quellpatch-Paket für **crDroid 17.0 (Android 17)**;
-Referenzgeräte: **OnePlus 13 (`dodge`, CPH2653)** und **OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415)** (jeweils SM8750 / FastConnect 7900).
+Referenzgeräte: **OnePlus 13** und **OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415)** (jeweils SM8750 / FastConnect 7900).
 
 **ROM-Umfang:** Das Paket ist derzeit ausschließlich für **crDroid 17.0** ausgelegt.
 Unterstützung für andere ROMs ist nicht belegt.
 
-> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
-> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
-> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
-> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung:** Anwenden und Ruecknahme sind an den [`NOTICE`](NOTICE)-
+> Referenzcommits quellgeprueft. Am 20.10.2026 meldete der Maintainer ein laufendes
+> 17.0-ROM mit funktionierender Bluetooth-Wiedergabe. Diese grundlegende
+> Rueckmeldung bestaetigt nicht jeden Codec, jede Rate, Frame-Dauer oder Gaming-Umschaltung.
+> Detaillierte Ergebnisse unten stammen aus crDroid 16.0, soweit nicht anders bezeichnet.
+> Die eingefrorene 16.0-Fassung liegt auf Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
->
-> In Android 17 gehört der alte Codec-Platz 7 zu LHDC. Die 17.0-Fassung führt aptX Adaptive daher
-> im Erweiterungsplatz 8 (Hersteller-Codec-ID `0x00ad00d7ff`) durch nativen Stack, beide
-> Java-Codec-Fabriken und das Framework; LHDC behält Platz 7.
+> Android 17 reserviert Legacy-Codec-Platz 7 fuer LHDC; aptX Adaptive verwendet
+> Erweiterungsplatz 8 (Vendor-Codec-ID `0x00ad00d7ff`) in Stack, Java und Framework.
 
 **Die grundlegenden Langzeitmessungen stammen aus der produktiven v39-Messreihe.** Die englische
 Publikationsfassung übersetzt Bezeichner und Diagnosetexte; sie wurde am 01.10.2026 in crDroid 16.0
@@ -97,7 +97,7 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 
 | Ebene | Komponente | Status & Hinweise |
 |---|---|---|
-| **Referenzgeräte** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Mit crDroid 16.0 verifizierte Referenzplattformen (SM8750 / FastConnect 7900); 17.0 noch nicht auf dem Gerät getestet. |
+| **Referenzgeräte** | **OnePlus 13**<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Mit crDroid 16.0 verifizierte Referenzplattformen (SM8750 / FastConnect 7900); 17.0 noch nicht auf dem Gerät getestet. |
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
 | **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 17.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 4 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
 | **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |

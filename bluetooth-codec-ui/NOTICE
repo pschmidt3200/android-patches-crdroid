@@ -21,7 +21,7 @@ Reference repositories, commits and public sources (crDroid branch 17.0):
   frameworks/base               c2382c14b024f5701071d31d9cc8fe1401dc9a88  https://github.com/crdroidandroid/android_frameworks_base
   packages/apps/Settings        927b09818133aa37cf6acd057c656859aa3a5ce6  https://github.com/crdroidandroid/android_packages_apps_Settings
 
-The series was built into crDroid 16.0 on the OnePlus 13 (dodge, CPH2653) and used
+The series was built into crDroid 16.0 on the OnePlus 13 and used
 with dual-mode receivers and with receivers whose details page is provided by a
 companion app. No device-specific code is involved.
 crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the

@@ -87,7 +87,7 @@ ANDROID_ROOT="$(cd "$1" && pwd)"
 # Module patches and their target repositories.
 PATCHES=(
     "build/release:crdroid_build_release_le_ase_read_multi_off.patch:LE Audio: ASE read-multiple flag disabled for release bp4a"
-    "packages/modules/Bluetooth:crdroid_bluetooth_le_codec_preference_match.patch:LE Audio: codec preference matcher"
+    "packages/modules/Bluetooth:crdroid_bluetooth_le_codec_preference_match.patch:LE Audio: explicit codec preferences and restored Android 17 LE/VCP grouped-read flag gates"
     "packages/modules/Bluetooth:crdroid_bluetooth_le_media_32khz.patch:LE Audio: 32 kHz and 24 kHz/7.5 ms media configurations"
 )
 

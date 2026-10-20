@@ -44,7 +44,7 @@ battery below 70 %.
 
 ## Verified on a device, and what was not
 
-Verified on a OnePlus 13 (dodge), crDroid 16.0:
+Verified on a OnePlus 13, crDroid 16.0:
 
 * threshold 70 % engaged and applied, eight cycles across four games
 * charge stop at the threshold: status 2 (charging) → 4 (not charging),

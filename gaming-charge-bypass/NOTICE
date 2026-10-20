@@ -36,7 +36,7 @@ crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse a
 reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
 edition is kept on branch 16.0 of this repository.
 
-Verified on a OnePlus 13 (dodge) running crDroid 16.0, in eight charge-pause
+Verified on a OnePlus 13 running crDroid 16.0, in eight charge-pause
 cycles across four games, plus a reboot while a game was in the foreground:
 
   threshold 70 %            engaged and applied, eight cycles

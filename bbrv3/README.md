@@ -90,7 +90,7 @@ Source and helper validation is fully verified:
 - Combined BBRv3 core application with the corrected SUSFS upstream patch verified in an isolated kernel index,
   for the 16.0 kernel and for the 17.0 kernel `48baf0c723f8` (2026-10-20).
 
-**Documented kernel and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
+**Documented kernel and device acceptance:** Validated live on the **OnePlus 13**
 running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):
 BBRv3 is active as the default congestion control algorithm (`net.ipv4.tcp_congestion_control = bbr3`),
 kernel symbols (`bbr3_*`) are loaded, and all active TCP sockets (`ss -tin`) run on `bbr3`.

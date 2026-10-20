@@ -46,7 +46,7 @@ sonst würde der Standardfall für jeden scheitern, der ein Spiel mit weniger al
 
 ## Am Gerät geprüft — und was nicht
 
-Geprüft auf einem OnePlus 13 (dodge), crDroid 16.0:
+Geprüft auf einem OnePlus 13, crDroid 16.0:
 
 * Schwelle 70 % greift und wirkt, acht Zyklen über vier Spiele
 * Ladestopp an der Schwelle: Status 2 (lädt) → 4 (lädt nicht),

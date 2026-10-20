@@ -62,7 +62,7 @@ body:
     id: device
     attributes:
       label: Device model and codename
-      placeholder: e.g. OnePlus 13 (dodge)
+      placeholder: e.g. OnePlus 13
     validations:
       required: true
   - type: input

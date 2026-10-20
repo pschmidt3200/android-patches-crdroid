@@ -64,7 +64,7 @@ adb shell cat /sys/module/tcp_bbr3/version
 
 ## Measurements
 
-Uploads from a OnePlus 13 (`dodge`) over Wi-Fi 7 to a wired host, `iperf3`, 20 s
+Uploads from a OnePlus 13 over Wi-Fi 7 to a wired host, `iperf3`, 20 s
 single stream, five rounds per kernel, through an identical controlled bottleneck
 (100 Mbit/s, +20 ms delay, 0.3 % random loss) so Wi-Fi variation does not decide the
 result. Medians, exact two-sided Mann-Whitney test:
@@ -82,7 +82,7 @@ measurable difference and no regression** in this scenario. Random loss does not
 trigger the spurious-loss undo, and 20 s runs weigh the DRAIN change little;
 targeted tests (packet reordering, short flows) have not been done.
 
-**Device acceptance:** OnePlus 13 (`dodge`, CPH2653), kernel build
+**Device acceptance:** OnePlus 13, kernel build
 `Sun Oct 4 11:15:40 CEST 2026`: `version` = `3-2026x`, `bbr3` default, 64
 established TCP sockets on `bbr3` (`ss -tin`), no BBR/TCP warnings in the kernel log. The
 complete kernel and its modules were built from the patched tree.

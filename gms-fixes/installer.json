@@ -15,7 +15,7 @@
     {
       "repository": "vendor/gms",
       "file": "gms_uses_libraries.patch",
-      "description": "Limit uses-library exceptions to three prebuilts and correct one optional-library declaration."
+      "description": "Align required and optional uses-library declarations with the prebuilt manifests, retaining the two existing build-check exceptions."
     },
     {
       "repository": "vendor/gms",

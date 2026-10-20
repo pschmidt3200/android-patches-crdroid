@@ -10,7 +10,7 @@
     {
       "repository": "packages/modules/Bluetooth",
       "file": "crdroid_bluetooth_le_codec_preference_match.patch",
-      "description": "LE Audio: codec preference matcher"
+      "description": "LE Audio: explicit codec preferences and restored Android 17 LE/VCP grouped-read flag gates"
     },
     {
       "repository": "packages/modules/Bluetooth",

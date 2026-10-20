@@ -66,7 +66,7 @@ adb shell cat /sys/module/tcp_bbr3/version
 
 ## Messungen
 
-Uploads von einem OnePlus 13 (`dodge`) über Wi-Fi 7 zu einem kabelgebundenen Rechner,
+Uploads von einem OnePlus 13 über Wi-Fi 7 zu einem kabelgebundenen Rechner,
 `iperf3`, 20 s, ein Datenstrom, je Kernel fünf Runden, durch einen identischen
 kontrollierten Engpass (100 Mbit/s, +20 ms, 0,3 % zufälliger Verlust), damit
 WLAN-Schwankungen das Ergebnis nicht bestimmen. Mediane, exakter zweiseitiger Mann-Whitney-Test:
@@ -84,7 +84,7 @@ Rückgang der Retransmits; er wird deshalb nicht dem Experiment zugeschrieben. E
 Verlust löst die Rücknahme bei fälschlichem Verlust nicht aus, und 20-s-Läufe gewichten
 die DRAIN-Änderung kaum; gezielte Tests (vertauschte Pakete, kurze Verbindungen) fehlen.
 
-**Geräteabnahme:** OnePlus 13 (`dodge`, CPH2653), Kernel-Build
+**Geräteabnahme:** OnePlus 13, Kernel-Build
 `Sun Oct 4 11:15:40 CEST 2026`: `version` = `3-2026x`, `bbr3` als Standard, 64
 bestehende TCP-Verbindungen auf `bbr3` (`ss -tin`), keine BBR-/TCP-Warnungen im Kernel-Log. Kernel
 und Module wurden vollständig aus dem gepatchten Baum gebaut.
