@@ -1,7 +1,7 @@
 # Bluetooth Codec UI v1.3
 
 Maintenance release for **crDroid 16.0 / Android 16**.
-Reference platform: **OnePlus 13** (`dodge`, CPH2653) with **FiiO BTR17** (LC3 over LE Audio; aptX Adaptive, AAC, SBC over A2DP).
+Reference platform: **OnePlus 13** with **FiiO BTR17** (LC3 over LE Audio; aptX Adaptive, AAC, SBC over A2DP).
 
 ## Changes from v1.2
 

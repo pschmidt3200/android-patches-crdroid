@@ -1,7 +1,7 @@
 # aptX Adaptive & Lossless v1.6
 
 Behaviour update for **crDroid 16.0 / Android 16**.
-Reference platform: **OnePlus 13** (`dodge`, CPH2653), SM8750 / Qualcomm FastConnect 7900,
+Reference platform: **OnePlus 13**, SM8750 / Qualcomm FastConnect 7900,
 with **FiiO BTR17**.
 
 ## Changes from v1.5

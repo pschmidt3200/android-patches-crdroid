@@ -41,7 +41,7 @@ bash gaming-charge-bypass/apply-patches.sh --check /path/to/crdroid
 
 ## Verified on a device, and what was not
 
-Verified on a OnePlus 13 (dodge) running crDroid 16.0:
+Verified on a OnePlus 13 running crDroid 16.0:
 
 | Check | Result |
 |---|---|
