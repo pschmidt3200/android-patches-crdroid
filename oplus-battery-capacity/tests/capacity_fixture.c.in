@@ -1,0 +1,47 @@
+#include <stdbool.h>
+#include <stdint.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+typedef int64_t s64;
+#define min_t(type, a, b) ((type)(a) < (type)(b) ? (type)(a) : (type)(b))
+enum { GAUGE_ITEM_SOH=1, GAUGE_ITEM_FCC_COEFF=2, POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN=3, POWER_SUPPLY_PROP_CHARGE_FULL=4 };
+union mms_msg_data { int intval; };
+struct fake_topic { int capacity, soh, coeff, soh_rc, coeff_rc, reads; };
+struct oplus_gki_device { struct fake_topic *gauge_topic; int batt_capacity_mah, batt_fcc; };
+static int oplus_gauge_get_batt_capacity_mah(struct fake_topic *topic) { return topic->capacity; }
+static int oplus_mms_get_item_data(struct fake_topic *topic, int id, union mms_msg_data *data, bool sync) {
+ (void)sync; topic->reads++; if(id==GAUGE_ITEM_SOH) { data->intval=topic->soh; return topic->soh_rc; }
+ data->intval=topic->coeff; return topic->coeff_rc;
+}
+@HELPERS@static int property(struct oplus_gki_device *chip, int prop) { union { int intval; } value, *pval=&value; switch(prop) {
+@PROPERTY_CASES@default: abort(); } return value.intval; }
+
+static int count;
+static void expect(const char *label, int actual, int expected) { count++; if(actual!=expected) { fprintf(stderr,"%s: %d != %d\n",label,actual,expected); exit(1); } }
+int main(void) {
+ struct fake_topic t={.capacity=5930,.soh=96,.coeff=900};
+ struct oplus_gki_device chip={.gauge_topic=&t,.batt_capacity_mah=6000,.batt_fcc=4608};
+ /* Fixture coefficients illustrate the observed compensated value; their live values are not claimed. */
+ expect("observed correction example",oplus_gki_batt_fcc_mah(&chip),5472);
+ expect("FCC microamp-hours",property(&chip,POWER_SUPPLY_PROP_CHARGE_FULL),5472000);
+ expect("fresh design microamp-hours",property(&chip,POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN),5930000);
+ t.coeff=INT_MAX;expect("wide multiplication and design ceiling",oplus_gki_batt_fcc_mah(&chip),5930);
+ t.coeff=900;t.soh=94;expect("age-dependent compensation",oplus_gki_batt_fcc_mah(&chip),5454);
+ t.coeff=0;expect("zero coefficient",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.coeff=-10;expect("invalid negative coefficient",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.coeff=900;t.soh=0;expect("unknown health",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.soh=-1;expect("negative health",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.soh=101;expect("invalid health",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.soh=100;t.soh_rc=-5;expect("failed health read",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.soh_rc=0;t.coeff_rc=-5;expect("failed coefficient read",oplus_gki_batt_fcc_mah(&chip),4608);
+ t.coeff_rc=0;t.capacity=0;expect("cached design fallback",oplus_gki_batt_capacity_mah(&chip),6000);
+ t.capacity=-1;expect("negative design fallback",oplus_gki_batt_capacity_mah(&chip),6000);
+ chip.batt_capacity_mah=0;expect("no usable design",oplus_gki_batt_fcc_mah(&chip),4608);
+ chip.gauge_topic=NULL;chip.batt_capacity_mah=5930;expect("gauge absent",oplus_gki_batt_fcc_mah(&chip),4608);
+ expect("gauge absent design fallback",oplus_gki_batt_capacity_mah(&chip),5930);
+ chip.gauge_topic=&t;t.capacity=5930;t.reads=0;chip.batt_fcc=0;
+ expect("unknown FCC",oplus_gki_batt_fcc_mah(&chip),0);expect("unknown FCC avoids gauge reads",t.reads,0);
+ chip.batt_fcc=-1;expect("negative FCC preserved",oplus_gki_batt_fcc_mah(&chip),-1);
+ printf("%d cases passed; actual helper and property cases; gauge API is a fixture.\n",count);
+}

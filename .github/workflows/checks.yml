@@ -25,6 +25,9 @@ jobs:
           python3 .github/scripts/generate-installers.py --check
           python3 .github/scripts/test-generate-installers.py
 
+      - name: OPlus battery capacity host behaviour
+        run: python3 oplus-battery-capacity/tests/check-capacity.py
+
       - name: Module release selection and publication guards
         run: python3 .github/scripts/test-release-modules.py
 

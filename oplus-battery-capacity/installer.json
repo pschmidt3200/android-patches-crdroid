@@ -1,0 +1,11 @@
+{
+  "title": "OPlus Battery Capacity",
+  "optional_repository": "",
+  "patches": [
+    {
+      "repository": "kernel/oneplus/sm8750-modules",
+      "file": "crdroid_oplus_battery_capacity.patch",
+      "description": "Report the existing gauge FCC compensation and current design capacity"
+    }
+  ]
+}

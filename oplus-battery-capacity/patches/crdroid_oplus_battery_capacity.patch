@@ -1,0 +1,69 @@
+# Target repository: kernel/oneplus/sm8750-modules
+# Target: crDroid 17.0
+# OPlus capacity reporting: expose the existing gauge FCC compensation to Android.
+# Source reference: 204b190250343259fc7925c6f50a9365b2bff629
+# Reporting only; charge control and learned gauge data are unchanged.
+
+diff --git a/oplus/kernel/charger/v2/oplus_chg_gki.c b/oplus/kernel/charger/v2/oplus_chg_gki.c
+--- a/oplus/kernel/charger/v2/oplus_chg_gki.c
++++ b/oplus/kernel/charger/v2/oplus_chg_gki.c
+@@ -658,6 +658,46 @@
+ 
+ #define KPOC_FORCE_VBUS_MV 5000
+ #define FORCE_VBUS_5V_TIME 10000
++/* Keep the Android capacity report aligned with the OPlus gauge compensation. */
++static int oplus_gki_batt_capacity_mah(struct oplus_gki_device *chip)
++{
++	int capacity;
++
++	if (!chip->gauge_topic)
++		return chip->batt_capacity_mah;
++	capacity = oplus_gauge_get_batt_capacity_mah(chip->gauge_topic);
++	return capacity > 0 ? capacity : chip->batt_capacity_mah;
++}
++
++static int oplus_gki_batt_fcc_mah(struct oplus_gki_device *chip)
++{
++	union mms_msg_data data = { 0 };
++	int fcc = chip->batt_fcc;
++	int soh, coeff, capacity;
++	s64 compensated;
++
++	if (fcc <= 0 || !chip->gauge_topic)
++		return fcc;
++	if (oplus_mms_get_item_data(chip->gauge_topic, GAUGE_ITEM_SOH,
++				    &data, false) < 0)
++		return fcc;
++	soh = data.intval;
++	if (soh <= 0 || soh > 100)
++		return fcc;
++	if (oplus_mms_get_item_data(chip->gauge_topic, GAUGE_ITEM_FCC_COEFF,
++				    &data, false) < 0)
++		return fcc;
++	coeff = data.intval;
++	if (coeff <= 0)
++		return fcc;
++	capacity = oplus_gki_batt_capacity_mah(chip);
++	if (capacity <= 0)
++		return fcc;
++
++	compensated = (s64)fcc + (s64)coeff * soh / 100;
++	return min_t(s64, compensated, capacity);
++}
++
+ static int battery_psy_get_prop(struct power_supply *psy,
+ 		enum power_supply_property prop,
+ 		union power_supply_propval *pval)
+@@ -795,10 +835,10 @@
+ 		pval->intval = chip->charger_cycle;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+-		pval->intval = chip->batt_capacity_mah * 1000;
++		pval->intval = oplus_gki_batt_capacity_mah(chip) * 1000;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+-		pval->intval = chip->batt_fcc * 1000;
++		pval->intval = oplus_gki_batt_fcc_mah(chip) * 1000;
+ 		break;
+ 	case POWER_SUPPLY_PROP_ENERGY_FULL:
+ 		oplus_gauge_get_qmax(chip->gauge_topic, 0, &batt_qmax_0);
