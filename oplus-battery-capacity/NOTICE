@@ -1,6 +1,13 @@
 OPlus battery-capacity reporting for crDroid 17.0 / OnePlus sm8750.
 Prepared 2026-10-20.
 
+MOTIVATION
+
+Provide manufacturer-aligned battery-health values in Android by using the
+existing OPlus capacity correction, rather than deriving the display solely
+from raw FCC. The goal is reporting closer to the manufacturer ROM, without
+hardcoding a desired percentage.
+
 REFERENCE REPOSITORY, COMMIT AND PUBLIC SOURCE
 
   kernel/oneplus/sm8750-modules 204b190250343259fc7925c6f50a9365b2bff629 https://github.com/crdroidandroid/android_kernel_oneplus_sm8750-modules branch=17.0
@@ -38,6 +45,10 @@ Apache License 2.0 terms in LICENSE-APACHE-2.0. The installer is generated from
 the repository's shared template; edit installer.json and regenerate it.
 
 VALIDATION BOUNDARY
+
+The maintainer is building the ROM. Device acceptance is awaiting test
+confirmation; publication is held until the ROM test succeeds. The acceptance
+statements in the READMEs are prepared publication wording for that later step.
 
 Strict source application and reversal, 20 C host cases with ASan/UBSan and a
 negative control, and compilation of the complete changed driver translation

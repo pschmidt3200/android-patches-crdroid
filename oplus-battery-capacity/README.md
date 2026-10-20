@@ -5,10 +5,28 @@ capacity (FCC) compensation through the Android power-supply reporting path on
 **crDroid 17.0 / OnePlus sm8750**. The generic path previously reported raw FCC,
 while the OPlus reporting code already applied a device-specific correction.
 
-**Validation status:** source application and reversal, 20 host cases with
+## Motivation
+
+The goal is a manufacturer-aligned battery-health display: Android should use
+the existing OPlus capacity correction to report values closer to those of the
+manufacturer ROM. This addresses a low battery-health percentage derived from
+raw, uncompensated capacity. The displayed value should follow the device's
+correction data rather than a fixed target percentage.
+
+## Acceptance
+
+**Prepared publication wording, to use only after the ROM test passes:**
+
+> Acceptance completed successfully; the patch works as expected. The aim is
+> manufacturer-aligned battery-health values using the existing OPlus capacity
+> correction.
+
+**Current status:** the maintainer is building the ROM. The device test has not
+yet been confirmed; publication is held until that test succeeds.
+
+**Technical checks passed:** source application and reversal, 20 host cases with
 ASan/UBSan and a negative control, and compilation of the complete changed driver
-translation unit with Android clang r596125 / 22.0.2 passed. A complete kernel/ROM
-build and installed Settings UI validation are pending.
+translation unit with Android clang r596125 / 22.0.2.
 
 ## Behaviour
 

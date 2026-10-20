@@ -5,10 +5,29 @@ Voll-Ladekapazitaet (FCC) an den Android-Power-Supply-Pfad weiter. Ziel ist
 **crDroid 17.0 / OnePlus sm8750**. Bisher meldete der generische Pfad die rohe FCC,
 waehrend der OPlus-Meldepfad bereits eine geraetespezifische Korrektur verwendete.
 
-**Pruefstand:** Quellanwendung und Ruecknahme, 20 Hostfaelle mit ASan/UBSan und
+## Motivation
+
+Ziel ist eine herstellernahe Akkugesundheitsanzeige wie im Hersteller-ROM:
+Android soll die vorhandene OPlus-Kapazitaetskorrektur nutzen und damit
+herstellernahe Werte anzeigen. Anlass war eine niedrige Akkugesundheitsanzeige
+aus der rohen, unkorrigierten Kapazitaet. Der angezeigte Wert soll aus den
+Korrekturdaten des Geraets entstehen; eine feste Prozentzahl wird nicht vorgegeben.
+
+## Abnahme
+
+**Vorbereiteter Veroeffentlichungstext, erst nach bestandenem ROM-Test verwenden:**
+
+> Abnahme abgeschlossen und OK; der Patch funktioniert wie erwartet. Ziel sind
+> herstellernahe Werte der Akkugesundheitsanzeige durch die vorhandene
+> OPlus-Kapazitaetskorrektur.
+
+**Aktueller Stand:** Der Maintainer baut das ROM. Der Geraetetest ist noch nicht
+bestaetigt; veroeffentlicht wird erst nach erfolgreichem Test.
+
+**Technische Pruefungen bestanden:** Quellanwendung und Ruecknahme,
+20 Hostfaelle mit ASan/UBSan und
 negativer Gegenprobe sowie die Kompilierung der kompletten geaenderten
-Treiberdatei mit Android clang r596125 / 22.0.2 bestanden. Ein vollstaendiger
-Kernel-/ROM-Build und die installierte Anzeige in den Einstellungen stehen aus.
+Treiberdatei mit Android clang r596125 / 22.0.2.
 
 ## Verhalten
 
