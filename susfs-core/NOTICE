@@ -5,17 +5,17 @@ reference commits in this NOTICE); ROM build and device validation are pending. 
 edition is kept on branch 16.0 of this repository.
 
 Reference checkout (place under the build root as external/susfs4ksu):
-  external/susfs4ksu 2d11d711de80f0f749b3055f8da8f7b9682454e4 https://gitlab.com/simonpunk/susfs4ksu branch=gki-android15-6.6
+  external/susfs4ksu 4a4cb1be85a4694372d3efb9420de69982eac29a https://gitlab.com/simonpunk/susfs4ksu branch=gki-android15-6.6
 
 Corrected upstream path: kernel_patches/50_add_susfs_in_gki-android15-6.6.patch
-Original SHA256: 15587d2d46f5cdf9d707d46604cbdd57f9da865477c84545d7c4b6427a67a67c
-Corrected SHA256: e4a8d393105611dd09d1aa8d74907ea3611fe0e2b7c34fa08a694694aa127433
-Context delta SHA256: f7f8e94632e2203e4638a59d686044fc70e0df26e8cc796d89e9c5bb9110ad84
+Original SHA256: f51921782c6b97c30ae5dc34a58b6f5daadb1e5c3e5db7f6d04b53bd3469f4b8
+Corrected SHA256: db6de46a32533e3f5cf3d32d139977ce2f0e570b9d5170095615617af52557d4
+Context delta SHA256: 53bd9734892725f4c6cc311c66082c7921b292d93bce1a8608796588c0d6a40b
 Target kernel for the corrected patch: https://github.com/crdroidandroid/android_kernel_oneplus_sm8750
-Branch 17.0 commit 48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976 (Android15 Linux6.6), checked
-2026-10-20 in an isolated kernel index, alone and after BBRv3; it also applied to
-branch 16.0 commit b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35. The current upstream
-gki-android15-6.6 head (rebuilt 2026-10-18/19) no longer matches this delta.
+Branch 17.0 commit 48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976 (Android15 Linux6.6),
+checked 2026-10-20 in an isolated kernel index, alone and after BBRv3 or its
+experimental companion. This delta targets the upstream revision pinned above;
+the frozen crDroid 16.0 edition remains on branch 16.0.
 
 Upstream commit author simonpunk; README credits KernelSU, 5ec1cff and Kartatz.
 No per-file author attribution is inferred. LICENSE is the exact GPL Version3

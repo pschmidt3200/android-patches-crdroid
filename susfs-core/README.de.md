@@ -10,13 +10,15 @@ Der Kontext enthält jetzt `vma_data_pages()` statt des veralteten `vma_pages()`
 Die korrigierte Upstream-Patchdatei zielt auf `kernel/oneplus/sm8750`, Branch
 `17.0`, Commit `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976` (Android 15 / Linux 6.6)
 für crDroid 17.0, allein und nach den `bbrv3`-Patches (geprüft am 20.10.2026 im isolierten
-Kernelindex). Auf den crDroid-16.0-Commit `b69d2cc667dd` passte sie ebenso. Andere Quellstände
+Kernelindex). Die crDroid-16.0-Fassung bleibt getrennt eingefroren. Andere Quellstände
 benötigen eigene Prüfung.
 
-> **crDroid 17.0: quellgeprüft, noch nicht auf dem Gerät getestet.** Die Kernel- und Geräteabnahme
-> unten stammt vom crDroid-16.0-Kernel. Der SUSFS-Upstream-Branch `gki-android15-6.6` wurde am
-> 18./19.10.2026 umgebaut; diese Fassung zielt weiter auf die festgelegte Revision `2d11d711de80`
-> und passt nicht auf den aktuellen Branch-Stand. Die 16.0-Fassung bleibt auf dem Branch
+> **17.0-Update vom 20.10.2026:** Auf Upstream `4a4cb1be85a4`
+> im Branch `gki-android15-6.6` neu aufgesetzt. Anwendung/Ruecknahme am Pin und
+> aktuellen Branch bestehen. Hinzugefuegte/entfernte Kernelzeilen bleiben exakt
+> upstream; nur Kontext und Patch-Metadaten aendern sich. Neuer Kernel-Build und
+> Geraeteabnahme stehen aus. Die Geraetemessungen unten stammen aus crDroid 16.0.
+> Die eingefrorene 16.0-Fassung bleibt auf Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Anwendung in zwei Schritten
@@ -28,7 +30,7 @@ crDroid-Baum. Falls noch nicht vorhanden, den genauen Upstream-Stand vorbereiten
 ```bash
 cd /pfad/zu/crdroid
 git clone --branch gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git external/susfs4ksu
-git -C external/susfs4ksu checkout --detach 2d11d711de80f0f749b3055f8da8f7b9682454e4
+git -C external/susfs4ksu checkout --detach 4a4cb1be85a4694372d3efb9420de69982eac29a
 ```
 
 In der Patchsammlung alle Moduldateien aus derselben Fassung verwenden:
@@ -40,7 +42,7 @@ sha256sum /pfad/zu/crdroid/external/susfs4ksu/kernel_patches/50_add_susfs_in_gki
 ```
 
 Erwartete SHA256 der korrigierten vollständigen Upstream-Patchdatei:
-`e4a8d393105611dd09d1aa8d74907ea3611fe0e2b7c34fa08a694694aa127433`.
+`db6de46a32533e3f5cf3d32d139977ce2f0e570b9d5170095615617af52557d4`.
 [NOTICE](NOTICE) nennt Originalhash, Quellen und Autoren.
 Ein bereits veränderter Checkout wird standardmäßig abgelehnt.
 `--check --reverse` und danach `--reverse` nehmen nur diese Patchdatei-Korrektur
@@ -57,8 +59,8 @@ SUSFS-Version `v2.3.0` und WildKernels-Fixpaket-Version `v2.2.0` sind unabhängi
 ## Prüfstatus und Grenzen
 
 Lokal geprüft werden Modulstruktur, eigenständiger Installer, reale Anwendung
-und Rücknahme auf dem Upstream-Referenzstand (der aktuelle Stand des Branches
-`gki-android15-6.6` passt seit dessen Umbau am 18./19.10.2026 nicht mehr) und die exakte
+und Rücknahme auf dem Upstream-Referenzstand und dem aktuellen Branch
+`gki-android15-6.6` sowie die exakte
 Ergebnisprüfsumme. Die entstandene vollständige
 Upstream-Patchdatei wird separat mit BBRv3 im isolierten Referenz-Kernelindex geprüft.
 **Dokumentierte Kernel- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13**

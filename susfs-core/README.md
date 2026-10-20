@@ -10,13 +10,15 @@ The relevant context now uses `vma_data_pages()` instead of the obsolete
 `kernel/oneplus/sm8750`, branch `17.0`, commit
 `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976` (Android 15 / Linux 6.6),
 used by crDroid 17.0, alone and after the `bbrv3` patches (checked 2026-10-20 in an isolated
-kernel index). It applied to the crDroid 16.0 commit `b69d2cc667dd` as well. Other revisions
+kernel index). The crDroid 16.0 edition is frozen separately. Other revisions
 require separate validation.
 
-> **crDroid 17.0: source-checked, not yet device-tested.** The kernel and device acceptance below
-> was measured with the crDroid 16.0 kernel. The SUSFS upstream branch `gki-android15-6.6` was
-> rebuilt on 2026-10-18/19; this edition still targets the pinned revision `2d11d711de80` and does
-> not apply to the current branch head. The 16.0 edition stays on branch
+> **17.0 update, 2026-10-20:** rebased against upstream `4a4cb1be85a4`
+> on `gki-android15-6.6`. Pinned and current-branch source application/reversal
+> pass. Kernel additions/removals are identical to upstream; only context and
+> patch metadata change. New kernel build and device acceptance remain pending.
+> Device measurements below refer to the frozen crDroid 16.0 edition.
+> The frozen 16.0 edition stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Two separate application steps
@@ -28,7 +30,7 @@ build root. Prepare it from the exact upstream revision if it is not already the
 ```bash
 cd /path/to/crdroid
 git clone --branch gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git external/susfs4ksu
-git -C external/susfs4ksu checkout --detach 2d11d711de80f0f749b3055f8da8f7b9682454e4
+git -C external/susfs4ksu checkout --detach 4a4cb1be85a4694372d3efb9420de69982eac29a
 ```
 
 From this patch collection, with all module files from the same edition:
@@ -40,7 +42,7 @@ sha256sum /path/to/crdroid/external/susfs4ksu/kernel_patches/50_add_susfs_in_gki
 ```
 
 Expected corrected SHA256:
-`e4a8d393105611dd09d1aa8d74907ea3611fe0e2b7c34fa08a694694aa127433`.
+`db6de46a32533e3f5cf3d32d139977ce2f0e570b9d5170095615617af52557d4`.
 The original input SHA256 and upstream attribution are in [NOTICE](NOTICE).
 The installer rejects an already modified target checkout by default.
 `--check --reverse` followed by `--reverse` restores **that patch file**;
@@ -57,8 +59,8 @@ and WildKernels fix-package version `v2.2.0` are independent.
 ## Validation and limits
 
 Local checks cover structure, standalone installer behaviour, real patch-file
-application/reversal at the pinned upstream (the current `gki-android15-6.6` branch head no
-longer matches since its rebuild on 2026-10-18/19), plus reconstruction of the exact corrected SHA256. The resulting full
+application/reversal at the pinned upstream and the current `gki-android15-6.6`
+branch, plus reconstruction of the exact corrected SHA256. The resulting full
 patch is checked separately with BBRv3 in an isolated reference-kernel index.
 **Documented kernel and device acceptance:** Validated live on the **OnePlus 13**
 running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):
