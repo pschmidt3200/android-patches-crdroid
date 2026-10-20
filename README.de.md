@@ -22,7 +22,7 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 * **[gaming-charge-bypass](gaming-charge-bypass/):** Das Laden pausiert, solange ein Spiel läuft, und der vorherige Ladezustand wird bei Spielende wiederhergestellt; die Schwelle ist im GameSpace-Panel einstellbar. Technische Details und die Grenzen der Geräteprüfung im Modulverzeichnis.
 * **[le-audio-fixes](le-audio-fixes/):** LE-Audio-Korrekturen: Empfänger, die die gesammelte Attributabfrage des Stacks nie beantworten, können verbinden, eine gewählte Abtastrate oder Frame-Dauer kommt im Stream an, und 32 kHz sowie 24 kHz / 7,5 ms stehen für Medien bereit. Technische Details und Voraussetzungen im Modulordner.
 * **[oplus-hardware-fixes](oplus-hardware-fixes/):** Die LTPO-Einstellung zeigt die tatsächliche Panel-Konfiguration statt der letzten gespeicherten Auswahl, und die Touch-HAL prüft Treiber- und Binder-Antworten statt Erfolg anzunehmen. Technische Details im Modulordner.
-* **[oplus-battery-capacity](oplus-battery-capacity/):** Reicht die vorhandene OPlus-Kapazitaetskorrektur auf OnePlus sm8750 an Android weiter. Nur die Meldung wird angepasst; kompletter Kernel-/ROM-Build und installierte UI-Pruefung stehen aus. Formel und Rueckfallverhalten im Modul.
+* **[oplus-battery-capacity](oplus-battery-capacity/):** Herstellernahe Akkugesundheitsanzeige durch die vorhandene OPlus-Kapazitaetskorrektur. Am 21.10.2026 bestaetigte der Maintainer 5472 mAh und 92 % in den Einstellungen des neuen OnePlus-13-ROMs. Formel, Rueckfallverhalten und Abnahmeumfang im Modul.
 
 ### Benutzeroberfläche & Einstellungen
 * **[bluetooth-codec-ui](bluetooth-codec-ui/):** Bluetooth-Audio-Codec-Auswahlmenü und Statusanzeige in den Einstellungen. Technische Details im Modulordner.

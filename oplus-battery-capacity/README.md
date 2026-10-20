@@ -15,14 +15,15 @@ correction data rather than a fixed target percentage.
 
 ## Acceptance
 
-**Prepared publication wording, to use only after the ROM test passes:**
+**Acceptance completed successfully.** On 2026-10-21, the maintainer confirmed
+that the new ROM was running on the OnePlus 13 and Settings showed a maximum
+capacity of **5472 mAh** and battery health of **92%**, matching the expected
+compensated report. The goal is manufacturer-aligned battery-health values
+using the existing OPlus capacity correction.
 
-> Acceptance completed successfully; the patch works as expected. The aim is
-> manufacturer-aligned battery-health values using the existing OPlus capacity
-> correction.
-
-**Current status:** the maintainer is building the ROM. The device test has not
-yet been confirmed; publication is held until that test succeeds.
+This is maintainer-reported ROM/UI acceptance on the reference device. It does
+not establish the physical remaining capacity or identical results on every
+device, and the separate manufacturer UI-SOH estimate is not substituted.
 
 **Technical checks passed:** source application and reversal, 20 host cases with
 ASan/UBSan and a negative control, and compilation of the complete changed driver

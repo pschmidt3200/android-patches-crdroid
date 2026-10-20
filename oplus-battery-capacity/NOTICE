@@ -46,12 +46,14 @@ the repository's shared template; edit installer.json and regenerate it.
 
 VALIDATION BOUNDARY
 
-The maintainer is building the ROM. Device acceptance is awaiting test
-confirmation; publication is held until the ROM test succeeds. The acceptance
-statements in the READMEs are prepared publication wording for that later step.
+On 2026-10-21 the maintainer confirmed the new running crDroid 17.0 ROM on the
+OnePlus 13. Settings showed maximum capacity 5472 mAh and battery health 92%,
+matching the expected compensated reporting. Functional ROM/UI acceptance is
+complete on that basis. This is a direct maintainer report, not an independent
+physical capacity measurement or validation of every device/configuration.
 
 Strict source application and reversal, 20 C host cases with ASan/UBSan and a
 negative control, and compilation of the complete changed driver translation
 unit with Android clang r596125 / 22.0.2 were verified. Gauge APIs in the host
-check are fixtures. A full kernel link, ROM build and installed device/UI
-acceptance remain pending. Source reversal is not an installed-device rollback.
+check are fixtures. Those checks are distinct from the maintainer-reported
+installed ROM/UI result above. Source reversal is not an installed-device rollback.

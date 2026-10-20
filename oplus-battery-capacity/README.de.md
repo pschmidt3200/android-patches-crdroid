@@ -15,18 +15,18 @@ Korrekturdaten des Geraets entstehen; eine feste Prozentzahl wird nicht vorgegeb
 
 ## Abnahme
 
-**Vorbereiteter Veroeffentlichungstext, erst nach bestandenem ROM-Test verwenden:**
+**Abnahme abgeschlossen und OK.** Am 21.10.2026 bestaetigte der Maintainer das
+neue laufende ROM auf dem OnePlus 13: Die Einstellungen zeigen eine maximale
+Kapazitaet von **5472 mAh** und einen Akkuzustand von **92 %**. Das entspricht
+der erwarteten korrigierten Meldung. Ziel sind herstellernahe Werte der
+Akkugesundheitsanzeige durch die vorhandene OPlus-Kapazitaetskorrektur.
 
-> Abnahme abgeschlossen und OK; der Patch funktioniert wie erwartet. Ziel sind
-> herstellernahe Werte der Akkugesundheitsanzeige durch die vorhandene
-> OPlus-Kapazitaetskorrektur.
-
-**Aktueller Stand:** Der Maintainer baut das ROM. Der Geraetetest ist noch nicht
-bestaetigt; veroeffentlicht wird erst nach erfolgreichem Test.
+Das ist die vom Maintainer bestaetigte ROM-/UI-Abnahme am Referenzgeraet.
+Sie belegt weder den physischen Restzustand noch gleiche Ergebnisse auf jedem
+Geraet. Der separate Hersteller-UI-SOH wird nicht als Kapazitaet uebernommen.
 
 **Technische Pruefungen bestanden:** Quellanwendung und Ruecknahme,
-20 Hostfaelle mit ASan/UBSan und
-negativer Gegenprobe sowie die Kompilierung der kompletten geaenderten
+20 Hostfaelle mit ASan/UBSan und negativer Gegenprobe sowie die Kompilierung der kompletten geaenderten
 Treiberdatei mit Android clang r596125 / 22.0.2.
 
 ## Verhalten

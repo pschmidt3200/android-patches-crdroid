@@ -22,7 +22,7 @@ Each module is self-contained and focuses on a single feature:
 * **[gaming-charge-bypass](gaming-charge-bypass/):** Charging pauses while a game runs and the previous charging state is restored on exit, with a threshold option in the GameSpace in-game panel. See the module directory for technical details and the limits of the device verification.
 * **[le-audio-fixes](le-audio-fixes/):** LE Audio fixes: receivers that never answer the stack's grouped attribute read can connect, a chosen sample rate or frame duration reaches the stream, and 32 kHz and 24 kHz / 7.5 ms become available for media. See the module directory for technical details and prerequisites.
 * **[oplus-hardware-fixes](oplus-hardware-fixes/):** LTPO settings show the panel's real configuration instead of the last stored preference, and the touch HAL validates driver and Binder responses instead of assuming success. See the module directory for technical details.
-* **[oplus-battery-capacity](oplus-battery-capacity/):** Reports the existing OPlus gauge capacity compensation to Android on OnePlus sm8750. Reporting only; a full kernel/ROM build and installed UI validation are pending. See the module for the formula and fallbacks.
+* **[oplus-battery-capacity](oplus-battery-capacity/):** Manufacturer-aligned battery-health reporting through the existing OPlus gauge capacity correction. On 2026-10-21 the maintainer confirmed 5472 mAh and 92% in Settings on the new OnePlus 13 ROM. See the module for the formula, fallbacks and validation scope.
 
 ### User Interface & Settings
 * **[bluetooth-codec-ui](bluetooth-codec-ui/):** Bluetooth audio codec selection menu and status display in Settings. See the module directory for technical details.
