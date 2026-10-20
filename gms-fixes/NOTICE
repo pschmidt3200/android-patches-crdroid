@@ -1,11 +1,14 @@
-GMS compatibility source patches for crDroid 16.0 (Android 16)
+GMS compatibility source patches for crDroid 17.0 (Android 17)
 Public edition prepared 2026-10-01.
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
-  frameworks/base a7b0e5e188fb72a566328bfed0e0412ddb7850e2 https://github.com/crdroidandroid/android_frameworks_base
-  vendor/gms 89c3940a77298c204c55a21efded92ddafb59fe9 https://github.com/Evolution-X/vendor_gms branch=bka
+  frameworks/base c2382c14b024f5701071d31d9cc8fe1401dc9a88 https://github.com/crdroidandroid/android_frameworks_base
+  vendor/gms d5490a1323f348fff1cc35f091b29ba583c67a84 https://github.com/Evolution-X/vendor_gms branch=cnb
 
-The optional fourth field branch=bka selects the vendor's Android 16 branch
+The optional fourth field branch=cnb selects the vendor's Android 17 branch
 when check-reference.sh is run with --branch. Pinned checks always use the SHA.
 
 Changes are limited to source/build-configuration diffs. No APKs, libraries,
@@ -15,7 +18,8 @@ Source Project; retain those per-file notices. This module's changes and
 documentation are provided under Apache License, Version 2.0 (see LICENSE).
 This notice grants no additional rights in upstream proprietary components.
 
-Reference setup: OnePlus 13 (dodge), crDroid 16.0 with this vendor/gms baseline.
+Reference setup of the 16.0 edition: OnePlus 13 (dodge), crDroid 16.0 with vendor/gms
+branch bka (89c3940a77298c204c55a21efded92ddafb59fe9).
 The GMS visibility change follows a locally used fix. The public edition as a
 whole has source apply/reverse checks only; no new ROM build or device test.
 Other vendors, vendor revisions and devices require their own validation.

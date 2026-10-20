@@ -7,6 +7,11 @@ previous charging configuration is restored exactly as it was.
 The threshold is user-visible in the GameSpace in-game panel:
 **battery level at game start**, or a fixed value between 70 and 100 %.
 
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gaming-charge-bypass).
+
 ## What the two patches do
 
 | Patch | Repository | Effect |
@@ -55,5 +60,6 @@ test.
 
 ## Requirements
 
-crDroid 16.0 (Android 16). Other ROMs are untested. See `NOTICE` for the exact
+crDroid 17.0 (Android 17); for 16.0, use branch `16.0` of this repository. Other ROMs are
+untested. See `NOTICE` for the exact
 upstream tree states the diffs were generated against.

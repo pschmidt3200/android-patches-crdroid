@@ -1,46 +1,39 @@
 # Target repository: vendor/gms
-# Limit uses-library exceptions to three prebuilts and correct one optional-library declaration.
+# Checked against Evolution-X vendor_gms d5490a1323f348fff1cc35f091b29ba583c67a84 (branch cnb, crDroid 17.0).
+# Limit uses-library exceptions to two prebuilts and correct the CrossDevice optional-library
+# declaration. PersistentBackgroundServices no longer exists in branch cnb.
 
 diff --git a/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk b/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
+index 553169f..ca20867 100644
 --- a/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
 +++ b/product/packages/privileged_apps/CustomizationBundlePrebuiltFullVersion/Android.mk
-@@ -19,6 +19,8 @@
-
+@@ -20,6 +20,8 @@ LOCAL_PATH := $(call my-dir)
+ 
  include $(CLEAR_VARS)
  LOCAL_MODULE := CustomizationBundlePrebuiltFullVersion
 +LOCAL_ENFORCE_USES_LIBRARIES := false
-+# The signed APK declares wear-sdk, which this crDroid tree does not provide.
++# The signed cnb APK declares optional wear-sdk; retain this module-local workaround.
  LOCAL_MODULE_TAGS := optional
  LOCAL_SRC_FILES := CustomizationBundlePrebuiltFullVersion.apk
  LOCAL_CERTIFICATE := PRESIGNED
 diff --git a/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk b/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk
+index c0e7492..c462e35 100644
 --- a/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk
 +++ b/product/packages/privileged_apps/SafetyHubPrebuilt/Android.mk
-@@ -20,6 +20,8 @@
-
+@@ -20,6 +20,8 @@ LOCAL_PATH := $(call my-dir)
+ 
  include $(CLEAR_VARS)
  LOCAL_MODULE := SafetyHubPrebuilt
 +LOCAL_ENFORCE_USES_LIBRARIES := false
-+# The signed APK declares wear-sdk, which this crDroid tree does not provide.
++# The signed cnb APK declares optional wear-sdk; retain this module-local workaround.
  LOCAL_MODULE_TAGS := optional
  LOCAL_SRC_FILES := SafetyHubPrebuilt.apk
  LOCAL_CERTIFICATE := PRESIGNED
-diff --git a/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk b/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk
---- a/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk
-+++ b/system_ext/packages/privileged_apps/PersistentBackgroundServices/Android.mk
-@@ -19,6 +19,8 @@
-
- include $(CLEAR_VARS)
- LOCAL_MODULE := PersistentBackgroundServices
-+LOCAL_ENFORCE_USES_LIBRARIES := false
-+# The signed APK declares com.google.input.gia.giaservicemanager, which this crDroid tree does not provide.
- LOCAL_MODULE_TAGS := optional
- LOCAL_SRC_FILES := PersistentBackgroundServices.apk
- LOCAL_CERTIFICATE := PRESIGNED
 diff --git a/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk b/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk
+index 4a6befa..9c537c9 100644
 --- a/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk
 +++ b/system_ext/packages/apps/CrossDeviceAccessServicePrimary/Android.mk
-@@ -24,6 +24,6 @@
+@@ -25,6 +25,6 @@ LOCAL_SRC_FILES := CrossDeviceAccessServicePrimary.apk
  LOCAL_CERTIFICATE := platform
  LOCAL_MODULE_CLASS := APPS
  LOCAL_SYSTEM_EXT_MODULE := true

@@ -2,10 +2,16 @@
 
 [English](README.md)
 
-Vier unabhängig nutzbare Quellpatches für **crDroid 16.0 (Android 16)** mit
-Evolution X `vendor_gms`, Branch `bka`, unter `vendor/gms`.
+Vier unabhängig nutzbare Quellpatches für **crDroid 17.0 (Android 17)** mit
+Evolution X `vendor_gms`, Branch `cnb`, unter `vendor/gms`.
 Sie ändern Framework-Sichtbarkeit und Vendor-Buildkonfiguration. Sie installieren
 keine GApps und enthalten keine Google-APKs. Andere GApps-Vendors sind nicht abgedeckt.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gms-fixes).
 
 ## Änderungen auswählen
 
@@ -13,7 +19,7 @@ keine GApps und enthalten keine Google-APKs. Andere GApps-Vendors sind nicht abg
 |---|---|---|
 | [gms_query_visibility.patch](patches/gms_query_visibility.patch) | `frameworks/base` | Ergänzt ausschließlich `com.google.android.gms` in `config_forceQueryablePackages` für Apps mit Paketsichtbarkeitsproblemen; ursprünglicher Anlass: Net Analyzer. Keine zusätzlichen Rechte oder weiteren global sichtbaren Pakete. |
 | [gms_google_clock_permission.patch](patches/gms_google_clock_permission.patch) | `vendor/gms` | Ergänzt ausschließlich für die Google-Uhr `SCHEDULE_EXACT_ALARM` in der privilegierten Berechtigungsliste. Die Berechtigungsprüfung bleibt aktiv. |
-| [gms_uses_libraries.patch](patches/gms_uses_libraries.patch) | `vendor/gms` | Setzt die uses-library-Buildprüfung nur für `CustomizationBundlePrebuiltFullVersion`, `SafetyHubPrebuilt` und `PersistentBackgroundServices` aus; entfernt eine überzählige `org.apache.http.legacy`-Deklaration bei `CrossDeviceAccessServicePrimary`. |
+| [gms_uses_libraries.patch](patches/gms_uses_libraries.patch) | `vendor/gms` | Setzt die uses-library-Buildprüfung nur für `CustomizationBundlePrebuiltFullVersion` und `SafetyHubPrebuilt` aus (`PersistentBackgroundServices`, in der 16.0-Fassung ebenfalls enthalten, gibt es im Branch `cnb` nicht mehr); entfernt eine überzählige `org.apache.http.legacy`-Deklaration bei `CrossDeviceAccessServicePrimary`. |
 | [gms_oneplus_package_selection.patch](patches/gms_oneplus_package_selection.patch) | `vendor/gms` | Entfernt die zehn unten genannten Pixel-Paketpräfixe aus Full-, Tablet-, Mini- und Pico-Produktlisten. Dies ist eine ausdrückliche OnePlus-Buildauswahl. |
 
 Der uses-library-Patch ist eine gezielte Build-Ausnahme, **keine Implementierung
@@ -22,7 +28,7 @@ Die Paketauswahl entfernt folgende Präfixe einschließlich versionierter Namen:
 
 * `FamilySpacePrebuilt`, `OdadPrebuilt`, `SearchSelectorPrebuilt`, `DeviceConnectivityServicePrebuilt`
 * `NexusLauncherRelease`, `WallpaperPickerGoogleRelease`
-* `SetupWizardPrebuilt_versioned`, `SetupWizardPixelPrebuilt_versioned`, `GooglePackageInstaller`
+* `SetupWizardPrebuilt`, `SetupWizardPixelPrebuilt`, `GooglePackageInstaller`
 * `WeatherPixelPrebuilt`
 
 Bei dieser Auswahl müssen crDroids Launcher, Einrichtungsassistent, Paketinstaller
@@ -60,11 +66,11 @@ Bereits angewendete oder kollidierende Patches werden abgewiesen; keine automati
 
 Die öffentliche Fassung wird auf Format, Fehlerbehandlung des Helfers sowie echte
 Anwendung/Rücknahme an [NOTICE](NOTICE)-Commits und aktuellen Upstream-Branches geprüft.
-Branch-Prüfungen verwenden `16.0` für crDroid und NOTICEs `branch=bka` für den Vendor:
+Branch-Prüfungen verwenden `17.0` für crDroid und NOTICEs `branch=cnb` für den Vendor:
 
 ```bash
 bash .github/scripts/check-reference.sh gms-fixes
-bash .github/scripts/check-reference.sh --branch 16.0 gms-fixes
+bash .github/scripts/check-reference.sh --branch 17.0 gms-fixes
 ```
 
 **Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**

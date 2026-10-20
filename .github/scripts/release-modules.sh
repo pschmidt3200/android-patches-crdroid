@@ -184,7 +184,7 @@ for i in "${PENDING[@]}"; do
         [[ -n "${CHECKED[${target}]+set}" ]] && continue
         bash .github/scripts/test-apply-script.sh "${target}"
         bash .github/scripts/check-reference.sh "${target}"
-        bash .github/scripts/check-reference.sh --branch 16.0 "${target}"
+        bash .github/scripts/check-reference.sh --branch 17.0 "${target}"
         CHECKED[${target}]=1
     done
 done

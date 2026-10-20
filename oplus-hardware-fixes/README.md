@@ -1,6 +1,6 @@
 # Oplus Hardware Fixes
 
-Two correctness fixes for `hardware/oplus` on **crDroid 16.0 (Android 16)**: the LTPO
+Two correctness fixes for `hardware/oplus` on **crDroid 17.0 (Android 17)**: the LTPO
 settings screen now shows the panel's real configuration instead of the last stored
 preference, and the touch HAL validates driver and Binder responses instead of assuming
 they succeeded.
@@ -9,6 +9,11 @@ Neither patch enables a feature, changes a sampling rate or touches a kernel nod
 make existing code tell the truth when the hardware says no.
 
 ---
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/oplus-hardware-fixes).
 
 ## What they fix
 
@@ -45,13 +50,16 @@ Three paths assumed their writes had worked:
   power double-tap path additionally validates the vendor proxy and reports parsing or
   write failures locally.
 
-Gesture nodes, the gesture list and touch sampling rates are unchanged.
+Gesture nodes, the gesture list and touch sampling rates are unchanged. crDroid 17.0 can write
+the mask to several gesture-mask nodes; the 17.0 edition reads each node's own mask, changes only the
+requested bit and stops at the first read, parse or write failure; earlier successful writes
+stay in place as upstream (no rollback across nodes).
 
 ---
 
 ## Prerequisites
 
-* crDroid 16.0 source tree with `hardware/oplus`
+* crDroid 17.0 source tree with `hardware/oplus` (for 16.0, use branch `16.0` of this repository)
 * An Oplus/OnePlus device whose tree uses that repository
 
 Both patches apply to `hardware/oplus` only. See `NOTICE` for the exact upstream commit

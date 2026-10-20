@@ -1,9 +1,12 @@
 # Target repository: hardware/oplus
-# Prepared against hardware/oplus 2c423457fffc1eea6d1eeb21abf26af66e541186 (crDroid 16.0).
+# Checked against hardware/oplus f5f9acbc690d9c5488ea994a15df9340b1192e22 (crDroid 17.0)
+# and the earlier 17.0 head d1ec13f56e45af871ed84e9f687151d7d9643c98.
 # Validate touch responses and stop on Binder/driver failures. No feature/rate toggles.
+# The multiple gesture-mask nodes and the INTERACTIVE and charger handling of
+# crDroid 17.0 are kept.
 #
 diff --git a/aidl/touch/GloveMode.cpp b/aidl/touch/GloveMode.cpp
-index 2ca4e13..c15a574 100644
+index 2ca4e134..c15a5748 100644
 --- a/aidl/touch/GloveMode.cpp
 +++ b/aidl/touch/GloveMode.cpp
 @@ -9,10 +9,14 @@
@@ -74,13 +77,16 @@ index 2ca4e13..c15a574 100644
          LOG(ERROR) << "Failed to write GloveMode state";
          return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 diff --git a/aidl/touch/TouchscreenGesture.cpp b/aidl/touch/TouchscreenGesture.cpp
-index 8dc8cf2..bdfd64c 100644
+index 3266db5..2891b7e 100644
 --- a/aidl/touch/TouchscreenGesture.cpp
 +++ b/aidl/touch/TouchscreenGesture.cpp
-@@ -43,33 +43,56 @@ ndk::ScopedAStatus TouchscreenGesture::getSupportedGestures(std::vector<Gesture>
+@@ -37,33 +37,56 @@ ndk::ScopedAStatus TouchscreenGesture::getSupportedGestures(std::vector<Gesture>
  }
  
  ndk::ScopedAStatus TouchscreenGesture::setGestureEnabled(const Gesture& gesture, bool enabled) {
+-    const auto updateMask = [&](int contents) {
+-        const int bit = 1 << (gesture.keycode - kGestureStartKey);
+-        return enabled ? contents | bit : contents & ~bit;
 +    // Bound before subtracting/shifting, and accept only configured gestures.
 +    if ((gesture.keycode < kGestureStartKey) || (gesture.keycode >= kGestureStartKey + 31)) {
 +        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
@@ -89,41 +95,26 @@ index 8dc8cf2..bdfd64c 100644
 +    if ((kGestureNames.count(bit) == 0) || ((kSupportedGestures & (1 << bit)) == 0)) {
 +        return ndk::ScopedAStatus::fromExceptionCode(EX_ILLEGAL_ARGUMENT);
 +    }
-     int contents = 0;
-+    std::string tmp;
++    const auto updateMask = [&](const std::string& value, std::string* mask) {
++        int contents = 0;
++        if (!OplusTouchConstants::ParseGestureMask(value, &contents)) return false;
++        contents = enabled ? contents | (1 << bit) : contents & ~(1 << bit);
++        *mask = std::to_string(contents);
++        return mask->size() <= OplusTouchConstants::GESTURE_MASK_MAX_BYTES;
+     };
  
--    if (std::string tmp; mOplusTouch) {
+     if (mOplusTouch) {
+         std::string tmp;
 -        mOplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
 -                                       OplusTouchConstants::DOUBLE_TAP_INDEP_NODE, &tmp);
--        contents = std::stoi(tmp, nullptr, 16);
--    } else if (ReadFileToString(kGestureEnableIndepPath, &tmp)) {
--        contents = std::stoi(Trim(tmp), nullptr, 16);
--    } else {
-+    if (mOplusTouch) {
+-        const int contents = updateMask(std::stoi(tmp, nullptr, 16));
 +        auto status = mOplusTouch->touchReadNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
 +                                                    OplusTouchConstants::DOUBLE_TAP_INDEP_NODE, &tmp);
 +        if (!status.isOk()) return status;
-+    } else if (!ReadFileToString(kGestureEnableIndepPath, &tmp)) {
-+        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
-+    }
-+    if (!OplusTouchConstants::ParseGestureMask(tmp, &contents)) {
-         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
-     }
- 
-     if (enabled) {
--        contents |= (1 << (gesture.keycode - kGestureStartKey));
-+        contents |= (1 << bit);
-     } else {
--        contents &= ~(1 << (gesture.keycode - kGestureStartKey));
-+        contents &= ~(1 << bit);
-+    }
-+
-+    const std::string mask = std::to_string(contents);
-+    if (mask.size() > OplusTouchConstants::GESTURE_MASK_MAX_BYTES) {
-+        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
-     }
- 
-     if (mOplusTouch) {
++        std::string mask;
++        if (!updateMask(tmp, &mask)) {
++            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
++        }
          int aidl_return = 0;
 -        mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
 -                                        OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE, "1",
@@ -131,10 +122,9 @@ index 8dc8cf2..bdfd64c 100644
 -        mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
 -                                        OplusTouchConstants::DOUBLE_TAP_INDEP_NODE,
 -                                        std::to_string(contents), &aidl_return);
--    } else if (!WriteStringToFile(std::to_string(contents), kGestureEnableIndepPath, true)) {
-+        auto status = mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
-+                                                     OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE,
-+                                                     "1", &aidl_return);
++        status = mOplusTouch->touchWriteNodeFile(OplusTouchConstants::DEFAULT_TP_IC_ID,
++                                               OplusTouchConstants::DOUBLE_TAP_ENABLE_NODE, "1",
++                                               &aidl_return);
 +        if (!status.isOk()) return status;
 +        if (aidl_return < 0) {
 +            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
@@ -146,12 +136,24 @@ index 8dc8cf2..bdfd64c 100644
 +        if (aidl_return < 0) {
 +            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
 +        }
-+    } else if (!WriteStringToFile(mask, kGestureEnableIndepPath, true)) {
-         return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
-     }
+     } else {
+         for (const auto& node : ::android::base::Split(GESTURE_ENABLE_INDEP_NODES, " ")) {
+             if (node.empty()) continue;
  
+             std::string tmp;
+-            if (!ReadFileToString(node, &tmp)) {
++            std::string mask;
++            if (!ReadFileToString(node, &tmp) || !updateMask(tmp, &mask)) {
+                 return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+             }
+-            const int contents = updateMask(std::stoi(Trim(tmp), nullptr, 16));
+-            if (!WriteStringToFile(std::to_string(contents), node, true)) {
++            if (!WriteStringToFile(mask, node, true)) {
+                 return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
+             }
+         }
 diff --git a/aidl/touch/touch-headers/OplusTouchConstants.h b/aidl/touch/touch-headers/OplusTouchConstants.h
-index 2fe4918..ea60e74 100644
+index 2fe49180..ea60e747 100644
 --- a/aidl/touch/touch-headers/OplusTouchConstants.h
 +++ b/aidl/touch/touch-headers/OplusTouchConstants.h
 @@ -5,6 +5,9 @@
@@ -190,10 +192,10 @@ index 2fe4918..ea60e74 100644
 +
  }  // namespace OplusTouchConstants
 diff --git a/power/power-mode.cpp b/power/power-mode.cpp
-index d1281e2..9ac6eac 100644
+index 52df4633..b118cc1b 100644
 --- a/power/power-mode.cpp
 +++ b/power/power-mode.cpp
-@@ -41,9 +41,17 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
+@@ -46,9 +46,17 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
                      ndk::SpAIBinder(AServiceManager_waitForService(instance.c_str())));
              LOG(INFO) << "Power mode: " << toString(type) << " isDoubleTapEnabled: " << enabled;
  
@@ -214,7 +216,7 @@ index d1281e2..9ac6eac 100644
  
              if (enabled) {
                  contents |= OplusTouchConstants::DOUBLE_TAP_GESTURE;
-@@ -51,13 +59,27 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
+@@ -56,13 +64,27 @@ bool setDeviceSpecificMode(Mode type, bool enabled) {
                  contents &= ~OplusTouchConstants::DOUBLE_TAP_GESTURE;
              }
  
@@ -247,4 +249,4 @@ index d1281e2..9ac6eac 100644
 +            }
              return true;
          }
-         default:
+ #endif

@@ -1,7 +1,9 @@
 name: reference-check
 
 # Applies the real patches to the real upstream sources (only the touched files are
-# downloaded). Patch changes test the NOTICE baselines; the weekly run tests 16.0.
+# downloaded). Patch changes test the NOTICE baselines; the weekly run tests upstream
+# branch 17.0, which main targets. The frozen crDroid 16.0 edition (branch 16.0) is not
+# re-checked weekly.
 # Manual runs still accept a branch name or use the NOTICE reference commits.
 on:
   push:
@@ -24,7 +26,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: "Upstream branch to test instead of the NOTICE reference commits (e.g. 16.0). Empty = reference commits."
+        description: "Upstream branch to test instead of the NOTICE reference commits (e.g. 17.0). Empty = reference commits."
         required: false
         default: ""
 
@@ -53,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${EVENT_NAME}" == "schedule" ]]; then
-            BRANCH="16.0"
+            BRANCH="17.0"
           fi
           for notice in */NOTICE; do
             module="$(dirname "${notice}")"

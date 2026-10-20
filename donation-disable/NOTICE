@@ -1,9 +1,12 @@
-Donation disabling source patches for crDroid 16.0 (Android 16)
+Donation disabling source patches for crDroid 17.0 (Android 17)
 Public edition prepared 2026-10-01.
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
-  packages/apps/crDroidSettings e43ad3d1c83290d25f2b721d8979a7095e53eecb https://github.com/crdroidandroid/android_packages_apps_crDroidSettings
-  packages/apps/Settings 62faa70985307e4e5fca0c7c838f11dba0b2c4ab https://github.com/crdroidandroid/android_packages_apps_Settings
+  packages/apps/crDroidSettings 4eeb1fb361a25985b675bf2bad448a8ce963c14f https://github.com/crdroidandroid/android_packages_apps_crDroidSettings
+  packages/apps/Settings 927b09818133aa37cf6acd057c656859aa3a5ce6 https://github.com/crdroidandroid/android_packages_apps_Settings
 
 The affected sources carry Apache 2.0 notices from the crDroid Android
 Project and The LineageOS Project. Retain their per-file copyright and

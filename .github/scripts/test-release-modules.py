@@ -168,7 +168,7 @@ class ReleaseTests(unittest.TestCase):
         first_create = next(i for i, event in enumerate(events) if event.startswith('gh ["release", "create"'))
         for module in MODULES:
             for gate in (f"test-apply-script.sh {module}", f"check-reference.sh {module}",
-                         f"check-reference.sh --branch 16.0 {module}"):
+                         f"check-reference.sh --branch 17.0 {module}"):
                 self.assertLess(events.index(gate), first_create)
         for call in self.creations():
             self.assertIn("--verify-tag", call)
@@ -289,7 +289,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_failed_gate_never_publishes_any_candidate(self):
         for gate in ("generate --check", "check-modules.sh ", "test-apply-script.sh gps-servers",
-                     "check-reference.sh gps-servers", "check-reference.sh --branch 16.0 gps-servers"):
+                     "check-reference.sh gps-servers", "check-reference.sh --branch 17.0 gps-servers"):
             with self.subTest(gate=gate):
                 self.release(success=False, FAIL_GATE=gate)
                 self.assertEqual(self.creations(), [])
@@ -316,11 +316,11 @@ class ReleaseTests(unittest.TestCase):
         self.release("--check", "v1.0")
         self.assertEqual(self.creations(), [])
         for module in MODULES:
-            self.assertIn(f"check-reference.sh --branch 16.0 {module}", self.calls())
+            self.assertIn(f"check-reference.sh --branch 17.0 {module}", self.calls())
 
     def test_collection_gate_failure_or_changed_root_prevents_publication(self):
         self.collection()
-        self.release("v1.0", success=False, FAIL_GATE="check-reference.sh --branch 16.0 gps-servers")
+        self.release("v1.0", success=False, FAIL_GATE="check-reference.sh --branch 17.0 gps-servers")
         self.assertEqual(self.creations(), [])
         (self.root / "README.md").write_text("uncommitted documentation\n")
         result = self.release("v1.0", success=False)

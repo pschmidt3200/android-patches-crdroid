@@ -1,6 +1,13 @@
 # android-patches-crdroid
 
-A collection of modular source patches, framework enhancements, and hardware integrations for **crDroid 16.0 (Android 16)**.
+A collection of modular source patches, framework enhancements, and hardware integrations for **crDroid 17.0 (Android 17)**.
+
+> **crDroid 17.0 status:** the patches on `main` are ported to crDroid 17.0 and pass the
+> source checks: each module applies and reverts cleanly at its NOTICE reference commits.
+> A ROM build and device verification on 17.0 are still pending, so treat the 17.0 editions
+> as untested on hardware. The crDroid 16.0 editions stay frozen on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0), each with the
+> verification status stated in its module README.
 
 All functional changes are distributed as source patches without proprietary binaries, designed to be applied directly to a crDroid source tree.
 
@@ -35,7 +42,10 @@ Each module is self-contained and focuses on a single feature:
 ## How to Install
 
 ### Step 1: Download the Module
-Choose the module you want from the [Releases page](https://github.com/pschmidt3200/android-patches-crdroid/releases) and download its `.zip` archive (e.g. `bluetooth-codec-ui-v1.2.zip` or `aptx-adaptive-v1.6.zip`).
+Choose the module you want from the [Releases page](https://github.com/pschmidt3200/android-patches-crdroid/releases) and download its `.zip` archive (e.g. `bluetooth-codec-ui-v1.3.zip` or `aptx-adaptive-v1.6.zip`).
+
+The releases published so far are crDroid 16.0 editions. Releases for 17.0 follow after the
+device verification; until then, a 17.0 tree takes the module directories from `main`.
 
 ### Step 2: Apply to Your crDroid Source Tree
 1. Extract the downloaded zip file anywhere outside or alongside your crDroid source tree.
@@ -59,7 +69,7 @@ The installer automatically checks compatibility and applies the patches to the 
 
 ## Reporting Issues
 
-If a patch does not apply cleanly or causes build errors on crDroid 16.0:
+If a patch does not apply cleanly or causes build errors on crDroid 17.0 (`main`) or 16.0 (branch `16.0`):
 1. Please [open an issue](https://github.com/pschmidt3200/android-patches-crdroid/issues/new?template=patch-problem.yml) using the **Patch problem** template.
 2. Include the module name, release tag or repository commit, your device model, and the terminal error output.
 3. *Please ensure personal data (such as Bluetooth MAC addresses or serial numbers) is removed from logs before posting.*

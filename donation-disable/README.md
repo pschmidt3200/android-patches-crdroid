@@ -2,7 +2,13 @@
 
 [Deutsch](README.de.md)
 
-An optional source patch module for **crDroid 16.0 (Android 16)**.
+An optional source patch module for **crDroid 17.0 (Android 17)**.
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/donation-disable).
+
 I created this because I personally dislike this form of donation request
 inside my ROM. It is not a statement against donations in general.
 
@@ -54,18 +60,19 @@ another ROM build and installation are required to restore it on the device.
 ## Validation and limits
 
 Format, helper failure handling and source apply/reverse are checked against
-the [NOTICE](NOTICE) commits and the current crDroid `16.0` branch:
+the [NOTICE](NOTICE) commits and the current crDroid `17.0` branch:
 
 ```bash
 bash .github/scripts/check-modules.sh
 bash .github/scripts/test-apply-script.sh donation-disable
 bash .github/scripts/check-reference.sh donation-disable
-bash .github/scripts/check-reference.sh --branch 16.0 donation-disable
+bash .github/scripts/check-reference.sh --branch 17.0 donation-disable
 ```
 
 Source validation is complete:
 - 34 of 34 helper tests (`test-apply-script.sh`) passed cleanly.
-- Clean apply and reverse (3/3 patches) on reference commits and crDroid `16.0` HEAD.
+- Clean apply and reverse (3/3 patches) on the 17.0 reference commits and crDroid `17.0` HEAD (2026-10-20);
+  the same check passed for 16.0 before.
 - Successful dry-run simulation against local crDroid source trees.
 
 **Documented ROM and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**

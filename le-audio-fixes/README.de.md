@@ -1,4 +1,4 @@
-# LE-Audio-Fixes für crDroid 16.0
+# LE-Audio-Fixes für crDroid 17.0
 
 Drei Korrekturen, die LE Audio mit Empfängern wie dem FiiO BTR17 nutzbar machen:
 
@@ -9,8 +9,19 @@ Drei Korrekturen, die LE Audio mit Empfängern wie dem FiiO BTR17 nutzbar machen
 3. **Mehr Media-Konfigurationen** — 32 kHz (7,5 und 10 ms) und 24 kHz / 7,5 ms stehen für die
    Medienwiedergabe zur Verfügung (Konfigurationsliste).
 
-**ROM-Geltung:** Dieses Paket ist derzeit nur für **crDroid 16.0** (Android 16) gedacht.
+**ROM-Geltung:** Dieses Paket ist derzeit nur für **crDroid 17.0** (Android 17) gedacht.
 Unterstützung für andere ROMs ist nicht erprobt.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/le-audio-fixes).
+>
+> crDroid 17.0 baut die Release-Konfiguration `cp2a`. Jeder Vererbungsweg von `cp2a` (über `cp1a`
+> und die `mainline_2026_*`-Konfigurationen) führt durch `bp4a`; der `bp4a`-Wert aus Patch 1 ist dort
+> der am weitesten abgeleitete. Das ist aus der 17.0-Konfiguration gelesen, in einem Build noch
+> nicht bestätigt.
 
 English version: [README.md](README.md)
 
@@ -104,7 +115,8 @@ Gemessen am selben Aufbau (LC3, Hardware-Offload, Medienkontext), jeder Schritt 
 ## Voraussetzungen und Geltungsbereich
 
 * **Prüfen, welche Release-Konfiguration der eigene Build wählt.** Die Flag-Datei liegt im
-  Verzeichnis `bp4a`. Ein Build, der eine andere Release-Konfiguration wählt, liest sie nicht. In
+  Verzeichnis `bp4a`. Ein Build, der eine andere Release-Konfiguration wählt, liest sie nur, wenn diese `bp4a` erbt, wie
+  `cp2a` von crDroid 17.0. In
   einem LineageOS-artigen Baum kommt der Wert aus `vendor/lineage/vars/aosp_target_release`. Das
   Verzeichnis sammelt seine Werte per Glob, eine weitere Registrierung ist nicht nötig.
 * **Ton braucht einen funktionierenden Herstellerpfad.** Ob LE Audio klingt, hängt am Audiopfad des

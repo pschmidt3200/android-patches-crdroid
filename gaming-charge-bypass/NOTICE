@@ -3,7 +3,7 @@ Source snapshot: 2026-10-08.
 
 UPSTREAM SOURCES AND COMPATIBILITY
 
-This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+This distribution contains source-code diffs for crDroid branch 17.0 (Android 17).
 Other ROMs are outside the current scope. It is not a ROM image and contains no
 vendor binaries, firmware or driver source.
 
@@ -27,10 +27,14 @@ files you patch.
 
 Upstream repositories and the tree state the diffs were generated against:
 
-  frameworks/base          68d3d80589e4cc8dd34c470db3aa9c027f610674  https://github.com/crdroidandroid/android_frameworks_base
-  packages/apps/GameSpace  2fecfaa6e963a288048dceedc6520f12b0116cd2  https://github.com/crdroidandroid/android_packages_apps_GameSpace
+  frameworks/base          c2382c14b024f5701071d31d9cc8fe1401dc9a88  https://github.com/crdroidandroid/android_frameworks_base
+  packages/apps/GameSpace  6ee68e38389c30454e5626aa9a048d2617542382  https://github.com/crdroidandroid/android_packages_apps_GameSpace
 
 DEVICE VERIFICATION, AND ITS LIMITS
+
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
 
 Verified on a OnePlus 13 (dodge) running crDroid 16.0, in eight charge-pause
 cycles across four games, plus a reboot while a game was in the foreground:

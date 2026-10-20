@@ -1,6 +1,6 @@
 # BBRv3 for crDroid sm8750
 
-Maintained TCP BBRv3 source patch for **crDroid 16.0**, using its OnePlus
+Maintained TCP BBRv3 source patch for **crDroid 17.0**, using its OnePlus
 `sm8750` Android 15 / Linux 6.6 kernel. The ROM version and kernel Android
 generation are different; this is not a general Android kernel port.
 
@@ -12,10 +12,15 @@ into the kernel and selects `bbr3` as its TCP congestion-control default in
 `gki_defconfig`. The installer applies the core first, then the companion.
 BBRv1 (`bbr`) and other congestion controllers remain available.
 
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured with the crDroid 16.0 kernel. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
+
 ## Requirements and use
 
-* Target: `kernel/oneplus/sm8750`, branch `16.0`, reference commit
-  `b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35`.
+* Target: `kernel/oneplus/sm8750`, branch `17.0`, reference commit
+  `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976`.
 * Reference hardware: OnePlus 13 / Pad 3 using this shared kernel.
   Other kernel trees and devices require their own validation.
 * Bash and Git; keep all module files from the same patch commit/tag.
@@ -79,9 +84,11 @@ is kept apart in the testing-only module [bbrv3-experimental](../bbrv3-experimen
 Source and helper validation is fully verified:
 
 - 34 of 34 helper tests (`test-apply-script.sh bbrv3`) passed cleanly.
-- Strict apply and reverse (2/2 patches) on reference commit `b69d2cc667dd` and current branch `16.0` (`check-reference.sh`).
+- Strict apply and reverse (2/2 patches) on reference commit `48baf0c723f8` and current branch `17.0` (`check-reference.sh`, 2026-10-20);
+  before that on the 16.0 commit `b69d2cc667dd`.
 - Successful core-patch dry-run simulation against the local OnePlus `sm8750` kernel tree.
-- Combined BBRv3 core application with the corrected SUSFS upstream patch verified in an isolated kernel index.
+- Combined BBRv3 core application with the corrected SUSFS upstream patch verified in an isolated kernel index,
+  for the 16.0 kernel and for the 17.0 kernel `48baf0c723f8` (2026-10-20).
 
 **Documented kernel and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
 running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):

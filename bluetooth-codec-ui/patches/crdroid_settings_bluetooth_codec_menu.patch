@@ -1,7 +1,10 @@
 # Target repository: packages/apps/Settings
+# Checked against packages/apps/Settings 927b09818133aa37cf6acd057c656859aa3a5ce6 (crDroid 17.0).
 #
 # Settings: codec selection dialog in the Bluetooth device details, opened from
 # the media audio row. Needs crdroid_framework_settingslib_codec_status.patch.
+# The desktop and visibility filtering of crDroid 17.0 is kept and also applies
+# to choices that are still pending.
 #
 # Paths below are relative to the target repository, NOT to the Android
 # source root. Apply with:  git -C <target repository> apply <this file>
@@ -9,7 +12,7 @@
 # Publication edition. Do not mix with another edition of these patches.
 diff --git a/res/values-de/bluetooth_codec_menu_strings.xml b/res/values-de/bluetooth_codec_menu_strings.xml
 new file mode 100644
-index 00000000000..129354a4b7e
+index 0000000000000000000000000000000000000000..129354a4b7e97030744ddcb3ce73820b2f2ba878
 --- /dev/null
 +++ b/res/values-de/bluetooth_codec_menu_strings.xml
 @@ -0,0 +1,20 @@
@@ -35,7 +38,7 @@ index 00000000000..129354a4b7e
 +</resources>
 diff --git a/res/values/bluetooth_codec_menu_strings.xml b/res/values/bluetooth_codec_menu_strings.xml
 new file mode 100644
-index 00000000000..0ffb4d34b2f
+index 0000000000000000000000000000000000000000..0ffb4d34b2f971053108457365caa2c48dd4ed21
 --- /dev/null
 +++ b/res/values/bluetooth_codec_menu_strings.xml
 @@ -0,0 +1,20 @@
@@ -60,12 +63,12 @@ index 00000000000..0ffb4d34b2f
 +    <string name="bluetooth_codec_menu_current">%1$s · %2$s kHz</string>
 +</resources>
 diff --git a/src/com/android/settings/bluetooth/BluetoothDetailsProfilesController.java b/src/com/android/settings/bluetooth/BluetoothDetailsProfilesController.java
-index 756de1f6522..4be7f400361 100644
+index b6d25a125568ef5d929f622633208a3cd4256b3b..324fa01792c62cf1742495bd902ad1d1ea5cf991 100644
 --- a/src/com/android/settings/bluetooth/BluetoothDetailsProfilesController.java
 +++ b/src/com/android/settings/bluetooth/BluetoothDetailsProfilesController.java
-@@ -18,14 +18,22 @@ package com.android.settings.bluetooth;
- 
- import static android.bluetooth.BluetoothDevice.METADATA_MODEL_NAME;
+@@ -20,14 +20,22 @@ import static android.bluetooth.BluetoothDevice.METADATA_MODEL_NAME;
+ import static android.bluetooth.BluetoothProfile.CONNECTION_POLICY_UNKNOWN;
+ import static android.content.pm.PackageManager.FEATURE_PC;
  
 +import android.app.AlertDialog;
  import android.app.settings.SettingsEnums;
@@ -86,15 +89,15 @@ index 756de1f6522..4be7f400361 100644
  
  import androidx.annotation.VisibleForTesting;
  import androidx.preference.Preference;
-@@ -38,6 +46,7 @@ import androidx.preference.TwoStatePreference;
+@@ -39,6 +47,7 @@ import androidx.preference.TwoStatePreference;
+ 
  import com.android.settings.R;
- import com.android.settings.flags.Flags;
  import com.android.settings.overlay.FeatureFactory;
 +import com.android.settingslib.PrimarySwitchPreference;
  import com.android.settingslib.bluetooth.A2dpProfile;
  import com.android.settingslib.bluetooth.BluetoothUtils;
  import com.android.settingslib.bluetooth.CachedBluetoothDevice;
-@@ -52,8 +61,10 @@ import com.android.settingslib.bluetooth.PbapServerProfile;
+@@ -55,8 +64,10 @@ import com.android.settingslib.bluetooth.PbapServerProfile;
  import com.android.settingslib.core.lifecycle.Lifecycle;
  import com.android.settingslib.utils.ThreadUtils;
  
@@ -105,7 +108,7 @@ index 756de1f6522..4be7f400361 100644
  import java.util.HashMap;
  import java.util.HashSet;
  import java.util.List;
-@@ -101,6 +112,15 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -104,6 +115,15 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
      private boolean mIsLeAudioToggleEnabled = false;
      private boolean mIsLeAudioOnlyDevice = false;
      private boolean mHasExtraSpace;
@@ -120,8 +123,8 @@ index 756de1f6522..4be7f400361 100644
 +    @VisibleForTesting BluetoothProfile.ServiceListener mA2dpServiceListener;
  
      @VisibleForTesting
-     PreferenceCategory mProfilesContainer;
-@@ -116,6 +136,8 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+     PreferenceGroup mProfilesContainer;
+@@ -119,6 +139,8 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
          mProfileManager = mManager.getProfileManager();
          mCachedDevice = device;
          mCachedDeviceGroup = Utils.findAllCachedBluetoothDevicesByGroupId(mManager, mCachedDevice);
@@ -130,7 +133,7 @@ index 756de1f6522..4be7f400361 100644
      }
  
      /** Sets the profiles to be hidden. */
-@@ -145,14 +167,35 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -141,14 +163,35 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
      /**
       * Creates a switch preference for the particular profile.
       *
@@ -169,7 +172,7 @@ index 756de1f6522..4be7f400361 100644
          pref.setKey(profile.toString());
          pref.setTitle(profile.getNameResource(mCachedDevice.getDevice()));
          pref.setOnPreferenceClickListener(this);
-@@ -184,9 +227,9 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -180,9 +223,9 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
      }
  
      /**
@@ -181,7 +184,7 @@ index 756de1f6522..4be7f400361 100644
              LocalBluetoothProfile profile) {
          BluetoothDevice device = mCachedDevice.getDevice();
          boolean isLeAudioEnabled = isLeAudioEnabled();
-@@ -214,21 +257,37 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -210,21 +253,37 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
          }
  
          if (profile instanceof MapProfile) {
@@ -223,11 +226,19 @@ index 756de1f6522..4be7f400361 100644
              TwoStatePreference highQualityPref =
                      mProfilesContainer.findPreference(HIGH_QUALITY_AUDIO_PREF_TAG);
              if (highQualityPref != null) {
-@@ -244,6 +303,153 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -240,6 +299,161 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
          }
      }
  
 +    private BluetoothCodecStatus getCodecStatusForMenu(A2dpProfile profile) {
++        // Keep 17.0's caller and feature-provider visibility rules effective for
++        // dialogs already open when the profile becomes hidden.
++        Set<String> additionalInvisibleProfiles = mAdditionalInvisibleProfiles.get();
++        if (mInvisibleProfiles.contains(profile.toString())
++                || (additionalInvisibleProfiles != null
++                && additionalInvisibleProfiles.contains(profile.toString()))) {
++            return null;
++        }
 +        BluetoothDevice device = mCachedDevice.getDevice();
 +        List<CachedBluetoothDevice> devices = mProfileDeviceMap.get(profile.toString());
 +        if (!profile.isProfileReady() || !profile.isEnabled(device)
@@ -377,7 +388,7 @@ index 756de1f6522..4be7f400361 100644
      private boolean isLeAudioEnabled(){
          LocalBluetoothProfile leAudio = mProfileManager.getLeAudioProfile();
          if (leAudio != null) {
-@@ -306,6 +496,12 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -302,6 +516,12 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
      @Override
      public boolean onPreferenceClick(Preference preference) {
          LocalBluetoothProfile profile = mProfileManager.getProfileByName(preference.getKey());
@@ -390,7 +401,7 @@ index 756de1f6522..4be7f400361 100644
          if (profile == null) {
              // It might be the PbapServerProfile, which is not stored by name.
              PbapServerProfile psp = mManager.getProfileManager().getPbapProfile();
-@@ -468,6 +664,10 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -476,6 +696,10 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
  
      @Override
      public void onPause() {
@@ -401,7 +412,7 @@ index 756de1f6522..4be7f400361 100644
          for (CachedBluetoothDevice item : mCachedDeviceGroup) {
              item.unregisterCallback(this);
          }
-@@ -476,6 +676,40 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -484,6 +708,40 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
  
      @Override
      public void onResume() {
@@ -442,7 +453,7 @@ index 756de1f6522..4be7f400361 100644
          updateLeAudioConfig();
          for (CachedBluetoothDevice item : mCachedDeviceGroup) {
              item.registerCallback(this);
-@@ -484,6 +718,15 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -492,6 +750,15 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
          refresh();
      }
  
@@ -458,7 +469,7 @@ index 756de1f6522..4be7f400361 100644
      private void updateLeAudioConfig() {
          boolean isLeAudioToggleVisible = SystemProperties.getBoolean(
                  LE_AUDIO_TOGGLE_VISIBLE_PROPERTY, LE_AUDIO_TOGGLE_VISIBLE_DEFAULT_VALUE);
-@@ -541,7 +784,7 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -549,7 +816,7 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
              if (profile == null || !profile.isProfileReady()) {
                  continue;
              }
@@ -467,7 +478,7 @@ index 756de1f6522..4be7f400361 100644
              if (pref == null) {
                  pref = createProfilePreference(mProfilesContainer.getContext(), profile);
                  mProfilesContainer.addPreference(pref);
-@@ -550,13 +793,29 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
+@@ -558,13 +825,29 @@ public class BluetoothDetailsProfilesController extends BluetoothDetailsControll
              refreshProfilePreference(pref, profile);
          }
          for (LocalBluetoothProfile removedProfile : mCachedDevice.getRemovedProfiles()) {
@@ -495,11 +506,11 @@ index 756de1f6522..4be7f400361 100644
 +            }
 +        }
 +
-         if (!Flags.enableBluetoothSettingsExpressiveDesign()) {
-             Preference preference = mProfilesContainer.findPreference(KEY_BOTTOM_PREFERENCE);
-             if (preference == null) {
+         Set<String> additionalInvisibleProfiles = mAdditionalInvisibleProfiles.get();
+         HashSet<String> combinedInvisibleProfiles = new HashSet<>(mInvisibleProfiles);
+         if (additionalInvisibleProfiles != null) {
 diff --git a/tests/robotests/src/com/android/settings/bluetooth/BluetoothDetailsProfilesControllerTest.java b/tests/robotests/src/com/android/settings/bluetooth/BluetoothDetailsProfilesControllerTest.java
-index 49be28fe259..24ab0927b92 100644
+index 9ac47e2966c4fa7899845fc3105823ca4104d6c4..a94f7e15034e5a759953a08d0f1dce2640eadc38 100644
 --- a/tests/robotests/src/com/android/settings/bluetooth/BluetoothDetailsProfilesControllerTest.java
 +++ b/tests/robotests/src/com/android/settings/bluetooth/BluetoothDetailsProfilesControllerTest.java
 @@ -19,13 +19,23 @@ package com.android.settings.bluetooth;
@@ -578,7 +589,7 @@ index 49be28fe259..24ab0927b92 100644
          mProfiles.setKey(mController.getPreferenceKey());
          mController.mProfilesContainer = mProfiles;
          mScreen.removeAll();
-@@ -459,6 +482,349 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -459,6 +482,391 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
                  BluetoothDetailsProfilesController.HIGH_QUALITY_AUDIO_PREF_TAG);
      }
  
@@ -817,9 +828,51 @@ index 49be28fe259..24ab0927b92 100644
 +        showCodecScreen();
 +        AlertDialog dialog = openCodecDialog();
 +        addLeAudioProfileToDevice(true);
++        when(mCachedDevice.isActiveDevice(BluetoothProfile.LE_AUDIO)).thenReturn(true);
 +
 +        mController.onDeviceAttributesChanged();
 +
++        assertThat(dialog.isShowing()).isFalse();
++        shadowOf(dialog).clickOnItem(1);
++        verify(mCodecService, never()).setCodecConfigPreference(any(), any());
++    }
++
++    @Test
++    public void codecMenu_permittedInactiveLeAudioKeepsClassicMenuOpen() {
++        showCodecScreen();
++        AlertDialog dialog = openCodecDialog();
++        addLeAudioProfileToDevice(true);
++        when(mCachedDevice.isActiveDevice(BluetoothProfile.LE_AUDIO)).thenReturn(false);
++
++        mController.onDeviceAttributesChanged();
++
++        assertThat(dialog.isShowing()).isTrue();
++        assertThat(getMediaAudioPref().isSelectable()).isTrue();
++    }
++
++    @Test
++    public void codecMenu_callerHidesProfileDismissesAndBlocksPendingSelection() {
++        showCodecScreen();
++        AlertDialog dialog = openCodecDialog();
++
++        mController.setInvisibleProfiles(List.of(mA2dpProfile.toString()));
++
++        assertThat(getMediaAudioPref().isVisible()).isFalse();
++        assertThat(dialog.isShowing()).isFalse();
++        shadowOf(dialog).clickOnItem(1);
++        verify(mCodecService, never()).setCodecConfigPreference(any(), any());
++    }
++
++    @Test
++    public void codecMenu_featureProviderHidesProfileDismissesAndBlocksPendingSelection() {
++        showCodecScreen();
++        AlertDialog dialog = openCodecDialog();
++        when(mFeatureProvider.getInvisibleProfilePreferenceKeys(any(), any()))
++                .thenReturn(Set.of(mA2dpProfile.toString()));
++
++        mController.onDeviceAttributesChanged();
++
++        assertThat(getMediaAudioPref().isVisible()).isFalse();
 +        assertThat(dialog.isShowing()).isFalse();
 +        shadowOf(dialog).clickOnItem(1);
 +        verify(mCodecService, never()).setCodecConfigPreference(any(), any());
@@ -928,7 +981,7 @@ index 49be28fe259..24ab0927b92 100644
      @Test
      public void highQualityAudio_prefIsPresentWhenSupported() {
          setupDevice(makeDefaultDeviceConfig());
-@@ -483,7 +849,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -483,7 +891,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
          showScreen(mController);
          assertThat(mProfiles.getPreferenceCount())
                  .isEqualTo(Flags.enableBluetoothSettingsExpressiveDesign() ? 1 : 2);
@@ -937,7 +990,7 @@ index 49be28fe259..24ab0927b92 100644
          assertThat(pref.getKey())
              .isNotEqualTo(BluetoothDetailsProfilesController.HIGH_QUALITY_AUDIO_PREF_TAG);
          assertThat(pref.getTitle()).isEqualTo(
-@@ -510,9 +876,8 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -510,9 +918,8 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
  
          // Disabling media audio should cause the high quality audio switch to disappear, but not
          // the regular audio one.
@@ -949,7 +1002,7 @@ index 49be28fe259..24ab0927b92 100644
          verify(mA2dpProfile).setEnabled(mDevice, false);
          when(mA2dpProfile.isEnabled(mDevice)).thenReturn(false);
          mController.onDeviceAttributesChanged();
-@@ -521,7 +886,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -521,7 +928,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
          assertThat(highQualityAudioPref.isVisible()).isFalse();
  
          // And re-enabling media audio should make high quality switch to reappear.
@@ -958,7 +1011,7 @@ index 49be28fe259..24ab0927b92 100644
          verify(mA2dpProfile).setEnabled(mDevice, true);
          when(mA2dpProfile.isEnabled(mDevice)).thenReturn(true);
          mController.onDeviceAttributesChanged();
-@@ -534,10 +899,10 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -534,10 +941,10 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
          setupDevice(makeDefaultDeviceConfig());
          addA2dpProfileToDevice(false, true, true);
          showScreen(mController);
@@ -971,7 +1024,7 @@ index 49be28fe259..24ab0927b92 100644
          assertThat(highQualityAudioPref).isNotNull();
          assertThat(highQualityAudioPref.isVisible()).isFalse();
      }
-@@ -578,8 +943,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -578,8 +985,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
  
          showScreen(mController);
  
@@ -981,7 +1034,7 @@ index 49be28fe259..24ab0927b92 100644
      }
  
      @Test
-@@ -592,8 +956,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -592,8 +998,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
  
          showScreen(mController);
  
@@ -991,7 +1044,7 @@ index 49be28fe259..24ab0927b92 100644
      }
  
      @Test
-@@ -606,8 +969,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -606,8 +1011,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
  
          showScreen(mController);
  
@@ -1001,7 +1054,7 @@ index 49be28fe259..24ab0927b92 100644
      }
  
      @Test
-@@ -620,8 +982,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
+@@ -620,8 +1024,7 @@ public class BluetoothDetailsProfilesControllerTest extends BluetoothDetailsCont
  
          showScreen(mController);
  

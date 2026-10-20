@@ -1,4 +1,5 @@
 # Target repository: frameworks/base
+# Checked against frameworks/base c2382c14b024f5701071d31d9cc8fe1401dc9a88 (crDroid 17.0).
 # Clean-Room Implementation: Gaming Lade-Bypass & Touch Game-Mode (MODE_GAME)
 # Saves and restores full charging mode, limit, and enabled state via HealthInterface.
 # Dynamic ContentObserver enables instant toggle during active game sessions.
@@ -9,49 +10,57 @@
 # Setter acknowledgements and settings readback are checked; this is not a hardware-current measurement.
 # Failed restoration retains its recovery record and blocks a new bypass session.
 # Settings.System bypass_charge_limit: 0 = game-start level (minimum 70), 70..100 = fixed limit.
+# crDroid 17.0 starts GameSpace through the framework; that lifecycle and the
+# performance settings are kept. Game changes, settings observers and boot
+# recovery are serialized across threads.
+#
 diff --git a/services/core/java/com/android/server/wm/GameStateDispatcher.java b/services/core/java/com/android/server/wm/GameStateDispatcher.java
-index f78e211..c50d20a 100644
+index 967ceb0842799a123093636e62faa213795bcf09..9ec9bcb948ef89228988340683a12272395f8512 100644
 --- a/services/core/java/com/android/server/wm/GameStateDispatcher.java
 +++ b/services/core/java/com/android/server/wm/GameStateDispatcher.java
-@@ -15,17 +15,28 @@
-  */
- package com.android.server.wm;
-
+@@ -17,18 +17,30 @@ package com.android.server.wm;
+ 
+ import android.app.ActivityManager;
+ import android.app.IActivityManager;
 +import android.content.BroadcastReceiver;
+ import android.content.ComponentName;
  import android.content.Context;
-+import android.content.Intent;
+ import android.content.Intent;
 +import android.content.IntentFilter;
 +import android.database.ContentObserver;
 +import android.database.Cursor;
  import android.os.BatteryManager;
 +import android.os.Bundle;
 +import android.os.FileUtils;
+ import android.os.RemoteException;
  import android.os.SystemProperties;
  import android.os.UserHandle;
  import android.provider.Settings;
-+import android.text.TextUtils;
  import android.util.Slog;
-
+ 
 +import com.android.server.UiThread;
++
  import lineageos.health.HealthInterface;
-
- import com.android.internal.app.IGameSpaceCallback;
-
+ 
 +import java.io.File;
 +import java.io.IOException;
- import java.util.List;
-
++import java.util.List;
++
  class GameStateDispatcher {
-@@ -33,21 +44,160 @@ class GameStateDispatcher {
      private static final String TAG = "GameStateDispatcher";
+     private static final String GAME_SPACE_PACKAGE = "io.chaldeaprjkt.gamespace";
+@@ -40,26 +52,170 @@ class GameStateDispatcher {
+     private static final String EXTRA_PACKAGE_NAME = "package_name";
      private static final String KEY_GAMING_MODE_ACTIVE = "ax_gaming_mode_active";
      private static final String KEY_BYPASS_CHARGE_ENABLED = "bypass_charge_enabled";
 +    // LineageSettings.CHARGING_CONTROL_LIMIT_VALIDATOR accepts 70..100.
 +    private static final int MIN_BYPASS_CHARGE_LIMIT = 70;
 +    // 0 uses the game-start level with that minimum; 70..100 is a fixed limit.
 +    private static final String KEY_BYPASS_CHARGE_LIMIT = "bypass_charge_limit";
+     private static final String KEY_POWER_MODE_PERF_BY_USER = "power_mode_perf_by_user";
      private static final String KEY_POWER_MODE_PERF = "persist.sys.power_mode_perf";
-     private static final String KEY_POWER_MODE_PERF_BY_USER = "persist.sys.power_mode_perf_by_user";
+-    private static final int DEFAULT_CHARGE_LIMIT = 100;
++
 +    // "mode:limit:enabled" of the charging control before bypass. HealthInterface
 +    // persists its settings, so without this a reboot or system_server restart
 +    // during a game would leave the battery limited to the game-start level.
@@ -61,23 +70,26 @@ index f78e211..c50d20a 100644
 +        "/proc/touchpanel/game_switch_enable",
 +        "/proc/touchpanel1/game_switch_enable"
 +    };
-
+ 
      private final Context mContext;
-     private final List<IGameSpaceCallback> mCallbacks;
-
--    private int mChargeControlLimit = 100;
+     private final IActivityManager mActivityManager;
+ 
+-    private int mChargeControlLimit = DEFAULT_CHARGE_LIMIT;
+-    private boolean mWasChargingControlEnabled;
+-    private boolean mBypassChargeActive;
++    // Charging state is guarded by this dispatcher: GameSpace runs on its own
++    // handler, while the settings observers and boot receiver run on UiThread.
 +    private int mSavedChargingLimit = 100;
 +    private int mSavedChargingMode = HealthInterface.MODE_LIMIT;
-     private boolean mWasChargingControlEnabled = false;
++    private boolean mWasChargingControlEnabled = false;
 +    private boolean mIsBypassActive = false;
 +    private int mBypassLimitPreference = 0;
 +    private boolean mIsGameActive = false;
 +    private int mGameStartBatteryLevel = -1;
-
-     GameStateDispatcher(Context context, List<IGameSpaceCallback> callbacks) {
+ 
+     GameStateDispatcher(Context context) {
          mContext = context;
-         mCallbacks = callbacks;
-+
+         mActivityManager = ActivityManager.getService();
 +        mContext.getContentResolver().registerContentObserver(
 +                Settings.System.getUriFor(KEY_BYPASS_CHARGE_ENABLED),
 +                false,
@@ -98,13 +110,17 @@ index f78e211..c50d20a 100644
 +                    }
 +                }, UserHandle.USER_ALL);
 +
-+        // Same UiThread as dispatchGameState() and the observer above.
++        // Boot recovery shares the dispatcher lock with game and setting changes.
 +        mContext.registerReceiver(new BroadcastReceiver() {
 +            @Override
 +            public void onReceive(Context context, Intent intent) {
-+                if (!mIsBypassActive) restoreInterruptedBypass();
++                restoreBypassAfterBoot();
 +            }
 +        }, new IntentFilter(Intent.ACTION_BOOT_COMPLETED), null, UiThread.getHandler());
++    }
++
++    private synchronized void restoreBypassAfterBoot() {
++        if (!mIsBypassActive) restoreInterruptedBypass();
 +    }
 +
 +    private int readBypassSetting(String key) {
@@ -142,8 +158,9 @@ index f78e211..c50d20a 100644
 +            if (saved != null && saved.isEmpty()) throw new IllegalStateException("Empty charging recovery row");
 +            return saved;
 +        }
-+    }
-+
+     }
+ 
+-    void dispatchGameState(boolean active, String packageName) {
 +    private boolean restoreInterruptedBypass() {
 +        String saved;
 +        try {
@@ -178,7 +195,7 @@ index f78e211..c50d20a 100644
 +        return false;
 +    }
 +
-+    private void onBypassSettingChanged(boolean limitChanged) {
++    private synchronized void onBypassSettingChanged(boolean limitChanged) {
 +        if (!mIsGameActive) return;
 +        try {
 +            if (readBypassSetting(KEY_BYPASS_CHARGE_ENABLED) != 1) {
@@ -194,37 +211,41 @@ index f78e211..c50d20a 100644
 +        } catch (RuntimeException e) {
 +            Slog.w(TAG, "Charging preference unavailable; keeping the recovery record", e);
 +        }
-     }
-
-     void dispatchGameState(boolean active, String packageName) {
-+        if (active && !mIsGameActive) mGameStartBatteryLevel = battLevel();
++    }
++
++    synchronized void dispatchGameState(boolean active, String packageName) {
++        if (active && !mIsGameActive) mGameStartBatteryLevel = batteryLevel();
 +        if (!active) mGameStartBatteryLevel = -1;
 +        mIsGameActive = active;
 +
-         Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                 KEY_GAMING_MODE_ACTIVE, active ? 1 : 0, UserHandle.USER_CURRENT);
-
-@@ -65,15 +215,27 @@ class GameStateDispatcher {
-         }
-
+         Settings.Secure.putIntForUser(mContext.getContentResolver(), KEY_GAMING_MODE_ACTIVE,
+                 active ? 1 : 0, UserHandle.USER_CURRENT);
+         updateGameSession(active, packageName);
++        updateTouchGameMode(active);
+         updateBypassCharge(active);
+     }
+ 
+@@ -113,22 +269,27 @@ class GameStateDispatcher {
+ 
+     private void updateBypassCharge(boolean active) {
          if (active) {
--            if (bypassChargeEnabled()) {
--                mChargeControlLimit = getChargingLimit();
--                setBypassActive(true);
--                setSmartChargeLvl(battLevel());
-+            updateTouchGameMode(true);
+-            if (!bypassChargeEnabled()) {
+-                return;
 +            if (bypassChargeEnabled() && !mIsBypassActive) {
 +                engageBypass();
              }
-         } else {
--            if (bypassChargeEnabled()) {
--                setBypassActive(false);
--                setSmartChargeLvl(mChargeControlLimit);
-+            updateTouchGameMode(false);
+-            mChargeControlLimit = getChargingLimit();
+-            setBypassActive(true);
+-            setSmartChargeLevel(batteryLevel());
+-            mBypassChargeActive = true;
+-            return;
++        } else {
 +            restoreInterruptedBypass();
-+        }
+         }
 +    }
-+
+ 
+-        if (!mBypassChargeActive) {
+-            return;
 +    private void updateTouchGameMode(boolean active) {
 +        String val = active ? "1" : "0";
 +        for (String path : TOUCH_GAME_SWITCH_NODES) {
@@ -236,43 +257,31 @@ index f78e211..c50d20a 100644
 +                } catch (IOException e) {
 +                    Slog.w(TAG, "Failed to write touch game mode to " + path + ": " + e.getMessage());
 +                }
-             }
++            }
          }
+-        setBypassActive(false);
+-        setSmartChargeLevel(mChargeControlLimit);
+-        mBypassChargeActive = false;
      }
-@@ -91,14 +253,11 @@ class GameStateDispatcher {
-     }
-
-     void setBypassCharge(boolean enable) {
--        if (!bypassChargeEnabled()) return;
--
-         if (enable) {
--            mChargeControlLimit = getChargingLimit();
-+            if (!mIsBypassActive) engageBypass();
-+        } else {
-+            restoreInterruptedBypass();
-         }
--
--        setBypassActive(enable);
--        setSmartChargeLvl(enable ? battLevel() : mChargeControlLimit);
-     }
-
+ 
      private boolean bypassChargeEnabled() {
-@@ -106,40 +265,94 @@ class GameStateDispatcher {
+@@ -136,17 +297,89 @@ class GameStateDispatcher {
                  KEY_BYPASS_CHARGE_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
      }
-
+ 
 -    private int getChargingLimit() {
 +    private void engageBypass() {
 +        if (!restoreInterruptedBypass()) {
 +            Slog.w(TAG, "Not engaging bypass: previous charging state is still pending");
 +            return;
 +        }
-+        int level = mIsGameActive ? mGameStartBatteryLevel : battLevel();
++        int level = mIsGameActive ? mGameStartBatteryLevel : batteryLevel();
 +        if (level < 0 || level > 100) {
 +            Slog.w(TAG, "Not engaging bypass: battery level is unavailable");
 +            return;
 +        }
          try {
+-            final HealthInterface health = HealthInterface.getInstance(mContext);
 +            int selected = readBypassSetting(KEY_BYPASS_CHARGE_LIMIT);
 +            if (selected != 0 && (selected < MIN_BYPASS_CHARGE_LIMIT || selected > 100)) {
 +                Slog.w(TAG, "Not engaging bypass: selected charging limit is invalid");
@@ -280,7 +289,7 @@ index f78e211..c50d20a 100644
 +            }
 +            int targetLimit = selected == 0
 +                    ? Math.max(MIN_BYPASS_CHARGE_LIMIT, level) : selected;
-             HealthInterface health = HealthInterface.getInstance(mContext);
++            HealthInterface health = HealthInterface.getInstance(mContext);
 +            if (!health.isChargingControlSupported()) return;
 +            int mode = health.getMode();
 +            int limit = health.getLimit();
@@ -317,24 +326,13 @@ index f78e211..c50d20a 100644
 +        } catch (RuntimeException e) {
 +            Slog.w(TAG, "Failed to engage charging bypass; saved state retained", e);
 +            restoreInterruptedBypass();
-         }
--        return 100;
--    }
--
--    private int battLevel() {
--        BatteryManager bm = mContext.getSystemService(BatteryManager.class);
--        return bm != null ? bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) : -1;
-     }
-
--    private void setSmartChargeLvl(int value) {
++        }
++    }
++
 +    private boolean disengageBypass() {
 +        mIsBypassActive = false;
-         try {
-             HealthInterface health = HealthInterface.getInstance(mContext);
--            health.setMode(HealthInterface.MODE_LIMIT);
--            health.setLimit(value);
--        } catch (Exception e) {
--            Slog.w(TAG, "Failed to set charging limit", e);
++        try {
++            HealthInterface health = HealthInterface.getInstance(mContext);
 +            if (!health.isChargingControlSupported()) return false;
 +            // Every setter runs, even if another is rejected. Retain the saved
 +            // state until all settings and removal of the recovery record agree.
@@ -360,18 +358,33 @@ index f78e211..c50d20a 100644
 +            Slog.w(TAG, "Failed to restore charging settings; saved state retained", e);
 +            return false;
          }
+-        return DEFAULT_CHARGE_LIMIT;
      }
-
+ 
+     private int batteryLevel() {
+@@ -157,25 +390,4 @@ class GameStateDispatcher {
+         return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+     }
+ 
+-    private void setSmartChargeLevel(int value) {
+-        if (value < 0) {
+-            return;
+-        }
+-        try {
+-            final HealthInterface health = HealthInterface.getInstance(mContext);
+-            health.setMode(HealthInterface.MODE_LIMIT);
+-            health.setLimit(value);
+-        } catch (Exception e) {
+-            Slog.w(TAG, "Failed to set charging limit", e);
+-        }
+-    }
+-
 -    private void setBypassActive(boolean value) {
 -        try {
--            HealthInterface health = HealthInterface.getInstance(mContext);
+-            final HealthInterface health = HealthInterface.getInstance(mContext);
 -            health.setEnabled(value || mWasChargingControlEnabled);
 -        } catch (Exception e) {
 -            Slog.w(TAG, "Failed to set charging bypass", e);
 -        }
-+    private int battLevel() {
-+        BatteryManager bm = mContext.getSystemService(BatteryManager.class);
-+        int level = bm != null ? bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY) : -1;
-+        return level;
-     }
+-    }
  }

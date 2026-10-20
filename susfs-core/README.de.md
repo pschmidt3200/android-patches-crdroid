@@ -8,8 +8,16 @@ unverändert; neue SUSFS-Funktionen wurden dabei nicht entwickelt.
 
 Der Kontext enthält jetzt `vma_data_pages()` statt des veralteten `vma_pages()`.
 Die korrigierte Upstream-Patchdatei zielt auf `kernel/oneplus/sm8750`, Branch
-`16.0`, Commit `b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35` (Android 15 / Linux 6.6)
-für crDroid 16.0. Andere Quellstände benötigen eigene Prüfung.
+`17.0`, Commit `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976` (Android 15 / Linux 6.6)
+für crDroid 17.0, allein und nach den `bbrv3`-Patches (geprüft am 20.10.2026 im isolierten
+Kernelindex). Auf den crDroid-16.0-Commit `b69d2cc667dd` passte sie ebenso. Andere Quellstände
+benötigen eigene Prüfung.
+
+> **crDroid 17.0: quellgeprüft, noch nicht auf dem Gerät getestet.** Die Kernel- und Geräteabnahme
+> unten stammt vom crDroid-16.0-Kernel. Der SUSFS-Upstream-Branch `gki-android15-6.6` wurde am
+> 18./19.10.2026 umgebaut; diese Fassung zielt weiter auf die festgelegte Revision `2d11d711de80`
+> und passt nicht auf den aktuellen Branch-Stand. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Anwendung in zwei Schritten
 
@@ -49,8 +57,9 @@ SUSFS-Version `v2.3.0` und WildKernels-Fixpaket-Version `v2.2.0` sind unabhängi
 ## Prüfstatus und Grenzen
 
 Lokal geprüft werden Modulstruktur, eigenständiger Installer, reale Anwendung
-und Rücknahme auf dem Upstream-Referenzstand sowie aktuellem Branch
-`gki-android15-6.6` und die exakte Ergebnisprüfsumme. Die entstandene vollständige
+und Rücknahme auf dem Upstream-Referenzstand (der aktuelle Stand des Branches
+`gki-android15-6.6` passt seit dessen Umbau am 18./19.10.2026 nicht mehr) und die exakte
+Ergebnisprüfsumme. Die entstandene vollständige
 Upstream-Patchdatei wird separat mit BBRv3 im isolierten Referenz-Kernelindex geprüft.
 **Dokumentierte Kernel- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**
 unter Linux 6.6 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:

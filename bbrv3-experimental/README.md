@@ -6,7 +6,7 @@
 > to the same kernel tree. It has no measured benefit over `bbrv3` so far (see
 > *Measurements*), and Google's newer upstream code is not yet a finished release.
 
-This module carries a complete series for **crDroid 16.0** and its OnePlus
+This module carries a complete series for **crDroid 17.0** and its OnePlus
 `sm8750` Android 15 / Linux 6.6 kernel:
 
 1. `patches/bbrv3-android15-6.6.patch` — the BBRv3 core, byte-identical to `bbrv3` v1.2.
@@ -14,6 +14,11 @@ This module carries a complete series for **crDroid 16.0** and its OnePlus
    as the TCP default, byte-identical to the `bbrv3` companion.
 3. `patches/bbrv3-2026-experimental-android15-6.6.patch` — **the experiment**: Google's
    TCP BBR branch `bbr-v3-2026-09-16-01` (revision `674859761ded`) backported to Linux 6.6.
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured with the crDroid 16.0 kernel. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3-experimental).
 
 ## What the experiment changes
 
@@ -32,8 +37,8 @@ TSO/GSO helpers), so a comparison against `bbrv3` measures only the algorithm up
 
 ## Requirements and use
 
-* Target: `kernel/oneplus/sm8750`, branch `16.0`, reference commit
-  `b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35`, on a tree **without** the `bbrv3` module.
+* Target: `kernel/oneplus/sm8750`, branch `17.0`, reference commit
+  `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976`, on a tree **without** the `bbrv3` module.
 * Reference hardware: OnePlus 13 / Pad 3 using this shared kernel.
 * Bash and Git; keep all module files from the same patch commit/tag.
 
@@ -90,6 +95,8 @@ reverse and re-apply with fuzz 0 on both the v1.1 and the v1.2 core, with and
 without the companion; ARM64 compile of `tcp_bbr3.o` and the touched TCP objects
 with Android clang `r563880c`, no warnings. The packaged file differs from the
 tested one only in its comment header and one code comment.
+On the 17.0 reference commit `48baf0c723f8`, `check-reference.sh` applies and reverts all three
+patches cleanly (2026-10-20); the ARM64 compile was not repeated for 17.0.
 
 ## License
 

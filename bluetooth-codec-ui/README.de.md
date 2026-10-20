@@ -1,4 +1,4 @@
-# Bluetooth-Codec-Status, -Badges und -Auswahl für crDroid 16.0
+# Bluetooth-Codec-Status, -Badges und -Auswahl für crDroid 17.0
 
 Settings-Patches, die anzeigen, welcher Bluetooth-Audio-Codec und welche Abtastrate aktiv sind,
 und die Auswahl von Codec und Abtastrate ermöglichen — bei LE Audio auch der Frame-Dauer. Sie sind
@@ -6,8 +6,14 @@ codec-unabhängig: Alles, was angezeigt oder angeboten wird, kommt vom Bluetooth
 verbundenen Gerät, zum Beispiel SBC, AAC, aptX, aptX HD, LDAC oder — wenn der Stack es
 bereitstellt — aptX Adaptive, dazu LC3 über LE Audio.
 
-**ROM-Umfang:** Dieses Paket ist derzeit nur für **crDroid 16.0** (Android 16) gedacht.
+**ROM-Umfang:** Dieses Paket ist derzeit nur für **crDroid 17.0** (Android 17) gedacht.
 Unterstützung für andere ROMs ist nicht belegt.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bluetooth-codec-ui).
 
 Englische Fassung: [README.md](README.md)
 
@@ -42,9 +48,9 @@ Geräten mit Begleit-App legt diese App die Detailseite fest.
   Eingangsrichtung (Mikrofon) bleibt automatisch. Die Auswahl wird gegen vollständige auswählbare
   Fähigkeiten des Geräts geprüft, und der Eintrag zeigt die vom Stack zurückgelesene
   Konfiguration, nicht den angetippten Wert.
-* Ob eine LE-Audio-Wahl im Stream ankommt, entscheidet der Stack. Unter crDroid 16.0 braucht es
+* Ob eine LE-Audio-Wahl im Stream ankommt, entscheidet der Stack. Unter crDroid 16.0 brauchte es
   dafür das Modul [`le-audio-fixes`](../le-audio-fixes/README.de.md) (Konfigurationsprüfung und
-  Media-Konfigurationen); ohne es bleibt der Stream auf seiner Standardkonfiguration, und der
+  Media-Konfigurationen), das auch auf 17.0 passt; ohne es bleibt der Stream auf seiner Standardkonfiguration, und der
   Eintrag zeigt genau das.
 * Komponenten, die die Codec-Konfiguration selbst ändern, etwa ein Spielmodus, können eine
   manuelle Wahl später ersetzen.
@@ -55,9 +61,10 @@ mit und ohne es.
 
 ## Voraussetzungen
 
-* Ein crDroid-Quellbaum auf Branch **`16.0`** (Android 16). Die genauen Referenz-Commits stehen
+* Ein crDroid-Quellbaum auf Branch **`17.0`** (Android 17); für 16.0 den Branch `16.0` dieses
+  Repositorys nehmen. Die genauen Referenz-Commits stehen
   in [`NOTICE`](NOTICE).
-* Es gibt keinen gerätespezifischen Code. Gebaut und genutzt wurde die Serie auf dem OnePlus 13.
+* Es gibt keinen gerätespezifischen Code. Gebaut und genutzt wurde die Serie auf dem OnePlus 13 mit crDroid 16.0.
 * Ein gesicherter Quellbaum und ein gesichertes Gerät. Nicht während eines laufenden Builds patchen.
 
 Zum Anwenden reichen **Git, die `.patch`-Dateien und ein passender crDroid-Quellbaum**.

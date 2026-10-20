@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-Optionaler Quellpatch für **crDroid 16.0 (Android 16)**. Der ROM-Filter in
+Optionaler Quellpatch für **crDroid 17.0 (Android 17)**. Der ROM-Filter in
 libc kann `org.lineageos.platform-res.apk` vor Morphes separatem ART-Patcher
 verstecken, obwohl die Datei existiert. Morphe erhält eine gezielte
 Prozessausnahme wie der bereits ausgenommene LineageOS-Updater.
@@ -17,6 +17,12 @@ und `/system/bin/app_process64` bleiben gefiltert. Erst nach der Umbenennung
 wird das Ergebnis normal zwischengespeichert. Andere Apps, ähnlich benannte
 Pakete, Updater und Zygote sind mit Positiv-/Negativproben abgedeckt.
 Die Ausnahme prüft den Prozessnamen, keine Paketsignatur.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; der unten
+> beschriebene Host-Test lief gegen den 16.0-Quellstand. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 
 ## Anwenden und zurücknehmen
 

@@ -7,9 +7,17 @@ SUSFS core patch or change its added/removed kernel code.
 
 The relevant context now uses `vma_data_pages()` instead of the obsolete
 `vma_pages()`. The corrected complete upstream patch is applicable to
-`kernel/oneplus/sm8750`, branch `16.0`, commit
-`b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35` (Android 15 / Linux 6.6),
-used by crDroid 16.0. Other revisions require separate validation.
+`kernel/oneplus/sm8750`, branch `17.0`, commit
+`48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976` (Android 15 / Linux 6.6),
+used by crDroid 17.0, alone and after the `bbrv3` patches (checked 2026-10-20 in an isolated
+kernel index). It applied to the crDroid 16.0 commit `b69d2cc667dd` as well. Other revisions
+require separate validation.
+
+> **crDroid 17.0: source-checked, not yet device-tested.** The kernel and device acceptance below
+> was measured with the crDroid 16.0 kernel. The SUSFS upstream branch `gki-android15-6.6` was
+> rebuilt on 2026-10-18/19; this edition still targets the pinned revision `2d11d711de80` and does
+> not apply to the current branch head. The 16.0 edition stays on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Two separate application steps
 
@@ -49,8 +57,8 @@ and WildKernels fix-package version `v2.2.0` are independent.
 ## Validation and limits
 
 Local checks cover structure, standalone installer behaviour, real patch-file
-application/reversal at the pinned upstream and its current `gki-android15-6.6`
-branch, plus reconstruction of the exact corrected SHA256. The resulting full
+application/reversal at the pinned upstream (the current `gki-android15-6.6` branch head no
+longer matches since its rebuild on 2026-10-18/19), plus reconstruction of the exact corrected SHA256. The resulting full
 patch is checked separately with BBRv3 in an isolated reference-kernel index.
 **Documented kernel and device acceptance:** Validated live on the **OnePlus 13 (`dodge`, CPH2653)**
 running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):

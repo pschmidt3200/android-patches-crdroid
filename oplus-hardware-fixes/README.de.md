@@ -1,6 +1,6 @@
 # Oplus Hardware Fixes
 
-Zwei Korrekturen für `hardware/oplus` auf **crDroid 16.0 (Android 16)**: Die
+Zwei Korrekturen für `hardware/oplus` auf **crDroid 17.0 (Android 17)**: Die
 LTPO-Einstellung zeigt jetzt die tatsächliche Panel-Konfiguration statt der letzten
 gespeicherten Auswahl, und die Touch-HAL prüft Treiber- und Binder-Antworten, anstatt
 Erfolg anzunehmen.
@@ -10,6 +10,12 @@ einen Kernel-Knoten an. Sie bringen vorhandenen Code dazu, die Wahrheit zu sagen
 Hardware nein sagt.
 
 ---
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/oplus-hardware-fixes).
 
 ## Was sie korrigieren
 
@@ -46,13 +52,16 @@ Drei Pfade nahmen an, ihre Schreibvorgänge hätten funktioniert:
   dem ersten Fehler folgt kein zweiter Schreibzugriff, ein halb angewendeter Zustand kann
   also nicht entstehen. Der Power-Double-Tap-Pfad prüft zusätzlich den Vendor-Proxy.
 
-Gesten-Knoten, Gestenliste und Touch-Abtastraten bleiben unverändert.
+Gesten-Knoten, Gestenliste und Touch-Abtastraten bleiben unverändert. crDroid 17.0 kann die Maske
+auf mehrere Gesten-Masken-Knoten schreiben; die 17.0-Fassung liest je Knoten dessen eigene Maske,
+ändert nur das angeforderte Bit und bricht beim ersten Lese-, Parse- oder Schreibfehler ab;
+vorher erfolgreiche Schreibvorgänge bleiben wie upstream bestehen (kein Rollback über Knoten).
 
 ---
 
 ## Voraussetzungen
 
-* crDroid-16.0-Quellbaum mit `hardware/oplus`
+* crDroid-17.0-Quellbaum mit `hardware/oplus` (für 16.0 den Branch `16.0` dieses Repositorys nehmen)
 * Ein Oplus-/OnePlus-Gerät, dessen Baum dieses Repository verwendet
 
 Beide Patches betreffen ausschließlich `hardware/oplus`. Der exakte Upstream-Commit, gegen

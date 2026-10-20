@@ -1,6 +1,13 @@
 # android-patches-crdroid
 
-Eine strukturierte Sammlung modularer Quellcode-Patches, Framework-Erweiterungen und Hardware-Integrationen für **crDroid 16.0 (Android 16)**.
+Eine strukturierte Sammlung modularer Quellcode-Patches, Framework-Erweiterungen und Hardware-Integrationen für **crDroid 17.0 (Android 17)**.
+
+> **Stand crDroid 17.0:** Die Patches auf `main` sind auf crDroid 17.0 portiert und bestehen
+> die Quellprüfungen: Jedes Modul lässt sich an seinen NOTICE-Referenzcommits sauber anwenden
+> und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen noch aus; die 17.0-Fassungen
+> gelten daher als auf Hardware ungetestet. Die crDroid-16.0-Fassungen bleiben eingefroren auf
+> dem Branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0), jeweils mit dem
+> Prüfstand aus der Modul-README.
 
 Alle funktionalen Änderungen werden als Quellcode-Patches ohne proprietäre Binärdateien bereitgestellt und können direkt in einen kompatiblen crDroid-Quellbaum eingespielt werden.
 
@@ -35,7 +42,10 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 ## Installation & Verwendung
 
 ### Schritt 1: Modul herunterladen
-Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `bluetooth-codec-ui-v1.2.zip` oder `aptx-adaptive-v1.6.zip`).
+Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `bluetooth-codec-ui-v1.3.zip` oder `aptx-adaptive-v1.6.zip`).
+
+Die bisher veröffentlichten Releases sind crDroid-16.0-Fassungen. Releases für 17.0 folgen nach
+der Geräteprüfung; bis dahin nimmt ein 17.0-Baum die Modulordner aus `main`.
 
 ### Schritt 2: In den crDroid-Quellbaum einspielen
 1. Entpacke das heruntergeladene ZIP-Archiv an einem beliebigen Ort außerhalb oder neben deinem crDroid-Quellordner.
@@ -59,7 +69,7 @@ Das Skript prüft automatisch die Kompatibilität des Quellbaums und wendet die 
 
 ## Probleme melden
 
-Falls ein Patch nicht sauber anwendbar ist oder Buildfehler auf crDroid 16.0 auftreten:
+Falls ein Patch nicht sauber anwendbar ist oder Buildfehler auf crDroid 17.0 (`main`) oder 16.0 (Branch `16.0`) auftreten:
 1. Bitte ein [Issue über die Vorlage „Patch problem“ anlegen](https://github.com/pschmidt3200/android-patches-crdroid/issues/new?template=patch-problem.yml).
 2. Modulname, Release-Tag oder Repository-Commit, Gerätemodell und die Terminal-Fehlerausgabe beifügen.
 3. *Bitte persönliche Daten (wie Bluetooth-MAC-Adressen oder Seriennummern) vor dem Absenden aus den Logs entfernen.*

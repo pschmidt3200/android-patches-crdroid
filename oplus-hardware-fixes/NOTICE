@@ -3,7 +3,7 @@ Source snapshot: 2026-10-07.
 
 UPSTREAM SOURCES AND COMPATIBILITY
 
-This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+This distribution contains source-code diffs for crDroid branch 17.0 (Android 17).
 Other ROMs are outside the current scope. It is not a ROM image and contains no
 vendor binaries, firmware or driver source. Both patches only add validation and
 read-back logic to code that already exists in the tree: the Lineage touch HAL
@@ -17,8 +17,12 @@ Source Project, LineageOS and crDroid. Retain the actual copyright and attributi
 notices of each affected source file. This overview does not replace the upstream
 per-file notices or license an entire ROM tree.
 
-Reference repository, commit and public source (as used by crDroid branch 16.0):
-  hardware/oplus                2c423457fffc1eea6d1eeb21abf26af66e541186  https://github.com/crdroidandroid/android_hardware_oplus
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
+
+Reference repository, commit and public source (as used by crDroid branch 17.0):
+  hardware/oplus                f5f9acbc690d9c5488ea994a15df9340b1192e22  https://github.com/crdroidandroid/android_hardware_oplus
 
 WHAT THE PATCHES DO
 

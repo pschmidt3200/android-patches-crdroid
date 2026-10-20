@@ -69,8 +69,8 @@ body:
     id: source
     attributes:
       label: ROM version
-      description: Which crDroid version/branch (e.g. crDroid 16.0). Add sync date if known.
-      placeholder: e.g. crDroid 16.0
+      description: Which crDroid version/branch (e.g. crDroid 17.0). Add sync date if known.
+      placeholder: e.g. crDroid 17.0
     validations:
       required: true
   - type: textarea

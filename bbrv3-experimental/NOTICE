@@ -1,8 +1,11 @@
-BBRv3 experimental source-patch edition for crDroid 16.0 / OnePlus sm8750.
+BBRv3 experimental source-patch edition for crDroid 17.0 / OnePlus sm8750.
 Prepared 2026-10-04; Android15 Linux6.6 kernel baseline. FOR TESTING ONLY.
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
 
 Reference repository, commit and source:
-  kernel/oneplus/sm8750 b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35 https://github.com/crdroidandroid/android_kernel_oneplus_sm8750 branch=16.0
+  kernel/oneplus/sm8750 48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976 https://github.com/crdroidandroid/android_kernel_oneplus_sm8750 branch=17.0
 
 This module is a complete, self-contained series. It replaces the bbrv3 module
 for a test build; never apply both modules to the same tree.

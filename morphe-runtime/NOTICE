@@ -1,8 +1,11 @@
-Morphe runtime compatibility source patch for crDroid 16.0 (Android 16)
-Prepared 2026-10-18; no ROM/device acceptance or publication yet.
+Morphe runtime compatibility source patch for crDroid 17.0 (Android 17)
+Prepared 2026-10-18; no ROM/device acceptance yet.
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
-  bionic fcfacc3e0ba78b59de4bdd46b8bec3676e5c305c https://github.com/crdroidandroid/android_bionic
+  bionic 0971171b892477cd712c027c93517b666a5b754a https://github.com/crdroidandroid/android_bionic
 
 Affected source: libc/bionic/custom_rom_hide.cpp.
 Retain its Apache 2.0 notices from AxionOS (2025-2026), VoltageOS (2026)

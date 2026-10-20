@@ -25,8 +25,8 @@ bash .github/scripts/test-apply-script.sh <module-name>
 # Verify patches against crDroid upstream reference commits
 bash .github/scripts/check-reference.sh <module-name>
 
-# Verify patches against the live 16.0 branch
-bash .github/scripts/check-reference.sh --branch 16.0 <module-name>
+# Verify patches against the live 17.0 branch (main targets crDroid 17.0)
+bash .github/scripts/check-reference.sh --branch 17.0 <module-name>
 ```
 
 ---

@@ -1,15 +1,24 @@
-# aptX Adaptive & aptX Lossless for crDroid 16.0 on the OnePlus 13 & OnePlus Pad 3
+# aptX Adaptive & aptX Lossless for crDroid 17.0 on the OnePlus 13 & OnePlus Pad 3
 
 Patches that bring working **aptX Adaptive** — including **aptX Lossless** at 44.1 kHz and a
-**low-latency mode for games** — to crDroid 16.0 (Android 16) on SM8750 devices (OnePlus 13 / `dodge`, CPH2653
+**low-latency mode for games** — to crDroid 17.0 (Android 17) on SM8750 devices (OnePlus 13 / `dodge`, CPH2653
 and OnePlus Pad 3 / Pad 2 Pro / `erhai`, OPD2415) with a Qualcomm FastConnect 7900 controller.
 
 The Android Bluetooth stack can negotiate aptX Adaptive, but on this platform the parts that
 actually make it *work* — the vendor-specific controller commands, the DSP mode, and the
 sample-rate switch — need this integration in the reference crDroid source tree.
 
-**ROM scope:** This package is currently intended only for **crDroid 16.0**.
+**ROM scope:** This package is currently intended only for **crDroid 17.0**.
 Support for other ROMs has not been established.
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
+>
+> In Android 17, legacy codec slot 7 belongs to LHDC. The 17.0 edition therefore carries aptX
+> Adaptive in extension slot 8 (vendor codec ID `0x00ad00d7ff`) through the native stack, both
+> Java codec factories and the framework; LHDC keeps slot 7.
 
 > 🇩🇪 Diese Datei auf Deutsch: [README.de.md](README.de.md)
 
@@ -81,7 +90,7 @@ Being explicit about the limits is the point of this section.
 
 * Reference devices: OnePlus 13 (`dodge`, CPH2653) and OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415), Qualcomm **FastConnect 7900**.
   Other devices need separate integration and validation; sharing the controller is not sufficient.
-* A crDroid tree on branch **`16.0`** (Android 16). The exact
+* A crDroid tree on branch **`17.0`** (Android 17); for 16.0, use branch `16.0` of this repository. The exact
   reference commits are listed in [`NOTICE`](NOTICE).
 * A sink that actually supports aptX Adaptive — the patches will not fake it. Devices that do not
   offer it keep their previous codec, and the UI says so instead of claiming success.
@@ -96,9 +105,9 @@ and the vendor-offload requirements still apply.
 
 | Layer | Component | Status / Notes |
 |---|---|---|
-| **Reference Devices** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Fully verified reference platforms (SM8750 / FastConnect 7900). |
+| **Reference Devices** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Verified reference platforms with crDroid 16.0 (SM8750 / FastConnect 7900); 17.0 not yet tested on the device. |
 | **SoC / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) w/ **FastConnect 7900** | Requires Qualcomm AIDL Audio HAL and DSP offload firmware. |
-| **Other Devices** | — | **Untested.** The patches target crDroid 16.0; patch 1 sends FastConnect 7900 vendor commands and patch 4 is device-specific. A port is your own integration and validation work. |
+| **Other Devices** | — | **Untested.** The patches target crDroid 17.0; patch 1 sends FastConnect 7900 vendor commands and patch 4 is device-specific. A port is your own integration and validation work. |
 | **Tested Audio Sinks** | **FiiO BTR17** (Qualcomm QCC5181) | Reference sink: 44.1 kHz Lossless, 48 / 96 kHz, 48 kHz low latency. |
 | | **Bose QuietComfort Ultra 2 Earbuds** | Offers 44.1 / 48 kHz only (no 96 kHz); link/setup events were logged, see above. |
 
@@ -143,7 +152,7 @@ To understand how these patches work together, follow the audio chain from the a
 ### 3. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Target:** `packages/apps/GameSpace`
 * **Source scope:** crDroid's GameSpace app; needs patch 1
-* **Hardware portability:** no device-specific code; tested only on crDroid `16.0` / OnePlus 13
+* **Hardware portability:** no device-specific code; tested on the device only with crDroid `16.0` / OnePlus 13
 * **Role:** **Automatic Low-Latency Trigger.**
 * **What it does:** Hooks into GameSpace game lifecycle events. When a game is launched, it automatically switches aptX Adaptive from High-Quality (~348 ms) to Low-Latency (~117 ms). When closing the game, it seamlessly restores the previous HQ or Lossless profile.
 * **If omitted:** Gaming mode switching must be triggered manually or remains at standard latency.
@@ -268,7 +277,7 @@ Stop on conflicts or an already-applied edition; do not force application or dis
 Build through the ROM's normal device-specific workflow, then validate codec/rate negotiation,
 controller acknowledgements, audible output, gaming transitions and reconnect behavior.
 
-Patch 3 depends on GameSpace as shipped by crDroid 16.0. Apply the complete four-patch series
+Patch 3 depends on GameSpace as shipped by crDroid 17.0. Apply the complete four-patch series
 to the documented crDroid target. Other ROMs are outside this package's current scope.
 
 ### Undo, sync again and build

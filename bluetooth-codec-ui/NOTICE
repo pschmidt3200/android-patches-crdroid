@@ -3,7 +3,7 @@ Source snapshot: 2026-10-04.
 
 UPSTREAM SOURCES AND COMPATIBILITY
 
-This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+This distribution contains source-code diffs for crDroid branch 17.0 (Android 17).
 Other ROMs are outside the current scope. It is not a ROM image and contains no
 codec implementation: it only reads and requests codec configurations through the
 public Android Bluetooth API (BluetoothCodecStatus, BluetoothCodecConfig,
@@ -17,13 +17,16 @@ Apache License, Version 2.0.
 Retain the actual copyright and attribution notices of each affected source file.
 This overview does not replace the upstream per-file notices or license an entire ROM tree.
 
-Reference repositories, commits and public sources (crDroid branch 16.0):
-  frameworks/base               a7b0e5e188fb72a566328bfed0e0412ddb7850e2  https://github.com/crdroidandroid/android_frameworks_base
-  packages/apps/Settings        62faa70985307e4e5fca0c7c838f11dba0b2c4ab  https://github.com/crdroidandroid/android_packages_apps_Settings
+Reference repositories, commits and public sources (crDroid branch 17.0):
+  frameworks/base               c2382c14b024f5701071d31d9cc8fe1401dc9a88  https://github.com/crdroidandroid/android_frameworks_base
+  packages/apps/Settings        927b09818133aa37cf6acd057c656859aa3a5ce6  https://github.com/crdroidandroid/android_packages_apps_Settings
 
 The series was built into crDroid 16.0 on the OnePlus 13 (dodge, CPH2653) and used
 with dual-mode receivers and with receivers whose details page is provided by a
 companion app. No device-specific code is involved.
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
 
 LICENSE AND REDISTRIBUTION
 

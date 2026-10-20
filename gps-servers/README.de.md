@@ -2,9 +2,15 @@
 
 [English](README.md)
 
-Zwei unabhängig wählbare Konfigurationspatches für **crDroid 16.0 (Android 16)**,
+Zwei unabhängig wählbare Konfigurationspatches für **crDroid 17.0 (Android 17)**,
 OnePlus `device/oneplus/sm8750-common`, Datei `configs/gps/gps.conf`.
 Die Auswahl erfolgt beim Build; es entsteht kein neues Android-Einstellungsmenü.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gps-servers).
 
 ## Einen, beide oder keinen auswählen
 
@@ -59,7 +65,7 @@ Anwendung/Rücknahme an Referenz-Commits und aktuellem Branch:
 
 ```bash
 bash .github/scripts/check-reference.sh gps-servers
-bash .github/scripts/check-reference.sh --branch 16.0 gps-servers
+bash .github/scripts/check-reference.sh --branch 17.0 gps-servers
 ```
 
 **Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**

@@ -2,7 +2,14 @@
 
 [English](README.md)
 
-Ein optionales Quellpatch-Modul für **crDroid 16.0 (Android 16)**.
+Ein optionales Quellpatch-Modul für **crDroid 17.0 (Android 17)**.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/donation-disable).
+
 Ich habe diesen Abschalter erstellt, weil ich diese Art der Spendenanfrage
 in meinem ROM persönlich nicht leiden kann. Das richtet sich nicht gegen
 Spenden allgemein.
@@ -58,18 +65,19 @@ das einen erneuten ROM-Build und dessen Installation.
 ## Prüfung und Grenzen
 
 Format, Fehlerbehandlung des Helfers sowie Anwendung/Rücknahme werden gegen
-die [NOTICE](NOTICE)-Commits und den aktuellen crDroid-Branch `16.0` geprüft:
+die [NOTICE](NOTICE)-Commits und den aktuellen crDroid-Branch `17.0` geprüft:
 
 ```bash
 bash .github/scripts/check-modules.sh
 bash .github/scripts/test-apply-script.sh donation-disable
 bash .github/scripts/check-reference.sh donation-disable
-bash .github/scripts/check-reference.sh --branch 16.0 donation-disable
+bash .github/scripts/check-reference.sh --branch 17.0 donation-disable
 ```
 
 Die Quelltests sind vollständig verifiziert:
 - 34 von 34 Tests im Helfer-Test (`test-apply-script.sh`) erfolgreich.
-- Saubere Anwendung und Rücknahme (3/3 Patches) auf den Referenz-Commits und crDroid `16.0` HEAD.
+- Saubere Anwendung und Rücknahme (3/3 Patches) auf den 17.0-Referenz-Commits und crDroid `17.0` HEAD
+  (20.10.2026); dieselbe Prüfung war vorher für 16.0 grün.
 - Fehlerfreie Dry-Run-Simulation gegen den lokalen crDroid-Quellbaum.
 
 **Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13 (`dodge`, CPH2653)**

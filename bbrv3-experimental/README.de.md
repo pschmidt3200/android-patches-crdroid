@@ -6,7 +6,7 @@
 > Module auf denselben Kernel-Baum an. Ein Vorteil gegenüber `bbrv3` ist bisher
 > nicht gemessen (siehe *Messungen*), und Googles neuer Code ist noch keine fertige Veröffentlichung.
 
-Das Modul enthält eine vollständige Serie für **crDroid 16.0** und dessen OnePlus-
+Das Modul enthält eine vollständige Serie für **crDroid 17.0** und dessen OnePlus-
 `sm8750`-Kernel (Android 15 / Linux 6.6):
 
 1. `patches/bbrv3-android15-6.6.patch` — der BBRv3-Kern, bytegleich mit `bbrv3` v1.2.
@@ -14,6 +14,12 @@ Das Modul enthält eine vollständige Serie für **crDroid 16.0** und dessen One
    als TCP-Standard, bytegleich mit dem Zusatzpatch aus `bbrv3`.
 3. `patches/bbrv3-2026-experimental-android15-6.6.patch` — **das Experiment**: Googles
    TCP-BBR-Zweig `bbr-v3-2026-09-16-01` (Stand `674859761ded`), auf Linux 6.6 zurückportiert.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3-experimental).
 
 ## Was das Experiment ändert
 
@@ -33,8 +39,8 @@ Algorithmusänderung misst. Details und Quellen in [NOTICE](NOTICE).
 
 ## Voraussetzungen und Anwendung
 
-* Ziel: `kernel/oneplus/sm8750`, Zweig `16.0`, Referenz-Commit
-  `b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35`, auf einem Baum **ohne** das Modul `bbrv3`.
+* Ziel: `kernel/oneplus/sm8750`, Zweig `17.0`, Referenz-Commit
+  `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976`, auf einem Baum **ohne** das Modul `bbrv3`.
 * Referenzgeräte: OnePlus 13 / Pad 3 mit diesem gemeinsamen Kernel.
 * Bash und Git; alle Moduldateien aus demselben Patch-Commit/-Tag verwenden.
 
@@ -91,6 +97,8 @@ Zurücknehmen und erneutes Anwenden mit Fuzz 0 auf dem Kern v1.1 und v1.2, jewei
 und ohne Zusatzpatch; ARM64-Kompilierung von `tcp_bbr3.o` und den berührten TCP-Objekten
 mit Android-Clang `r563880c`, ohne Warnungen. Die paketierte Datei unterscheidet sich
 von der geprüften nur im Kommentarkopf und in einem Code-Kommentar.
+Am 17.0-Referenz-Commit `48baf0c723f8` lassen sich alle drei Patches mit `check-reference.sh`
+sauber anwenden und zurücknehmen (20.10.2026); die ARM64-Kompilierung wurde für 17.0 nicht wiederholt.
 
 ## Lizenz
 

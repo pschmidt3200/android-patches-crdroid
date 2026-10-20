@@ -7,6 +7,12 @@ vorherige Ladezustand genau so wiederhergestellt, wie er war.
 Die Schwelle ist im GameSpace-Panel sichtbar einstellbar:
 **Akkustand bei Spielstart** oder ein fester Wert zwischen 70 und 100 %.
 
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gaming-charge-bypass).
+
 ## Was die zwei Patches tun
 
 | Patch | Repository | Wirkung |
@@ -56,5 +62,6 @@ Gerätetest.
 
 ## Voraussetzungen
 
-crDroid 16.0 (Android 16). Andere ROMs sind ungetestet. Die genauen
+crDroid 17.0 (Android 17); für 16.0 den Branch `16.0` dieses Repositorys nehmen. Andere ROMs
+sind ungetestet. Die genauen
 Upstream-Stände, gegen die die Diffs erzeugt wurden, stehen in `NOTICE`.

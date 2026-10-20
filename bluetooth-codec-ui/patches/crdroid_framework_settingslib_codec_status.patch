@@ -1,13 +1,15 @@
 # Target repository: frameworks/base
+# Checked against frameworks/base c2382c14b024f5701071d31d9cc8fe1401dc9a88 (crDroid 17.0).
 #
 # SettingsLib: reports the active codec so the UI can show it.
+# The extended codec naming of crDroid 17.0 is kept.
 #
 # Paths below are relative to the target repository, NOT to the Android
 # source root. Apply with:  git -C <target repository> apply <this file>
 #
 # Publication edition. Do not mix with another edition of these patches.
 diff --git a/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java b/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java
-index d7951ebf5dca..6c313bfc5a53 100644
+index 645407b12c4c6598e007f7b8b7e40be8f68aa972..9dba124e039afacb3a5b1da5ef01dcd4db78079e 100644
 --- a/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java
 +++ b/packages/SettingsLib/src/com/android/settingslib/bluetooth/A2dpProfile.java
 @@ -24,6 +24,7 @@ import android.bluetooth.BluetoothA2dp;
@@ -15,11 +17,11 @@ index d7951ebf5dca..6c313bfc5a53 100644
  import android.bluetooth.BluetoothClass;
  import android.bluetooth.BluetoothCodecConfig;
 +import android.bluetooth.BluetoothCodecStatus;
+ import android.bluetooth.BluetoothCodecType;
  import android.bluetooth.BluetoothDevice;
  import android.bluetooth.BluetoothProfile;
- import android.bluetooth.BluetoothUuid;
-@@ -361,6 +362,16 @@ public class A2dpProfile implements LocalBluetoothProfile {
-                 mContext.getResources().getStringArray(R.array.bluetooth_a2dp_codec_titles)[index]);
+@@ -338,6 +339,16 @@ public class A2dpProfile implements LocalBluetoothProfile {
+                 R.string.bluetooth_profile_a2dp_high_quality, codecType.getCodecName());
      }
  
 +    /**
@@ -36,18 +38,19 @@ index d7951ebf5dca..6c313bfc5a53 100644
          return NAME;
      }
 diff --git a/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java b/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java
-index d2881e9ee78b..7f89c8094b7b 100644
+index 904445e878fc681c76170b1409ebce81de7dc319..9d4f3da9ba305f14621dd65e0028a0d5768a4333 100644
 --- a/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java
 +++ b/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothEventManager.java
-@@ -130,6 +130,7 @@ public class BluetoothEventManager {
-                 new ActiveDeviceChangedHandler());
+@@ -131,6 +131,8 @@ public class BluetoothEventManager {
          addHandler(BluetoothLeAudio.ACTION_LE_AUDIO_ACTIVE_DEVICE_CHANGED,
                     new ActiveDeviceChangedHandler());
-+        addHandler(BluetoothA2dp.ACTION_CODEC_CONFIG_CHANGED, new CodecConfigChangedHandler());
  
++        addHandler(BluetoothA2dp.ACTION_CODEC_CONFIG_CHANGED, new CodecConfigChangedHandler());
++
          // Headset state changed broadcasts
          addHandler(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED,
-@@ -540,6 +541,20 @@ public class BluetoothEventManager {
+                 new AudioModeChangedHandler());
+@@ -544,6 +546,20 @@ public class BluetoothEventManager {
          }
      }
  

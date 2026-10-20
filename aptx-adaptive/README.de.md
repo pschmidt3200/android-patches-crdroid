@@ -1,10 +1,20 @@
 # aptX Adaptive für crDroid
 
-Stand: 2026-10-01. Quellpatch-Paket für **crDroid 16.0 (Android 16)**;
+Stand: 2026-10-01. Quellpatch-Paket für **crDroid 17.0 (Android 17)**;
 Referenzgeräte: **OnePlus 13 (`dodge`, CPH2653)** und **OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD2415)** (jeweils SM8750 / FastConnect 7900).
 
-**ROM-Umfang:** Das Paket ist derzeit ausschließlich für **crDroid 16.0** ausgelegt.
+**ROM-Umfang:** Das Paket ist derzeit ausschließlich für **crDroid 17.0** ausgelegt.
 Unterstützung für andere ROMs ist nicht belegt.
+
+> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
+> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
+> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
+> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
+>
+> In Android 17 gehört der alte Codec-Platz 7 zu LHDC. Die 17.0-Fassung führt aptX Adaptive daher
+> im Erweiterungsplatz 8 (Hersteller-Codec-ID `0x00ad00d7ff`) durch nativen Stack, beide
+> Java-Codec-Fabriken und das Framework; LHDC behält Platz 7.
 
 **Die grundlegenden Langzeitmessungen stammen aus der produktiven v39-Messreihe.** Die englische
 Publikationsfassung übersetzt Bezeichner und Diagnosetexte; sie wurde am 01.10.2026 in crDroid 16.0
@@ -56,7 +66,8 @@ oder eines durchgehend bittransparenten Android-Audiopfads gleichzusetzen.
 
 ## Voraussetzungen und Referenzstände
 
-- Vollständiger, baubarer crDroid-Quellbaum auf Branch **`16.0`** (Android 16)
+- Vollständiger, baubarer crDroid-Quellbaum auf Branch **`17.0`** (Android 17); für 16.0 den
+  Branch `16.0` dieses Repositorys nehmen,
   mit passenden Gerätedateien und Vendor-Komponenten
   für das Zielgerät; die Android-Repository-Pfade unten müssen vorhanden sein.
 - Kompatibler Qualcomm-AIDL-Audio-Provider, DSP-Firmware und Controller.
@@ -86,9 +97,9 @@ keine durch diesen Referenzstand zugesicherte Kompatibilität.
 
 | Ebene | Komponente | Status & Hinweise |
 |---|---|---|
-| **Referenzgeräte** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Vollständig verifizierte Referenzplattformen (SM8750 / FastConnect 7900). |
+| **Referenzgeräte** | **OnePlus 13** (`dodge`, CPH2653)<br>**OnePlus Pad 3 / Pad 2 Pro** (`erhai`, OPD2415) | Mit crDroid 16.0 verifizierte Referenzplattformen (SM8750 / FastConnect 7900); 17.0 noch nicht auf dem Gerät getestet. |
 | **Chipsatz / Controller** | Qualcomm **Snapdragon 8 Elite** (SM8750) mit **FastConnect 7900** | Benötigt Qualcomm AIDL Audio HAL und DSP-Offload-Firmware. |
-| **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 16.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 4 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
+| **Andere Geräte** | — | **Ungetestet.** Die Patches richten sich an crDroid 17.0; Patch 1 sendet FastConnect-7900-Herstellerbefehle und Patch 4 ist gerätespezifisch. Ein Port ist eigene Integrations- und Testarbeit. |
 | **Gegenstellen (Kopfhörer/DACs)** | **FiiO BTR17** (Qualcomm QCC5181) | Referenz: 44,1 kHz Lossless, 48 / 96 kHz, 48 kHz Low Latency. |
 | | **Bose QuietComfort Ultra 2 Earbuds** | Bietet nur 44,1 / 48 kHz an (kein 96 kHz); Link-/Aufbauereignisse erfasst, siehe „Belege und Grenzen“. |
 
@@ -133,7 +144,7 @@ Um das Zusammenspiel der 4 Patches zu verstehen, folgt man der Audiokette von de
 ### 3. `crdroid_gamespace_bluetooth_gaming_audio.patch`
 * **Ziel:** `packages/apps/GameSpace`
 * **Quellumfang:** die GameSpace-App von crDroid; braucht Patch 1
-* **Hardware-Portabilität:** kein gerätespezifischer Code; nur auf crDroid `16.0` / OnePlus 13 getestet
+* **Hardware-Portabilität:** kein gerätespezifischer Code; auf dem Gerät nur mit crDroid `16.0` / OnePlus 13 getestet
 * **Rolle:** **Automatische Latenzsteuerung beim Spielen.**
 * **Was er tut:** Klinkt sich in die GameSpace-Ereignisse ein. Sobald ein Spiel gestartet wird, schaltet der Bluetooth-Stack automatisch von High-Quality (~348 ms) auf Low-Latency (~117 ms). Beim Beenden des Spiels wird das vorherige HQ- oder Lossless-Profil nahtlos wiederhergestellt.
 * **Wenn er weggelassen wird:** Spiele laufen mit Standard-Latenz oder müssen manuell geschaltet werden.

@@ -3,7 +3,7 @@ Source snapshot: 2026-10-05.
 
 UPSTREAM SOURCES AND COMPATIBILITY
 
-This distribution contains source-code diffs for crDroid branch 16.0 (Android 16).
+This distribution contains source-code diffs for crDroid branch 17.0 (Android 17).
 Other ROMs are outside the current scope. It is not a ROM image and contains no
 codec implementation: it sets one build-time aconfig flag value that already
 exists in the Android source tree, corrects the LE Audio configuration matcher of
@@ -17,11 +17,16 @@ configuration value, licensed under the Apache License, Version 2.0.
 Retain the actual copyright and attribution notices of each affected source file.
 This overview does not replace the upstream per-file notices or license an entire ROM tree.
 
-Reference repositories, commits and public sources (as used by crDroid branch 16.0).
-Note that build/release is a LineageOS repository which crDroid builds on; it is not
-a crDroid fork:
-  build/release                 d76088e515490325b6edd276ef167449fd71805a  https://github.com/LineageOS/android_build_release  branch=lineage-23.2
-  packages/modules/Bluetooth    c575db642364a8e3e2f9878d2fdd55dc4451230e  https://github.com/crdroidandroid/android_packages_modules_Bluetooth
+Reference repositories, commits and public sources (as used by crDroid branch 17.0).
+Note that crDroid 17.0 takes build/release directly from AOSP (tag android-17.0.0_r1);
+it is not a crDroid fork (the 16.0 edition used LineageOS android_build_release):
+  build/release                 c85f4aebe46714235599a9bd6430a0fe30c6e8d5  https://android.googlesource.com/platform/build/release  branch=android-17.0.0_r1
+  packages/modules/Bluetooth    f3fb97e5f1ddb23e4674d60b91c4f6a4895d9d6b  https://github.com/crdroidandroid/android_packages_modules_Bluetooth
+
+crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
+reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+edition is kept on branch 16.0 of this repository.
+crDroid 17.0 builds release configuration cp2a, which inherits the bp4a flag value.
 
 The series was built into crDroid 16.0 on the OnePlus 13 (dodge, CPH2653) and
 verified with a dual-mode receiver that advertises EATT, using LC3 with hardware

@@ -1,4 +1,4 @@
-# LE Audio fixes for crDroid 16.0
+# LE Audio fixes for crDroid 17.0
 
 Three fixes that make LE Audio usable with receivers such as the FiiO BTR17:
 
@@ -9,8 +9,18 @@ Three fixes that make LE Audio usable with receivers such as the FiiO BTR17:
 3. **More media configurations** — 32 kHz (7.5 and 10 ms) and 24 kHz / 7.5 ms become available for
    media playback (configuration list).
 
-**ROM scope:** This package is currently intended only for **crDroid 16.0** (Android 16).
+**ROM scope:** This package is currently intended only for **crDroid 17.0** (Android 17).
 Support for other ROMs has not been established.
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/le-audio-fixes).
+>
+> crDroid 17.0 builds the release configuration `cp2a`. Every inheritance path of `cp2a`
+> (via `cp1a` and the `mainline_2026_*` configurations) leads through `bp4a`, so the `bp4a` flag
+> value of patch 1 is the most derived one there; read from the 17.0 configuration, not yet
+> confirmed in a build.
 
 German version: [README.de.md](README.de.md)
 
@@ -105,7 +115,8 @@ Measured on the same setup (LC3, hardware offload, media context), each step wit
 ## Prerequisites and scope
 
 * **Check which release configuration your build selects.** The flag file is placed in the `bp4a`
-  directory. A build that selects a different release configuration will not read it. On a
+  directory. A build that selects a different release configuration reads it only if that configuration
+  inherits `bp4a`, as crDroid 17.0's `cp2a` does. On a
   LineageOS-style tree the value comes from `vendor/lineage/vars/aosp_target_release`. The
   directory collects its values by glob, so no further registration is needed.
 * **Audio needs a working vendor path.** Whether LE Audio produces sound depends on your vendor

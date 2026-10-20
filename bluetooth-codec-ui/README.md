@@ -1,12 +1,17 @@
-# Bluetooth codec status, badges and selection for crDroid 16.0
+# Bluetooth codec status, badges and selection for crDroid 17.0
 
 Settings patches that show the active Bluetooth audio codec and sample rate, and let you choose
 the codec and its sample rate — for LE Audio also the frame duration. They are codec-independent:
 everything shown or offered comes from the Bluetooth stack and the connected device, for example
 SBC, AAC, aptX, aptX HD, LDAC or — when the stack provides it — aptX Adaptive, and LC3 over LE Audio.
 
-**ROM scope:** This package is currently intended only for **crDroid 16.0** (Android 16).
+**ROM scope:** This package is currently intended only for **crDroid 17.0** (Android 17).
 Support for other ROMs has not been established.
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the results described below were
+> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bluetooth-codec-ui).
 
 German version: [README.de.md](README.de.md)
 
@@ -39,9 +44,9 @@ app the details page is defined by that app.
   group; the input (microphone) direction stays automatic. Choices are validated against
   complete selectable capabilities of the device, and the entry shows the configuration read back
   from the stack, not the value that was tapped.
-* Whether an LE Audio choice reaches the stream is decided by the stack. On crDroid 16.0 this needs
+* Whether an LE Audio choice reaches the stream is decided by the stack. On crDroid 16.0 this needed
   the [`le-audio-fixes`](../le-audio-fixes/README.md) module (configuration matcher and Media
-  configurations); without it the stream stays on its default configuration and the entry shows
+  configurations), which also applies to 17.0; without it the stream stays on its default configuration and the entry shows
   that.
 * Components that change the codec configuration themselves, such as a game mode, may later
   replace a manual choice.
@@ -52,9 +57,10 @@ with or without it.
 
 ## Requirements
 
-* A crDroid tree on branch **`16.0`** (Android 16). The exact reference commits are listed in
+* A crDroid tree on branch **`17.0`** (Android 17); for 16.0, use branch `16.0` of this repository.
+  The exact reference commits are listed in
   [`NOTICE`](NOTICE).
-* No device-specific code is involved. The series was built and used on the OnePlus 13.
+* No device-specific code is involved. The series was built and used on the OnePlus 13 with crDroid 16.0.
 * A backed-up source tree and device. Do not patch a tree while a build is running.
 
 You only need **Git, the `.patch` files and a compatible crDroid source tree** to apply them.

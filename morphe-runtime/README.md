@@ -2,7 +2,7 @@
 
 [Deutsch](README.de.md)
 
-Optional source patch for **crDroid 16.0 (Android 16)**. The custom ROM
+Optional source patch for **crDroid 17.0 (Android 17)**. The custom ROM
 filter in libc can hide `org.lineageos.platform-res.apk` from Morphe's
 separate ART patcher, even though the resource exists. This module grants
 Morphe the same process exemption already used for the LineageOS updater.
@@ -17,6 +17,11 @@ or `/system/bin/app_process64` remain filtered, but their negative result
 is not cached before `--nice-name` takes effect. Other apps and package-name
 lookalikes remain filtered; updater and zygote handling are retained.
 This is a process-name compatibility rule, not package-signature validation.
+
+> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
+> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
+> A ROM build and device verification on 17.0 are pending; the host test described below was
+> run against the 16.0 source. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 
 ## Apply and undo
 
