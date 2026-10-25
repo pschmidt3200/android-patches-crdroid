@@ -136,7 +136,9 @@ reference_commit() {
 }
 
 # How HEAD relates to the reference commit. Information only, never a reason to abort:
-# the series may well apply to newer sources.
+# the series may well apply to newer sources. In a partial clone (fetch --filter) git
+# would download a missing commit from the promisor remote just for this line; for
+# frameworks/base that took 3m20s per call (measured 2026-10-25), so it stays local.
 describe_reference() {
     local repo_dir="$1" ref="$2" head
     if ! head="$(git -C "${repo_dir}" rev-parse --verify -q HEAD)"; then
@@ -145,9 +147,9 @@ describe_reference() {
         echo "HEAD ${head:0:12}; no reference commit listed in NOTICE"
     elif [[ "${head}" == "${ref}" ]]; then
         echo "matches reference ${ref:0:12}"
-    elif ! git -C "${repo_dir}" cat-file -e "${ref}^{commit}" 2>/dev/null; then
+    elif ! GIT_NO_LAZY_FETCH=1 git -C "${repo_dir}" cat-file -e "${ref}^{commit}" 2>/dev/null; then
         echo "HEAD ${head:0:12}; reference ${ref:0:12} not in local history (older tree or another remote)"
-    elif git -C "${repo_dir}" merge-base --is-ancestor "${ref}" "${head}"; then
+    elif GIT_NO_LAZY_FETCH=1 git -C "${repo_dir}" merge-base --is-ancestor "${ref}" "${head}"; then
         echo "HEAD ${head:0:12} is newer than reference ${ref:0:12}"
     else
         echo "HEAD ${head:0:12} does not contain reference ${ref:0:12}"
