@@ -15,10 +15,14 @@ Das Modul enthält eine vollständige Serie für **crDroid 17.0** und dessen One
 3. `patches/bbrv3-2026-experimental-android15-6.6.patch` — **das Experiment**: Googles
    TCP-BBR-Zweig `bbr-v3-2026-09-16-01` (Stand `674859761ded`), auf Linux 6.6 zurückportiert.
 
-> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
-> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
-> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
-> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
+> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
+> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
+> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
+> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
+> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
+> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem
+> Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3-experimental).
 
 ## Was das Experiment ändert

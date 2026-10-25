@@ -7,10 +7,18 @@ previous charging configuration is restored exactly as it was.
 The threshold is user-visible in the GameSpace in-game panel:
 **battery level at game start**, or a fixed value between 70 and 100 %.
 
-> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
-> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
-> A ROM build and device verification on 17.0 are pending; the results described below were
-> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gaming-charge-bypass).
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-20 the maintainer
+> accepted the module on a OnePlus 13 running a crDroid 17.0 build of this series, with a game
+> in the foreground and the charger connected: with *battery level at game start* (66 %, raised
+> to 70 %) charging stopped at 70 % and the current dropped to 0 A; with a fixed limit of 90 %
+> charging continued past the 80 % limit of the existing charging-control setting and stopped at
+> 90 %. Moving the game to the background and back kept the pause. In both runs the previous
+> charging settings were written back on game exit and charging resumed. The module is also part
+> of the maintainer's 17.0 ROM build of 2026-10-22, made from this repository at commit
+> `4bdecab`. Further results described below were measured on crDroid 16.0. The 16.0 edition
+> stays on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gaming-charge-bypass).
 
 ## What the two patches do
 

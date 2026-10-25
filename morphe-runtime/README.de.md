@@ -18,9 +18,12 @@ wird das Ergebnis normal zwischengespeichert. Andere Apps, ähnlich benannte
 Pakete, Updater und Zygote sind mit Positiv-/Negativproben abgedeckt.
 Die Ausnahme prüft den Prozessnamen, keine Paketsignatur.
 
-> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
-> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
-> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; der unten
+> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
+> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
+> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
+> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
+> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
+> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; der unten
 > beschriebene Host-Test lief gegen den 16.0-Quellstand. Die 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 

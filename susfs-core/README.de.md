@@ -13,12 +13,12 @@ für crDroid 17.0, allein und nach den `bbrv3`-Patches (geprüft am 20.10.2026 i
 Kernelindex). Die crDroid-16.0-Fassung bleibt getrennt eingefroren. Andere Quellstände
 benötigen eigene Prüfung.
 
-> **17.0-Update vom 20.10.2026:** Auf Upstream `4a4cb1be85a4`
-> im Branch `gki-android15-6.6` neu aufgesetzt. Anwendung/Ruecknahme am Pin und
-> aktuellen Branch bestehen. Hinzugefuegte/entfernte Kernelzeilen bleiben exakt
-> upstream; nur Kontext und Patch-Metadaten aendern sich. Neuer Kernel-Build und
-> Geraeteabnahme stehen aus. Die Geraetemessungen unten stammen aus crDroid 16.0.
-> Die eingefrorene 16.0-Fassung bleibt auf Branch
+> **17.0-Update vom 20.10.2026:** Auf Upstream `4a4cb1be85a4` im Branch `gki-android15-6.6` neu
+> aufgesetzt. Anwendung/Ruecknahme am Pin und aktuellen Branch bestehen. Hinzugefuegte/entfernte
+> Kernelzeilen bleiben exakt upstream; nur Kontext und Patch-Metadaten aendern sich. Der Patch
+> ist Teil des 17.0-ROM-Builds des Maintainers vom 22.10.2026, gebaut aus diesem Repository auf
+> Stand `4bdecab`; die Geraeteabnahme von SUSFS selbst steht aus. Die Geraetemessungen unten
+> stammen aus crDroid 16.0. Die eingefrorene 16.0-Fassung bleibt auf Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Anwendung in zwei Schritten

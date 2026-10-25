@@ -11,14 +11,16 @@ sample-rate switch — need this integration in the reference crDroid source tre
 **ROM scope:** This package is currently intended only for **crDroid 17.0**.
 Support for other ROMs has not been established.
 
-> **crDroid 17.0 edition:** source apply/reverse checks pass at the [`NOTICE`](NOTICE)
-> reference commits. On 2026-10-20, the maintainer reported a running 17.0 ROM with
-> working Bluetooth playback. This is basic device feedback; it does not revalidate
-> every codec, rate, frame duration or gaming transition. Detailed results below refer
-> to crDroid 16.0 unless explicitly labelled otherwise. The frozen 16.0 edition is on
-> branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
-> Android 17 reserves legacy codec slot 7 for LHDC; aptX Adaptive uses extension slot 8
-> (vendor codec ID `0x00ad00d7ff`) across the native stack, Java factories and framework.
+> **crDroid 17.0 edition:** source apply/reverse checks pass at the [`NOTICE`](NOTICE) reference
+> commits. On 2026-10-20, the maintainer reported a running 17.0 ROM with working Bluetooth
+> playback. The module is part of the maintainer's crDroid 17.0 ROM build of 2026-10-22, made
+> from this repository at commit `4bdecab`. This is basic device feedback; it does not
+> revalidate every codec, rate, frame duration or gaming transition. Detailed results below
+> refer to crDroid 16.0 unless explicitly labelled otherwise. The frozen 16.0 edition is on
+> branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
+> Android 17 reserves legacy codec slot 7 for LHDC; aptX Adaptive uses extension slot 8 (vendor
+> codec ID `0x00ad00d7ff`) across the native stack, Java factories and framework.
 
 > 🇩🇪 Diese Datei auf Deutsch: [README.de.md](README.de.md)
 

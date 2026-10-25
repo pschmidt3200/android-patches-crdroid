@@ -13,12 +13,12 @@ used by crDroid 17.0, alone and after the `bbrv3` patches (checked 2026-10-20 in
 kernel index). The crDroid 16.0 edition is frozen separately. Other revisions
 require separate validation.
 
-> **17.0 update, 2026-10-20:** rebased against upstream `4a4cb1be85a4`
-> on `gki-android15-6.6`. Pinned and current-branch source application/reversal
-> pass. Kernel additions/removals are identical to upstream; only context and
-> patch metadata change. New kernel build and device acceptance remain pending.
-> Device measurements below refer to the frozen crDroid 16.0 edition.
-> The frozen 16.0 edition stays on branch
+> **17.0 update, 2026-10-20:** rebased against upstream `4a4cb1be85a4` on `gki-android15-6.6`.
+> Pinned and current-branch source application/reversal pass. Kernel additions/removals are
+> identical to upstream; only context and patch metadata change. The patch is part of the
+> maintainer's crDroid 17.0 ROM build of 2026-10-22, made from this repository at commit
+> `4bdecab`; device acceptance of SUSFS itself remains pending. Device measurements below refer
+> to the frozen crDroid 16.0 edition. The frozen 16.0 edition stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Two separate application steps

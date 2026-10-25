@@ -13,15 +13,16 @@ Drei Korrekturen, die LE Audio mit Empfängern wie dem FiiO BTR17 nutzbar machen
 Unterstützung für andere ROMs ist nicht erprobt.
 
 > **crDroid-17.0-Fassung:** Anwenden und Ruecknahme sind an den [`NOTICE`](NOTICE)-
-> Referenzcommits quellgeprueft. Am 20.10.2026 meldete der Maintainer ein laufendes
-> 17.0-ROM mit funktionierender Bluetooth-Wiedergabe und LC3-Verbindung zur FiiO. Diese grundlegende
-> Rueckmeldung bestaetigt nicht jeden Codec, jede Rate, Frame-Dauer oder Gaming-Umschaltung.
-> Detaillierte Ergebnisse unten stammen aus crDroid 16.0, soweit nicht anders bezeichnet.
-> Die eingefrorene 16.0-Fassung liegt auf Branch
+> Referenzcommits quellgeprueft. Am 20.10.2026 meldete der Maintainer ein laufendes 17.0-ROM mit
+> funktionierender Bluetooth-Wiedergabe und LC3-Verbindung zur FiiO. Das Modul ist Teil des
+> 17.0-ROM-Builds des Maintainers vom 22.10.2026, gebaut aus diesem Repository auf Stand
+> `4bdecab`. Diese grundlegende Rueckmeldung bestaetigt nicht jeden Codec, jede Rate,
+> Frame-Dauer oder Gaming-Umschaltung. Detaillierte Ergebnisse unten stammen aus crDroid 16.0,
+> soweit nicht anders bezeichnet. Die eingefrorene 16.0-Fassung liegt auf Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/le-audio-fixes).
-> Android 17 entfernte das Flag fuer gesammelte Attributabfragen und dessen Aufrufer.
-> Patch 2 stellt Deklaration und LE-/Volume-Control-Abfragen wieder her; Patch 1 deaktiviert
-> das Flag ueber `bp4a`, dessen Wert die Releasekonfiguration `cp2a` erbt.
+> Android 17 entfernte das Flag fuer gesammelte Attributabfragen und dessen Aufrufer. Patch 2
+> stellt Deklaration und LE-/Volume-Control-Abfragen wieder her; Patch 1 deaktiviert das Flag
+> ueber `bp4a`, dessen Wert die Releasekonfiguration `cp2a` erbt.
 
 English version: [README.md](README.md)
 

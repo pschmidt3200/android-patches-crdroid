@@ -7,10 +7,14 @@ Evolution X `vendor_gms`, branch `cnb`, installed at `vendor/gms`.
 They change framework visibility and vendor build configuration. They do not
 install GApps or provide Google APKs. Other GApps vendors are outside this module's scope.
 
-> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
-> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
-> A ROM build and device verification on 17.0 are pending; the results described below were
-> measured on crDroid 16.0. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gms-fixes).
+> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
+> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
+> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
+> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
+> this series have been running on the device since 2026-10-20. This module's own functions have
+> not been checked individually on 17.0; the results described below were measured on crDroid
+> 16.0. The 16.0 edition stays on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gms-fixes).
 
 ## Choose the changes
 

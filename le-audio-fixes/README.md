@@ -12,15 +12,17 @@ Three fixes that make LE Audio usable with receivers such as the FiiO BTR17:
 **ROM scope:** This package is currently intended only for **crDroid 17.0** (Android 17).
 Support for other ROMs has not been established.
 
-> **crDroid 17.0 edition:** source apply/reverse checks pass at the [`NOTICE`](NOTICE)
-> reference commits. On 2026-10-20, the maintainer reported a running 17.0 ROM with
-> working Bluetooth playback and LC3 connection to a FiiO receiver. This is basic device feedback; it does not revalidate
-> every codec, rate, frame duration or gaming transition. Detailed results below refer
-> to crDroid 16.0 unless explicitly labelled otherwise. The frozen 16.0 edition is on
-> branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/le-audio-fixes).
-> Android 17 removed the grouped-read flag and its callers. Patch 2 restores both the
-> flag declaration and the LE Audio / Volume Control gates; patch 1 disables the flag
-> through `bp4a`, inherited by the `cp2a` release configuration.
+> **crDroid 17.0 edition:** source apply/reverse checks pass at the [`NOTICE`](NOTICE) reference
+> commits. On 2026-10-20, the maintainer reported a running 17.0 ROM with working Bluetooth
+> playback and LC3 connection to a FiiO receiver. The module is part of the maintainer's crDroid
+> 17.0 ROM build of 2026-10-22, made from this repository at commit `4bdecab`. This is basic
+> device feedback; it does not revalidate every codec, rate, frame duration or gaming
+> transition. Detailed results below refer to crDroid 16.0 unless explicitly labelled otherwise.
+> The frozen 16.0 edition is on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/le-audio-fixes).
+> Android 17 removed the grouped-read flag and its callers. Patch 2 restores both the flag
+> declaration and the LE Audio / Volume Control gates; patch 1 disables the flag through `bp4a`,
+> inherited by the `cp2a` release configuration.
 
 German version: [README.de.md](README.de.md)
 

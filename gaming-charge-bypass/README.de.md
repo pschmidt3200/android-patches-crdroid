@@ -7,10 +7,17 @@ vorherige Ladezustand genau so wiederhergestellt, wie er war.
 Die Schwelle ist im GameSpace-Panel sichtbar einstellbar:
 **Akkustand bei Spielstart** oder ein fester Wert zwischen 70 und 100 %.
 
-> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
-> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
-> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
-> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
+> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 20.10.2026
+> hat der Maintainer das Modul auf einem OnePlus 13 mit einem crDroid-17.0-Build dieser Reihe
+> abgenommen, mit Spiel im Vordergrund und angeschlossenem Netzteil: Mit *Akkustand bei
+> Spielstart* (66 %, angehoben auf 70 %) stoppte das Laden bei 70 % und der Strom fiel auf 0 A;
+> mit fester Grenze 90 % lud das Telefon über die 80-%-Grenze der bestehenden Ladesteuerung
+> hinaus und stoppte bei 90 %. Hintergrund und Rückkehr ins Spiel hielten die Pause. In beiden
+> Läufen wurden beim Spielende die vorherigen Ladeeinstellungen zurückgeschrieben, danach lud
+> das Telefon wieder. Das Modul ist außerdem Teil des 17.0-ROM-Builds des Maintainers vom
+> 22.10.2026, gebaut aus diesem Repository auf Stand `4bdecab`. Weitere unten beschriebene
+> Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gaming-charge-bypass).
 
 ## Was die zwei Patches tun

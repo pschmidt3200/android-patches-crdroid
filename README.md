@@ -2,12 +2,15 @@
 
 A collection of modular source patches, framework enhancements, and hardware integrations for **crDroid 17.0 (Android 17)**.
 
-> **crDroid 17.0 status:** all module editions are checked for source application and
-> reversal at their NOTICE reference commits. The maintainer reported a running 17.0
-> ROM with Bluetooth playback and LC3 connection on 2026-10-20; this is not individual
-> acceptance of every module or codec configuration. Read the module-specific limits,
-> especially the pinned SUSFS source requirement. The crDroid 16.0 editions remain on
-> branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0).
+> **crDroid 17.0 status:** all module editions are checked for source application and reversal
+> at their NOTICE reference commits. The maintainer's crDroid 17.0 ROM build of 2026-10-22 for
+> the OnePlus 13 contains every module at commit `4bdecab`; builds of this series have been
+> running on the device since 2026-10-20. Device results so far: Bluetooth playback and an LC3
+> connection (2026-10-20), the gaming charge pause in both threshold modes (2026-10-20) and the
+> battery capacity display (2026-10-21). This is not individual acceptance of every module or
+> codec configuration. Read the module-specific limits, especially the pinned SUSFS source
+> requirement. The crDroid 16.0 editions remain on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0).
 
 All functional changes are distributed as source patches without proprietary binaries, designed to be applied directly to a crDroid source tree.
 

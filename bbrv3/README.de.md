@@ -12,11 +12,14 @@ fest ein und wählt in `gki_defconfig` den TCP-Standard `bbr3`.
 Der Installer wendet zuerst den Core und danach den Zusatzpatch an.
 BBRv1 (`bbr`) und die anderen Algorithmen bleiben verfügbar.
 
-> **crDroid-17.0-Fassung: quellgeprüft, noch nicht auf dem Gerät getestet.** Diese Patches
-> zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber
-> anwenden und zurücknehmen. ROM-Build und Geräteprüfung unter 17.0 stehen aus; die unten
-> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem Branch
-> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
+> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
+> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
+> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
+> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
+> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
+> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
+> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem
+> Branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
 
 ## Voraussetzungen und Anwendung
 

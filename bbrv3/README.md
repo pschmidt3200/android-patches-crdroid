@@ -12,10 +12,14 @@ into the kernel and selects `bbr3` as its TCP congestion-control default in
 `gki_defconfig`. The installer applies the core first, then the companion.
 BBRv1 (`bbr`) and other congestion controllers remain available.
 
-> **crDroid 17.0 edition: source-checked, not yet device-tested.** These patches target
-> crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits.
-> A ROM build and device verification on 17.0 are pending; the results described below were
-> measured with the crDroid 16.0 kernel. The 16.0 edition stays on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
+> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
+> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
+> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
+> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
+> this series have been running on the device since 2026-10-20. This module's own functions have
+> not been checked individually on 17.0; the results described below were measured with the
+> crDroid 16.0 kernel. The 16.0 edition stays on branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
 
 ## Requirements and use
 

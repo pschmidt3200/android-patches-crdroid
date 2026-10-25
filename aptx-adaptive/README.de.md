@@ -7,11 +7,12 @@ Referenzgeräte: **OnePlus 13** und **OnePlus Pad 3 / Pad 2 Pro (`erhai`, OPD241
 Unterstützung für andere ROMs ist nicht belegt.
 
 > **crDroid-17.0-Fassung:** Anwenden und Ruecknahme sind an den [`NOTICE`](NOTICE)-
-> Referenzcommits quellgeprueft. Am 20.10.2026 meldete der Maintainer ein laufendes
-> 17.0-ROM mit funktionierender Bluetooth-Wiedergabe. Diese grundlegende
+> Referenzcommits quellgeprueft. Am 20.10.2026 meldete der Maintainer ein laufendes 17.0-ROM mit
+> funktionierender Bluetooth-Wiedergabe. Das Modul ist Teil des 17.0-ROM-Builds des Maintainers
+> vom 22.10.2026, gebaut aus diesem Repository auf Stand `4bdecab`. Diese grundlegende
 > Rueckmeldung bestaetigt nicht jeden Codec, jede Rate, Frame-Dauer oder Gaming-Umschaltung.
-> Detaillierte Ergebnisse unten stammen aus crDroid 16.0, soweit nicht anders bezeichnet.
-> Die eingefrorene 16.0-Fassung liegt auf Branch
+> Detaillierte Ergebnisse unten stammen aus crDroid 16.0, soweit nicht anders bezeichnet. Die
+> eingefrorene 16.0-Fassung liegt auf Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/aptx-adaptive).
 > Android 17 reserviert Legacy-Codec-Platz 7 fuer LHDC; aptX Adaptive verwendet
 > Erweiterungsplatz 8 (Vendor-Codec-ID `0x00ad00d7ff`) in Stack, Java und Framework.
