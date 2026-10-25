@@ -1,5 +1,8 @@
 # LE Audio Fixes v1.0
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [LE Audio Fixes v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/le-audio-fixes-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt LE Audio Fixes v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 Initial release for **crDroid 16.0 / Android 16**.
 Reference platform: **OnePlus 13** with **FiiO BTR17** (LC3 over LE Audio, hardware offload).
 

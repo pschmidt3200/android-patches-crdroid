@@ -46,10 +46,11 @@ Jedes Modul ist in sich abgeschlossen und konzentriert sich auf eine spezifische
 ## Installation & Verwendung
 
 ### Schritt 1: Modul herunterladen
-Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `bluetooth-codec-ui-v1.3.zip` oder `aptx-adaptive-v1.6.zip`).
+Wähle das gewünschte Modul auf der [Releases-Seite](https://github.com/pschmidt3200/android-patches-crdroid/releases) aus und lade das `.zip`-Archiv herunter (z. B. `bluetooth-codec-ui-v2.0.zip` oder `aptx-adaptive-v2.0.zip`).
 
-Die bisher veröffentlichten Releases sind crDroid-16.0-Fassungen. Releases für 17.0 folgen nach
-der Geräteprüfung; bis dahin nimmt ein 17.0-Baum die Modulordner aus `main`.
+Die Hauptversion nennt die crDroid-Version: **2.x-Releases sind crDroid-17.0-Fassungen**; 1.x-Releases
+sind die letzten crDroid-16.0-Fassungen (Branch `16.0`). Den Stand jedes Moduls unter 17.0 nennen
+seine Release-Notizen und seine README.
 
 ### Schritt 2: In den crDroid-Quellbaum einspielen
 1. Entpacke das heruntergeladene ZIP-Archiv an einem beliebigen Ort außerhalb oder neben deinem crDroid-Quellordner.

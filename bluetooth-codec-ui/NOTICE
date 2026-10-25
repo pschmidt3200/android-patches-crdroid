@@ -25,7 +25,8 @@ The series was built into crDroid 16.0 on the OnePlus 13 and used
 with dual-mode receivers and with receivers whose details page is provided by a
 companion app. No device-specific code is involved.
 crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
+(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
 edition is kept on branch 16.0 of this repository.
 
 LICENSE AND REDISTRIBUTION

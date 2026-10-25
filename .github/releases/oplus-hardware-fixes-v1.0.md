@@ -1,5 +1,8 @@
 # Oplus Hardware Fixes v1.0
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [Oplus Hardware Fixes v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/oplus-hardware-fixes-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt Oplus Hardware Fixes v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 First public module release for **crDroid 16.0 / Android 16**. Two correctness
 fixes for `hardware/oplus`: the LTPO settings screen shows the panel's real
 configuration instead of the last stored preference, and the touch HAL validates

@@ -1,5 +1,8 @@
 # Gaming Charge Bypass v1.0
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [Gaming Charge Bypass v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/gaming-charge-bypass-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt Gaming Charge Bypass v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 First public module release for **crDroid 16.0 / Android 16**. Charging is paused
 while a game is in the foreground, so the battery is not charged and discharged at
 the same time during a long session. On game exit the previous charging

@@ -1,5 +1,8 @@
 # Donation Disable v1.0
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [Donation Disable v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/donation-disable-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt Donation Disable v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 First public source-patch release for **crDroid 16.0 / Android 16**.
 Personal preference against this form of donation request inside the ROM,
 not an objection to donations in general.

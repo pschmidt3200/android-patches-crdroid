@@ -25,7 +25,8 @@ it is not a crDroid fork (the 16.0 edition used LineageOS android_build_release)
 
 crDroid 17.0 edition, 2026-10-20: strict source apply/reverse checks at the reference
 commits in this NOTICE. The maintainer reported a running 17.0 ROM with Bluetooth
-playback and LC3 connection. Complete per-mode device validation remains pending.
+playback and LC3 connection. Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 (repository commit 4bdecab).
+Complete per-mode device validation remains pending.
 The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 crDroid 17.0 builds release configuration cp2a, which inherits the bp4a flag value.
 

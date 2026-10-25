@@ -1,5 +1,8 @@
 # GMS Compatibility Fixes v1.0
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [GMS Compatibility v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/gms-fixes-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt GMS Compatibility v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 First public module release for **crDroid 16.0 / Android 16** with
 Evolution X `vendor_gms`, Android branch **`bka`**, at `vendor/gms`.
 Implementation baseline: `f62057a0120f044d65278770fad17af96f0fdc5c`.

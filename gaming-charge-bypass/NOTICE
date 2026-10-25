@@ -32,8 +32,10 @@ Upstream repositories and the tree state the diffs were generated against:
 
 DEVICE VERIFICATION, AND ITS LIMITS
 
-crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this NOTICE.
+Device-verified on a OnePlus 13 on 2026-10-20 (both threshold modes, pause at the limit,
+restore on game exit); also built into the maintainer's crDroid 17.0 ROM of 2026-10-22
+(repository commit 4bdecab). The crDroid 16.0
 edition is kept on branch 16.0 of this repository.
 
 Verified on a OnePlus 13 running crDroid 16.0, in eight charge-pause

@@ -1,5 +1,8 @@
 # aptX Adaptive & Lossless v1.6
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [aptX Adaptive v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/aptx-adaptive-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt aptX Adaptive v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 Behaviour update for **crDroid 16.0 / Android 16**.
 Reference platform: **OnePlus 13**, SM8750 / Qualcomm FastConnect 7900,
 with **FiiO BTR17**.

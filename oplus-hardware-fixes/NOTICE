@@ -18,7 +18,8 @@ notices of each affected source file. This overview does not replace the upstrea
 per-file notices or license an entire ROM tree.
 
 crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); ROM build and device validation are pending. The crDroid 16.0
+reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
+(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
 edition is kept on branch 16.0 of this repository.
 
 Reference repository, commit and public source (as used by crDroid branch 17.0):

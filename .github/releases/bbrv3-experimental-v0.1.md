@@ -1,5 +1,8 @@
 # BBRv3 experimental v0.1 — testing only
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [BBRv3 experimental 2026 update for crDroid sm8750 (testing only) v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/bbrv3-experimental-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt BBRv3 experimental 2026 update for crDroid sm8750 (testing only) v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 **Experimental module. Use it only to test; for regular builds use `bbrv3`.**
 It replaces `bbrv3` in a test build and must not be applied together with it.
 

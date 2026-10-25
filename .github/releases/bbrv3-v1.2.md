@@ -1,5 +1,8 @@
 # BBRv3 v1.2 — ECN flag correction in the core patch
 
+> **Superseded.** This is the final crDroid 16.0 edition; for crDroid 17.0 use [BBRv3 for crDroid sm8750 v2.0](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/bbrv3-v2.0).
+> On a crDroid 16.0 tree this release stays valid (branch `16.0`). Deutsch: Letzte crDroid-16.0-Fassung; für crDroid 17.0 gilt BBRv3 for crDroid sm8750 v2.0, für 16.0-Bäume bleibt diese Fassung gültig.
+
 Third module edition for crDroid `16.0` and its OnePlus sm8750 Android15/Linux6.6
 kernel, reference `b69d2cc667dd0a57adb78b54c9a3453f5c5a5b35`.
 The release tag identifies the reviewed patch-collection commit.

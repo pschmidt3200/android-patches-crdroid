@@ -41,7 +41,8 @@ In the crDroid 17.0 edition, aptX Adaptive uses extension codec slot 8, because
 Android 17 assigns legacy slot 7 to LHDC.
 crDroid 17.0 edition, 2026-10-20: strict source apply/reverse checks at the reference
 commits in this NOTICE. The maintainer reported a running 17.0 ROM with Bluetooth
-playback. Complete per-mode device validation remains pending.
+playback. Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 (repository commit 4bdecab).
+Complete per-mode device validation remains pending.
 The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 
 LICENSE AND REDISTRIBUTION
