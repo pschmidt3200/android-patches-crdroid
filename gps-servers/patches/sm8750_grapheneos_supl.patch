@@ -1,19 +1,49 @@
 # Target repository: device/oneplus/sm8750-common
-# Select the GrapheneOS SUPL proxy for the SM8750 GNSS configuration.
+# Select the GrapheneOS SUPL proxy in gps.conf and in the framework's gps_debug.conf.
+#
+# The Android framework passes the carrier-configuration SUPL host to the GNSS HAL
+# and so overrides SUPL_HOST from gps.conf. It reads /vendor/etc/gps_debug.conf
+# after the carrier configuration, so the same values are installed there as well.
 
+diff --git a/common.mk b/common.mk
+index a872944..1a74ea4 100644
+--- a/common.mk
++++ b/common.mk
+@@ -197,6 +197,9 @@ ifneq ($(TARGET_IS_TABLET),true)
+ PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/configs/gps/gps.conf:$(TARGET_COPY_OUT_ODM)/etc/gps.conf
+ 
++PRODUCT_COPY_FILES += \
++    $(LOCAL_PATH)/configs/gps/gps_debug.conf:$(TARGET_COPY_OUT_VENDOR)/etc/gps_debug.conf
++
+ PRODUCT_COPY_FILES += \
+     frameworks/native/data/etc/android.hardware.location.gps.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.location.gps.xml
+ endif
 diff --git a/configs/gps/gps.conf b/configs/gps/gps.conf
+index b5ea2e0..9f6c4d7 100644
 --- a/configs/gps/gps.conf
 +++ b/configs/gps/gps.conf
-@@ -51,9 +51,9 @@
+@@ -51,9 +51,9 @@ CAPABILITIES=0x17
  ##### AGPS server settings #####
  ################################
-
+ 
 -# FOR SUPL SUPPORT, set the following
 -# SUPL_HOST=supl.host.com or IP
 -# SUPL_PORT=1234
 +# FOR SUPL SUPPORT (GrapheneOS proxy)
 +SUPL_HOST=supl.grapheneos.org
 +SUPL_PORT=7275
-
+ 
  # FOR MO SUPL SUPPORT, set the following
  # MO_SUPL_HOST=supl.host.com or IP
+diff --git a/configs/gps/gps_debug.conf b/configs/gps/gps_debug.conf
+new file mode 100644
+index 0000000..2d38b21
+--- /dev/null
++++ b/configs/gps/gps_debug.conf
+@@ -0,0 +1,5 @@
++# GrapheneOS SUPL proxy for the Android framework.
++# GnssConfiguration reads this file after the carrier configuration and
++# passes SUPL_HOST/SUPL_PORT to the GNSS HAL. gps.conf alone is overridden.
++SUPL_HOST=supl.grapheneos.org
++SUPL_PORT=7275

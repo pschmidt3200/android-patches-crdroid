@@ -1,5 +1,7 @@
 # GPS Server Choices v2.0
 
+> **Superseded.** This is an older release, replaced by [GPS Server Choices v2.1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/gps-servers-v2.1).
+
 First edition for **crDroid 17.0 / Android 17**. Version 2.x is the crDroid 17.0 line; the final crDroid 16.0 edition is [`gps-servers-v1.0`](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/gps-servers-v1.0) on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0).
 
 Two independently selectable configuration patches for the GNSS configuration of OnePlus `device/oneplus/sm8750-common`: alternative SUPL and NTP servers.

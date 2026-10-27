@@ -5,7 +5,7 @@
     {
       "repository": "device/oneplus/sm8750-common",
       "file": "sm8750_grapheneos_supl.patch",
-      "description": "Select the GrapheneOS SUPL proxy for the SM8750 GNSS configuration."
+      "description": "Select the GrapheneOS SUPL proxy in gps.conf and in the framework's gps_debug.conf."
     },
     {
       "repository": "device/oneplus/sm8750-common",

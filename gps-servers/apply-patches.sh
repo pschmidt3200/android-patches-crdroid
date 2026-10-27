@@ -86,7 +86,7 @@ ANDROID_ROOT="$(cd "$1" && pwd)"
 
 # Module patches and their target repositories.
 PATCHES=(
-    "device/oneplus/sm8750-common:sm8750_grapheneos_supl.patch:Select the GrapheneOS SUPL proxy for the SM8750 GNSS configuration."
+    "device/oneplus/sm8750-common:sm8750_grapheneos_supl.patch:Select the GrapheneOS SUPL proxy in gps.conf and in the framework's gps_debug.conf."
     "device/oneplus/sm8750-common:sm8750_ntp_germany.patch:Select the German NTP pool for GNSS assistance time."
 )
 
