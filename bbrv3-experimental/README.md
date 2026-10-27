@@ -15,13 +15,13 @@ This module carries a complete series for **crDroid 17.0** and its OnePlus
 3. `patches/bbrv3-2026-experimental-android15-6.6.patch` — **the experiment**: Google's
    TCP BBR branch `bbr-v3-2026-09-16-01` (revision `674859761ded`) backported to Linux 6.6.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured with the
-> crDroid 16.0 kernel. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: built in and active on the device.** These patches target crDroid 17.0
+> and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-26, a
+> OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25 (made from this
+> repository at commit `4bdecab`) ran this series: `version` = `3-2026x`, and `bbr3` was the
+> default on all established TCP connections; see *Measurements*. The effect of the 2026 update
+> was not measured on 17.0; the comparison below comes from the crDroid 16.0 kernel. The 16.0
+> edition stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3-experimental).
 
 ## What the experiment changes
@@ -91,6 +91,11 @@ targeted tests (packet reordering, short flows) have not been done.
 established TCP sockets on `bbr3` (`ss -tin`), no BBR/TCP warnings in the kernel log. The
 complete kernel and its modules were built from the patched tree.
 
+**crDroid 17.0 device check (2026-10-26):** OnePlus 13, kernel 6.6.144, crDroid 17.0 build of
+2026-10-25: `version` = `3-2026x`, `bbr3` default, available `reno bbr bbr3 cubic`, all 29
+established TCP connections on `bbr3` (`ss -tin`), including NAT64 destinations. The
+throughput, retransmit and latency comparison was not repeated on 17.0.
+
 ## Packaging and validation
 
 Patches 1 and 2 are copies of the `bbrv3` module files (SHA256 in [NOTICE](NOTICE)).
@@ -100,7 +105,9 @@ without the companion; ARM64 compile of `tcp_bbr3.o` and the touched TCP objects
 with Android clang `r563880c`, no warnings. The packaged file differs from the
 tested one only in its comment header and one code comment.
 On the 17.0 reference commit `48baf0c723f8`, `check-reference.sh` applies and reverts all three
-patches cleanly (2026-10-20); the ARM64 compile was not repeated for 17.0.
+patches cleanly (2026-10-20); no separate ARM64 compile
+was run for 17.0, but the maintainer's crDroid 17.0 ROM build of 2026-10-25 compiled the series
+into the kernel checked under *Measurements*.
 
 ## License
 

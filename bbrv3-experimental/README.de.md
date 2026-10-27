@@ -15,14 +15,13 @@ Das Modul enthält eine vollständige Serie für **crDroid 17.0** und dessen One
 3. `patches/bbrv3-2026-experimental-android15-6.6.patch` — **das Experiment**: Googles
    TCP-BBR-Zweig `bbr-v3-2026-09-16-01` (Stand `674859761ded`), auf Linux 6.6 zurückportiert.
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
-> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem
-> Branch
+> **crDroid-17.0-Fassung: am Gerät eingebaut und aktiv.** Diese Patches zielen auf crDroid 17.0
+> und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am
+> 26.10.2026 lief diese Reihe auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom
+> 25.10.2026 (gebaut aus diesem Repository auf Stand `4bdecab`): `version` = `3-2026x`, und
+> `bbr3` war Standard auf allen bestehenden TCP-Verbindungen; siehe *Messungen*. Die Wirkung des
+> 2026-Updates wurde unter 17.0 nicht gemessen; der Vergleich unten stammt vom
+> crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3-experimental).
 
 ## Was das Experiment ändert
@@ -93,6 +92,11 @@ die DRAIN-Änderung kaum; gezielte Tests (vertauschte Pakete, kurze Verbindungen
 bestehende TCP-Verbindungen auf `bbr3` (`ss -tin`), keine BBR-/TCP-Warnungen im Kernel-Log. Kernel
 und Module wurden vollständig aus dem gepatchten Baum gebaut.
 
+**Geräteprüfung unter crDroid 17.0 (26.10.2026):** OnePlus 13, Kernel 6.6.144, Build vom
+25.10.2026: `version` = `3-2026x`, `bbr3` als Standard, verfügbar `reno bbr bbr3 cubic`, alle
+29 bestehenden TCP-Verbindungen auf `bbr3` (`ss -tin`), auch zu NAT64-Zielen. Der Vergleich
+von Durchsatz, Neuübertragungen und Latenz wurde unter 17.0 nicht wiederholt.
+
 ## Paketierung und Prüfung
 
 Patch 1 und 2 sind Kopien der Dateien aus `bbrv3` (SHA256 in [NOTICE](NOTICE)).
@@ -102,7 +106,9 @@ und ohne Zusatzpatch; ARM64-Kompilierung von `tcp_bbr3.o` und den berührten TCP
 mit Android-Clang `r563880c`, ohne Warnungen. Die paketierte Datei unterscheidet sich
 von der geprüften nur im Kommentarkopf und in einem Code-Kommentar.
 Am 17.0-Referenz-Commit `48baf0c723f8` lassen sich alle drei Patches mit `check-reference.sh`
-sauber anwenden und zurücknehmen (20.10.2026); die ARM64-Kompilierung wurde für 17.0 nicht wiederholt.
+sauber anwenden und zurücknehmen (20.10.2026); eine eigene ARM64-Kompilierung
+gab es für 17.0 nicht, der 17.0-ROM-Build des Maintainers vom 25.10.2026 hat die Reihe aber in
+den unter *Messungen* geprüften Kernel gebaut.
 
 ## Lizenz
 

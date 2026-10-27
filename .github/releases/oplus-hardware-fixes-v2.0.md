@@ -13,7 +13,13 @@ Two correctness fixes for `hardware/oplus`: the LTPO settings screen shows the p
 
 Part of the maintainer's crDroid 17.0 ROM build of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of this series have been running on the device since 2026-10-20.
 
-The module's own functions have not yet been checked individually on 17.0.
+**Device-verified on 2026-10-26** (OnePlus 13, crDroid 17.0 build of 2026-10-25):
+
+* **LTPO:** switching off wrote `adfr_config` from `0x109f` to `0x0`; after reopening, the screen showed the real state (off), and switching on restored exactly `0x109f`. Variable refresh rates (60/120 Hz) were kept.
+* **Touch:** with double-tap-to-wake on, every screen-off ran the full touch-driver chain and a double-tap woke the device; with the setting off, it did not. All four touch HAL interfaces were registered and no touch error was logged.
+* **Not covered:** one glove-mode write was acknowledged by the touch HAL, but its effect was not assessed; screen-off gestures other than double-tap were not exercised.
+
+These results were recorded after this release in the [module README on `main`](https://github.com/pschmidt3200/android-patches-crdroid/tree/main/oplus-hardware-fixes); the files of this tag are unchanged.
 
 ## Source baselines
 
@@ -32,6 +38,6 @@ Publication requires installer tests and real source application/reversal at the
 
 ## Deutsch
 
-Erste Fassung für crDroid 17.0: Touch-Fehlerbehandlung auf die neuen Gesture-Mask-Knoten von Upstream portiert, LTPO-Patch unverändert. Teil des 17.0-Builds vom 22.10.2026; nicht einzeln geprüft.
+Erste Fassung für crDroid 17.0: Touch-Fehlerbehandlung auf die neuen Gesture-Mask-Knoten von Upstream portiert, LTPO-Patch unverändert. Teil des 17.0-Builds vom 22.10.2026. Am 26.10.2026 auf einem OnePlus 13 geprüft (Build vom 25.10.2026): Der LTPO-Schalter zeigt den echten Zustand (`0x109f` → `0x0` → `0x109f`), Double-Tap-to-Wake weckt nur bei eingeschalteter Einstellung. Handschuhmodus und weitere Bildschirm-aus-Gesten wurden nicht bewertet.
 
 Apache License 2.0; preserve LICENSE, NOTICE and upstream file notices.

@@ -13,7 +13,9 @@ Maintained TCP BBRv3 source patch for the OnePlus sm8750 Android15/Linux 6.6 ker
 
 Part of the maintainer's crDroid 17.0 ROM build of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of this series have been running on the device since 2026-10-20.
 
-The module's own functions have not yet been checked individually on 17.0.
+**Device check on 2026-10-26** (OnePlus 13, kernel 6.6.144, crDroid 17.0 build of 2026-10-25): `net.ipv4.tcp_congestion_control = bbr3`, available `reno bbr bbr3 cubic`, and `ss -tin` showed `bbr3` on all 29 established connections, including NAT64 destinations. That build used the testing-only `bbrv3-experimental` series, whose patches 1 and 2 are byte-identical to this module's two patches. The check therefore confirms these shared patches (registration and default) on 17.0, not this module's unchanged algorithm alone; throughput and latency were not measured.
+
+These results were recorded after this release in the [module README on `main`](https://github.com/pschmidt3200/android-patches-crdroid/tree/main/bbrv3); the files of this tag are unchanged.
 
 ## Source baselines
 
@@ -32,6 +34,6 @@ Publication requires installer tests and real source application/reversal at the
 
 ## Deutsch
 
-Erste Fassung für crDroid 17.0: Patches unverändert gegenüber v1.2, Referenz auf den 17.0-Kernel umgestellt. Teil des 17.0-Builds vom 22.10.2026; Funktion unter 17.0 nicht einzeln gemessen.
+Erste Fassung für crDroid 17.0: Patches unverändert gegenüber v1.2, Referenz auf den 17.0-Kernel umgestellt. Teil des 17.0-Builds vom 22.10.2026. Am 26.10.2026 auf einem OnePlus 13 geprüft (Build vom 25.10.2026): `bbr3` ist Standard und auf allen 29 bestehenden Verbindungen aktiv. Der Build nutzte die Testreihe `bbrv3-experimental`, deren Patches 1 und 2 mit denen dieses Moduls bytegleich sind; belegt sind damit diese gemeinsamen Patches, nicht der unveränderte Algorithmus allein.
 
 Keep the module files together. Kernel GPL/file terms and BBR's preserved `Dual BSD/GPL` declaration differ from Apache2.0 for own docs/installer; see NOTICE.

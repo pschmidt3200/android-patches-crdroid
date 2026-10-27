@@ -12,12 +12,14 @@ fest ein und wählt in `gki_defconfig` den TCP-Standard `bbr3`.
 Der Installer wendet zuerst den Core und danach den Zusatzpatch an.
 BBRv1 (`bbr`) und die anderen Algorithmen bleiben verfügbar.
 
-> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
-> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 26.10.2026
-> war auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom 25.10.2026 (gebaut aus diesem
-> Repository auf Stand `4bdecab`) `bbr3` der Standard-Algorithmus, und alle bestehenden
-> TCP-Verbindungen nutzten ihn; siehe *Verpackung und Prüfstatus*. Die 16.0-Fassung bleibt auf
-> dem Branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
+> **crDroid-17.0-Fassung: gemeinsame Patches am Gerät geprüft.** Diese Patches zielen auf
+> crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und
+> zurücknehmen. Am 26.10.2026 lief auf einem OnePlus 13 der 17.0-Build des Maintainers vom
+> 25.10.2026 (gebaut aus diesem Repository auf Stand `4bdecab`) mit der Testreihe
+> [bbrv3-experimental](../bbrv3-experimental/), deren erste zwei Patches mit denen dieses Moduls
+> bytegleich sind; `bbr3` war Standard-Algorithmus, und alle bestehenden TCP-Verbindungen
+> nutzten ihn; siehe *Verpackung und Prüfstatus*. Die 16.0-Fassung bleibt auf dem Branch
+> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
 
 ## Voraussetzungen und Anwendung
 
@@ -97,10 +99,10 @@ BBRv3 ist als Standard-Algorithmus aktiv (`net.ipv4.tcp_congestion_control = bbr
 **Geräteprüfung unter crDroid 17.0 (26.10.2026):** OnePlus 13, Kernel 6.6.144, Build vom
 25.10.2026: `net.ipv4.tcp_congestion_control = bbr3`, verfügbar `reno bbr bbr3 cubic`, und
 `ss -tin` zeigte `bbr3` auf allen 29 bestehenden Verbindungen, auch zu NAT64-Zielen. Dieser
-Build enthielt zusätzlich das Testmodul [bbrv3-experimental](../bbrv3-experimental/)
-(`/sys/module/tcp_bbr3/version` = `3-2026x`). Die Prüfung belegt deshalb die gemeinsamen
-Grundpatches dieses Moduls (Registrierung und Standard), nicht allein den unveränderten
-Algorithmus dieses Moduls.
+Build nutzte stattdessen die Testreihe [bbrv3-experimental](../bbrv3-experimental/)
+(`/sys/module/tcp_bbr3/version` = `3-2026x`), deren Patches 1 und 2 mit den beiden Patches
+dieses Moduls bytegleich sind. Die Prüfung belegt deshalb diese gemeinsamen Patches
+(Registrierung und Standard), nicht allein den unveränderten Algorithmus dieses Moduls.
 
 Quellprüfungen belegen keine Durchsatz- oder Latenzgewinne. Modulprüfungen laufen bei jedem
 Push über GitHub Actions.

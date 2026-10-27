@@ -1,9 +1,10 @@
 BBRv3 experimental source-patch edition for crDroid 17.0 / OnePlus sm8750.
 Prepared 2026-10-04; Android15 Linux6.6 kernel baseline. FOR TESTING ONLY.
-crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
-(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
-edition is kept on branch 16.0 of this repository.
+crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
+NOTICE. Device check on a OnePlus 13 on 2026-10-26 (crDroid 17.0 build of 2026-10-25,
+repository commit 4bdecab): this series was built in (version 3-2026x), bbr3 is the default
+congestion control and all established TCP connections use it; the effect of the update was
+not measured on 17.0. The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 
 Reference repository, commit and source:
   kernel/oneplus/sm8750 48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976 https://github.com/crdroidandroid/android_kernel_oneplus_sm8750 branch=17.0

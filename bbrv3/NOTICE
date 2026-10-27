@@ -3,7 +3,8 @@ Prepared 2026-10-03; Android15 Linux6.6 kernel baseline.
 crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
 NOTICE. Device check on a OnePlus 13 on 2026-10-26 (crDroid 17.0 build of 2026-10-25,
 repository commit 4bdecab): bbr3 is the default congestion control and all established TCP
-connections use it. That build also carried the testing-only bbrv3-experimental update.
+connections use it. That build used the testing-only bbrv3-experimental series, whose
+patches 1 and 2 are byte-identical to this module's two patches.
 The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 
 Reference repository, commit and source:
