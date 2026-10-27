@@ -6,11 +6,14 @@ Two independently selectable configuration patches for **crDroid 17.0 (Android 1
 OnePlus `device/oneplus/sm8750-common`, file `configs/gps/gps.conf`.
 They are build-time choices, not a new Android Settings menu.
 
-> **crDroid 17.0 edition: configuration verified on the device.** These patches target crDroid
-> 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27
-> both settings were found active on a OnePlus 13 running the maintainer's crDroid 17.0 build of
-> 2026-10-25, made from this repository at commit `4bdecab`; a satellite fix on 17.0 is still to
-> be observed. See *Validation and limits*. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: checked on the device; the SUPL choice is overridden at runtime.**
+> These patches target crDroid 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE)
+> reference commits. On 2026-10-27 both settings were active in `/odm/etc/gps.conf` on a OnePlus
+> 13 running the maintainer's crDroid 17.0 build of 2026-10-25, made from this repository at
+> commit `4bdecab`, and GNSS reached a fix. The Android framework, however, passes the SUPL host
+> from the carrier configuration (here `supl.google.com`) to the GNSS HAL, so the GrapheneOS
+> SUPL choice does not take effect on this device; see *Validation and limits*. The 16.0 edition
+> stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gps-servers).
 
 ## Choose either, both or neither
@@ -70,10 +73,22 @@ bash .github/scripts/check-reference.sh --branch 17.0 gps-servers
 ```
 
 **crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25 with
-both patches: `/odm/etc/gps.conf` sets `SUPL_HOST=supl.grapheneos.org`, `SUPL_PORT=7275` and
-`NTP_SERVER=0.de.pool.ntp.org`, and the GNSS service runs. No satellite fix was observed during
-this indoor check (about five minutes with a GNSS test app, weak signals). Whether the modem uses the
-configured servers still needs a trace.
+both patches.
+* `/odm/etc/gps.conf` sets `SUPL_HOST=supl.grapheneos.org`, `SUPL_PORT=7275` and
+  `NTP_SERVER=0.de.pool.ntp.org`; all three hosts resolve on the device.
+* The framework does not keep that SUPL host. `GnssConfiguration` builds its values from the
+  carrier configuration (`gps.supl_host = supl.google.com` on this device), resource overlays
+  and `gps_debug.conf` (empty here), and `GnssLocationProvider.setSuplHostPort()` hands the
+  result to the HAL with `setAgpsServer`. The GrapheneOS SUPL choice therefore does not take
+  effect here; it would have to be set in `/vendor/etc/gps_debug.conf` or a
+  carrier-configuration overlay. No network trace was taken.
+* `NTP_SERVER` replaces the upstream `time.xtracloud.net`, Qualcomm's XTRA time service.
+  `xtra-daemon` was not running on this build, so no XTRA assistance reached the receiver, and
+  whether the NTP choice is used could not be observed.
+* GNSS itself works. Behind a closed window 13 of 49 satellites had signal (12–22 dB-Hz,
+  ephemeris for one) and there was no fix. With the window open, the first fix came after 208 s
+  without assistance data, followed by 40 positions with a mean accuracy of 18 m from GPS,
+  GLONASS and BeiDou, including L5.
 
 **Documented ROM and device acceptance:** Validated live on the **OnePlus 13**
 running crDroid 16.0 (build `Sat Oct 3 23:45:41 CEST 2026`):

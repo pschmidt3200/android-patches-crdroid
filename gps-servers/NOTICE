@@ -1,9 +1,10 @@
 Optional GPS server configuration for crDroid 17.0 (Android 17)
 Public edition prepared 2026-10-01.
 crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
-NOTICE. Configuration verified on a OnePlus 13 on 2026-10-27 (crDroid 17.0 build of
-2026-10-25, repository commit 4bdecab): /odm/etc/gps.conf carries both settings and the GNSS
-service runs; a satellite fix on 17.0 is still to be observed. The crDroid 16.0 edition is
+NOTICE. Checked on a OnePlus 13 on 2026-10-27 (crDroid 17.0 build of 2026-10-25, repository
+commit 4bdecab): both settings are present in /odm/etc/gps.conf and GNSS reaches a fix, but
+the Android framework passes the carrier-configuration SUPL host (supl.google.com) to the
+HAL, so the GrapheneOS SUPL choice does not take effect there. The crDroid 16.0 edition is
 kept on branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
