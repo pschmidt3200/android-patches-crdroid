@@ -9,13 +9,11 @@ bereitstellt — aptX Adaptive, dazu LC3 über LE Audio.
 **ROM-Umfang:** Dieses Paket ist derzeit nur für **crDroid 17.0** (Android 17) gedacht.
 Unterstützung für andere ROMs ist nicht belegt.
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
-> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
+> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 27.10.2026
+> wurde das Codec-Menü auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom 25.10.2026,
+> gebaut aus diesem Repository auf Stand `4bdecab`, geprüft; siehe *Am Gerät gegenprüfen*. Die
+> 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bluetooth-codec-ui).
 
 Englische Fassung: [README.md](README.md)
@@ -177,6 +175,14 @@ Eine `.patch`-Datei wird nicht direkt geflasht: Für die Installation muss ein n
 4. Bei einem LE-Audio-Empfänger auch eine andere Frame-Dauer wählen und den Eintrag mit
    `adb shell dumpsys bluetooth_manager` (`Stream config`) vergleichen.
 5. Trennen und neu verbinden: Der Codec wird neu ausgehandelt, und der Eintrag folgt.
+
+**Geräteprüfung unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026. Die
+installierte Einstellungen-App enthält Codec-Eintrag, Auswahldialog, Texte und Symbole, und die
+Einstellungen sind seit dem Start nicht abgestürzt. Der Maintainer hat das Menü mit einem
+aptX-Adaptive-Empfänger benutzt und als funktionierend gemeldet. Der Bluetooth-Stack hat die
+gewählten Konfigurationen übernommen (Codec-Priorität *höchste*), mit Wechseln der Abtastrate
+zwischen 48 kHz und 44,1 kHz, und nach erneutem Verbinden wieder aptX Adaptive ausgehandelt. Die
+LE-Audio-Frame-Dauer (Schritt 4) war nicht Teil dieser Prüfung.
 
 ## Lizenz und Quellstände
 

@@ -7,14 +7,12 @@ Evolution X `vendor_gms`, branch `cnb`, installed at `vendor/gms`.
 They change framework visibility and vendor build configuration. They do not
 install GApps or provide Google APKs. Other GApps vendors are outside this module's scope.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured on crDroid
-> 16.0. The 16.0 edition stays on branch
-> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gms-fixes).
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27 all four patches
+> were checked on a OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25, made
+> from this repository at commit `4bdecab`; the Google Clock permission has no effect on the
+> currently installed Clock version. See *Validation and limits*. The 16.0 edition stays on
+> branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gms-fixes).
 
 ## Choose the changes
 
@@ -76,6 +74,24 @@ Local source checks:
 bash .github/scripts/check-reference.sh gms-fixes
 bash .github/scripts/check-reference.sh --branch 17.0 gms-fixes
 ```
+
+**crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25 with
+all four patches:
+* `com.google.android.gms` is in the force-queryable package list; Google Play services (26.42)
+  and the Play Store (53.7) run.
+* The privileged-permission file on `/product` grants Google Clock `SCHEDULE_EXACT_ALARM`, and
+  an alarm rang as set. The installed Clock version, updated through the Play Store, requests
+  `USE_EXACT_ALARM` instead, which is granted; this permission patch therefore has no effect on
+  that version.
+* None of the ten removed Pixel packages comes from the system image. Two of them
+  (`com.google.android.odad` and the setup search selector) were installed later into
+  `/data/app`, at least one through the Play Store; that is outside the build.
+* The device log shows no uses-library errors. The crash log since boot holds SCONE (one
+  data-directory error, three refused background service starts) and Magic Portrait (one
+  backup-agent error); none of them is a missing-library error, but this does not establish that
+  every affected app works.
+
+Net Analyzer, the original visibility case, was not re-run on 17.0.
 
 **Documented ROM and device acceptance:** Validated live on the **OnePlus 13**
 running crDroid 16.0 (build `v12.12-20261003`): clean boot without bootloops, Google Play Services (26.37)

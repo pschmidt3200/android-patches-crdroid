@@ -4,13 +4,11 @@
 
 An optional source patch module for **crDroid 17.0 (Android 17)**.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured on crDroid
-> 16.0. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27 the removal was
+> checked on a OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25, made from
+> this repository at commit `4bdecab`; see *Validation and limits*. The 16.0 edition stays on
+> branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/donation-disable).
 
 I created this because I personally dislike this form of donation request
@@ -78,6 +76,13 @@ Source validation is complete:
 - Clean apply and reverse (3/3 patches) on the 17.0 reference commits and crDroid `17.0` HEAD (2026-10-20);
   the same check passed for 16.0 before.
 - Successful dry-run simulation against local crDroid source trees.
+
+**crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25. The
+installed Settings app contains no `DonateActivity`; `DonateReceiver` is still registered, as
+intended, for cleanup only. No donation alarm is pending, and the former reminder channel
+`donation_channel` is marked deleted, so the cleanup ran. The maintainer has seen no donation
+prompt on these builds, and the maintainer name stays visible in About. Repeated version taps
+were not re-checked on 17.0.
 
 **Documented ROM and device acceptance:** Validated live on the **OnePlus 13**
 running crDroid 16.0 (build `Sat Oct 3 23:45:41 CEST 2026`):

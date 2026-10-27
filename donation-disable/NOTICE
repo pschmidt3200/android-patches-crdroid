@@ -1,9 +1,10 @@
 Donation disabling source patches for crDroid 17.0 (Android 17)
 Public edition prepared 2026-10-01.
-crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
-(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
-edition is kept on branch 16.0 of this repository.
+crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
+NOTICE. Device-verified on a OnePlus 13 on 2026-10-27 (crDroid 17.0 build of 2026-10-25,
+repository commit 4bdecab): no DonateActivity, no pending donation alarm, the reminder
+channel is deleted, and no donation prompt appeared. The crDroid 16.0 edition is kept on
+branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
   packages/apps/crDroidSettings 4eeb1fb361a25985b675bf2bad448a8ce963c14f https://github.com/crdroidandroid/android_packages_apps_crDroidSettings

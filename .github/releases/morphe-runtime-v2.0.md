@@ -12,7 +12,9 @@ Morphe runtime compatibility for crDroid in libc.
 
 Part of the maintainer's crDroid 17.0 ROM build of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of this series have been running on the device since 2026-10-20.
 
-The module's own functions have not yet been checked individually on 17.0.
+**Device-verified on 2026-10-27** (OnePlus 13, crDroid 17.0 build of 2026-10-25): the device's `libc.so` carries the `app.morphe.manager` exemption, and Morphe's patcher runs cleanly with **Process runtime** enabled.
+
+These results were recorded after this release in the [module README on `main`](https://github.com/pschmidt3200/android-patches-crdroid/tree/main/morphe-runtime); the files of this tag are unchanged.
 
 ## Source baselines
 
@@ -31,6 +33,6 @@ Publication requires installer tests and real source application/reversal at the
 
 ## Deutsch
 
-Erste Fassung für crDroid 17.0: Patch unverändert, Referenz auf 17.0. Teil des 17.0-Builds vom 22.10.2026; nicht einzeln geprüft.
+Erste Fassung für crDroid 17.0: Patch unverändert, Referenz auf 17.0. Teil des 17.0-Builds vom 22.10.2026. Am 27.10.2026 auf einem OnePlus 13 geprüft (Build vom 25.10.2026): Die Ausnahme steckt in der `libc.so`, und Morphes Patcher läuft mit eingeschalteter Process runtime sauber durch.
 
 Apache License 2.0; preserve LICENSE, NOTICE and upstream file notices.

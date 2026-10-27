@@ -24,9 +24,10 @@ Reference repositories, commits and public sources (crDroid branch 17.0):
 The series was built into crDroid 16.0 on the OnePlus 13 and used
 with dual-mode receivers and with receivers whose details page is provided by a
 companion app. No device-specific code is involved.
-crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
-(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
+crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
+NOTICE. Device-verified on a OnePlus 13 on 2026-10-27 (crDroid 17.0 build of 2026-10-25,
+repository commit 4bdecab): codec entry, selection and sample-rate read-back work with an
+aptX Adaptive receiver; the LE Audio frame-duration choice was not checked. The crDroid 16.0
 edition is kept on branch 16.0 of this repository.
 
 LICENSE AND REDISTRIBUTION

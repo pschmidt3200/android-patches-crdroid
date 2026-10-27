@@ -18,13 +18,11 @@ wird das Ergebnis normal zwischengespeichert. Andere Apps, ähnlich benannte
 Pakete, Updater und Zygote sind mit Positiv-/Negativproben abgedeckt.
 Die Ausnahme prüft den Prozessnamen, keine Paketsignatur.
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; der unten
-> beschriebene Host-Test lief gegen den 16.0-Quellstand. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
+> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 27.10.2026
+> wurde Morphes Prozess-Laufzeit auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom
+> 25.10.2026, gebaut aus diesem Repository auf Stand `4bdecab`, geprüft; siehe *Prüfung und
+> Grenzen*. Die 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 
 ## Anwenden und zurücknehmen
@@ -51,12 +49,16 @@ Der echte C++-Filter wurde auf dem Host mit kontrollierter UID, PID und
 Prozesskennung kompiliert: **43 Prüfungen, null Fehler**. Die ungepatchte
 Quelle scheitert an neun Prüfungen; nur der Ausnahmelisteneintrag lässt
 noch die drei späten Umbenennungen scheitern. Die Probe startet kein ART.
-Neuer ROM-Build und Abnahme am Gerät stehen aus.
 
 Nach Installation Morphes **Process runtime** einschalten und den
 fehlgeschlagenen Patchvorgang wiederholen. Das Laden der LineageOS-
 Framework-Ressource darf nicht mehr scheitern. Der getrennte ART-Fehler
 `Could not find contiguous low-memory space` wird hier nicht behoben.
+
+**Geräteprüfung unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026. Die
+`libc.so` des Geräts enthält die Ausnahme für `app.morphe.manager` neben dem LineageOS-Updater.
+Morphe Manager ist mit eingeschalteter **Process runtime** installiert, und der Maintainer
+meldet, dass der Patcher sauber durchläuft; das Geräteprotokoll zeigt keine Morphe-Fehler.
 
 Referenz: [Morphe-Prozessstart](https://github.com/MorpheApp/morphe-manager/blob/da8545c92c94b83e23adf7b573b46b282fa2b062/app/src/main/java/app/morphe/manager/patcher/runtime/ProcessRuntime.kt#L314).
 Lizenz: [LICENSE](LICENSE). Bei einem entsprechenden Upstream-Fix den

@@ -8,13 +8,11 @@ SBC, AAC, aptX, aptX HD, LDAC or — when the stack provides it — aptX Adaptiv
 **ROM scope:** This package is currently intended only for **crDroid 17.0** (Android 17).
 Support for other ROMs has not been established.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured on crDroid
-> 16.0. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27 the codec menu was
+> checked on a OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25, made from
+> this repository at commit `4bdecab`; see *Checking on the device*. The 16.0 edition stays on
+> branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bluetooth-codec-ui).
 
 German version: [README.de.md](README.de.md)
@@ -173,6 +171,14 @@ A patch file is not flashed directly: installing these changes requires a newly 
 4. For an LE Audio receiver, also choose another frame duration and compare the entry with
    `adb shell dumpsys bluetooth_manager` (`Stream config`).
 5. Disconnect and reconnect: the codec is negotiated again and the entry follows.
+
+**crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25. The
+installed Settings app contains the codec entry, the selection dialog, their strings and icons,
+and Settings did not crash since boot. The maintainer used the menu with an aptX Adaptive
+receiver and reported it working. The Bluetooth stack recorded the selected configurations
+(codec priority *highest*) with sample-rate changes between 48 kHz and 44.1 kHz, and negotiated
+aptX Adaptive again after a reconnect. The LE Audio frame-duration choice (step 4) was not part
+of this check.
 
 ## Licence and source baselines
 

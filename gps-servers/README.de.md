@@ -6,13 +6,12 @@ Zwei unabhängig wählbare Konfigurationspatches für **crDroid 17.0 (Android 17
 OnePlus `device/oneplus/sm8750-common`, Datei `configs/gps/gps.conf`.
 Die Auswahl erfolgt beim Build; es entsteht kein neues Android-Einstellungsmenü.
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
-> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: Konfiguration am Gerät geprüft.** Diese Patches zielen auf crDroid
+> 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und
+> zurücknehmen. Am 27.10.2026 waren beide Einstellungen auf einem OnePlus 13 mit dem 17.0-Build
+> des Maintainers vom 25.10.2026, gebaut aus diesem Repository auf Stand `4bdecab`, aktiv; ein
+> Satelliten-Fix unter 17.0 steht noch aus. Siehe *Prüfung und Grenzen*. Die 16.0-Fassung bleibt
+> auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gps-servers).
 
 ## Einen, beide oder keinen auswählen
@@ -70,6 +69,12 @@ Anwendung/Rücknahme an Referenz-Commits und aktuellem Branch:
 bash .github/scripts/check-reference.sh gps-servers
 bash .github/scripts/check-reference.sh --branch 17.0 gps-servers
 ```
+
+**Geräteprüfung unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026 mit beiden
+Patches: `/odm/etc/gps.conf` setzt `SUPL_HOST=supl.grapheneos.org`, `SUPL_PORT=7275` und
+`NTP_SERVER=0.de.pool.ntp.org`, und der GNSS-Dienst läuft. Bei dieser Prüfung in Innenräumen kam
+kein Satelliten-Fix zustande (rund fünf Minuten mit einer GNSS-Test-App, schwache Signale). Ob das
+Modem die eingestellten Server nutzt, braucht weiterhin einen Mitschnitt.
 
 **Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13**
 unter crDroid 16.0 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:

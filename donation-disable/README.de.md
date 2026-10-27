@@ -4,13 +4,11 @@
 
 Ein optionales Quellpatch-Modul für **crDroid 17.0 (Android 17)**.
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
-> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
+> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 27.10.2026
+> wurde die Entfernung auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom 25.10.2026,
+> gebaut aus diesem Repository auf Stand `4bdecab`, geprüft; siehe *Prüfung und Grenzen*. Die
+> 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/donation-disable).
 
 Ich habe diesen Abschalter erstellt, weil ich diese Art der Spendenanfrage
@@ -82,6 +80,14 @@ Die Quelltests sind vollständig verifiziert:
 - Saubere Anwendung und Rücknahme (3/3 Patches) auf den 17.0-Referenz-Commits und crDroid `17.0` HEAD
   (20.10.2026); dieselbe Prüfung war vorher für 16.0 grün.
 - Fehlerfreie Dry-Run-Simulation gegen den lokalen crDroid-Quellbaum.
+
+**Geräteprüfung unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026. Die
+installierte Einstellungen-App enthält keine `DonateActivity`; `DonateReceiver` ist wie
+vorgesehen nur noch zum Aufräumen registriert. Es steht kein Spenden-Wecker aus, und der frühere
+Erinnerungskanal `donation_channel` ist als gelöscht markiert, das Aufräumen ist also gelaufen.
+Der Maintainer hat auf diesen Builds keine Spendenaufforderung gesehen, und der Maintainer-Name
+bleibt unter *Über das Telefon* sichtbar. Wiederholtes Antippen der Version wurde unter 17.0
+nicht erneut geprüft.
 
 **Dokumentierte ROM- und Geräteabnahme:** Auf dem Referenzgerät **OnePlus 13**
 unter crDroid 16.0 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:

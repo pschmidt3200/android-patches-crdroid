@@ -1,9 +1,11 @@
 GMS compatibility source patches for crDroid 17.0 (Android 17)
 Public edition prepared 2026-10-01.
-crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
-(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
-edition is kept on branch 16.0 of this repository.
+crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
+NOTICE. Device-verified on a OnePlus 13 on 2026-10-27 (crDroid 17.0 build of 2026-10-25,
+repository commit 4bdecab): Play services force-queryable, Clock alarm works, no removed
+Pixel package in the system image, no uses-library errors in the log. The current Play Store
+version of Google Clock no longer requests SCHEDULE_EXACT_ALARM. The crDroid 16.0 edition is
+kept on branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
   frameworks/base c2382c14b024f5701071d31d9cc8fe1401dc9a88 https://github.com/crdroidandroid/android_frameworks_base

@@ -18,13 +18,11 @@ is not cached before `--nice-name` takes effect. Other apps and package-name
 lookalikes remain filtered; updater and zygote handling are retained.
 This is a process-name compatibility rule, not package-signature validation.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the host test described below was run against the 16.0
-> source. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27 Morphe's process
+> runtime was checked on a OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25,
+> made from this repository at commit `4bdecab`; see *Validation and limits*. The 16.0 edition
+> stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 
 ## Apply and undo
@@ -56,7 +54,12 @@ After installing a patched ROM, enable Morphe's **Process runtime** and
 repeat the failing patch operation. Confirm that loading the LineageOS
 framework resource no longer fails. This patch does not change ART heap
 limits or fix the separate `Could not find contiguous low-memory space`
-error. ROM build and device verification remain pending.
+error.
+
+**crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25. The
+device's `libc.so` carries the `app.morphe.manager` exemption next to the LineageOS updater.
+Morphe Manager is installed with **Process runtime** enabled, and the maintainer reports that
+the patcher runs cleanly; the device log shows no Morphe errors.
 
 Source references: [Morphe launcher](https://github.com/MorpheApp/morphe-manager/blob/da8545c92c94b83e23adf7b573b46b282fa2b062/app/src/main/java/app/morphe/manager/patcher/runtime/ProcessRuntime.kt#L314),
 [process runtime documentation](https://github.com/MorpheApp/morphe-manager/blob/da8545c92c94b83e23adf7b573b46b282fa2b062/docs/patching-process.md).

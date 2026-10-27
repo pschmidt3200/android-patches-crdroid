@@ -6,13 +6,11 @@ Two independently selectable configuration patches for **crDroid 17.0 (Android 1
 OnePlus `device/oneplus/sm8750-common`, file `configs/gps/gps.conf`.
 They are build-time choices, not a new Android Settings menu.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured on crDroid
-> 16.0. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: configuration verified on the device.** These patches target crDroid
+> 17.0 and apply and revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27
+> both settings were found active on a OnePlus 13 running the maintainer's crDroid 17.0 build of
+> 2026-10-25, made from this repository at commit `4bdecab`; a satellite fix on 17.0 is still to
+> be observed. See *Validation and limits*. The 16.0 edition stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gps-servers).
 
 ## Choose either, both or neither
@@ -70,6 +68,12 @@ and application/reversal of the real configuration at the reference and current 
 bash .github/scripts/check-reference.sh gps-servers
 bash .github/scripts/check-reference.sh --branch 17.0 gps-servers
 ```
+
+**crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25 with
+both patches: `/odm/etc/gps.conf` sets `SUPL_HOST=supl.grapheneos.org`, `SUPL_PORT=7275` and
+`NTP_SERVER=0.de.pool.ntp.org`, and the GNSS service runs. No satellite fix was observed during
+this indoor check (about five minutes with a GNSS test app, weak signals). Whether the modem uses the
+configured servers still needs a trace.
 
 **Documented ROM and device acceptance:** Validated live on the **OnePlus 13**
 running crDroid 16.0 (build `Sat Oct 3 23:45:41 CEST 2026`):
