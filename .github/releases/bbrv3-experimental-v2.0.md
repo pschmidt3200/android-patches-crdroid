@@ -14,7 +14,11 @@ First edition for **crDroid 17.0 / Android 17**. Version 2.x is the crDroid 17.0
 
 Part of the maintainer's crDroid 17.0 ROM build of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of this series have been running on the device since 2026-10-20.
 
-On a device, `/sys/module/tcp_bbr3/version` reads `3-2026x` while this edition runs. The module's own functions have not yet been checked individually on 17.0.
+On a device, `/sys/module/tcp_bbr3/version` reads `3-2026x` while this edition runs.
+
+**Device check on 2026-10-26** (OnePlus 13, kernel 6.6.144, crDroid 17.0 build of 2026-10-25): this series was built in (`version` = `3-2026x`), `net.ipv4.tcp_congestion_control = bbr3`, available `reno bbr bbr3 cubic`, and `ss -tin` showed `bbr3` on all 29 established connections, including NAT64 destinations. The effect of the 2026 update was not measured on 17.0; the throughput, retransmit and latency comparison in the module README comes from the crDroid 16.0 kernel.
+
+These results were recorded after this release in the [module README on `main`](https://github.com/pschmidt3200/android-patches-crdroid/tree/main/bbrv3-experimental); the files of this tag are unchanged.
 
 ## Source baselines
 
@@ -33,6 +37,6 @@ Publication requires installer tests and real source application/reversal at the
 
 ## Deutsch
 
-Experimentell, nur zum Testen. Erste Fassung für crDroid 17.0: Patches unverändert, Referenz auf den 17.0-Kernel. Teil des 17.0-Builds vom 22.10.2026; nicht einzeln gemessen.
+Experimentell, nur zum Testen. Erste Fassung für crDroid 17.0: Patches unverändert, Referenz auf den 17.0-Kernel. Teil des 17.0-Builds vom 22.10.2026. Am 26.10.2026 auf einem OnePlus 13 geprüft (Build vom 25.10.2026): Die Reihe ist eingebaut (`version` = `3-2026x`), `bbr3` ist Standard und auf allen 29 bestehenden Verbindungen aktiv. Die Wirkung des 2026-Updates wurde unter 17.0 nicht gemessen.
 
 Keep the module files together. Kernel GPL/file terms and BBR's preserved `Dual BSD/GPL` declaration differ from Apache2.0 for own docs/installer; see NOTICE.
