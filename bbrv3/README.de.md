@@ -12,14 +12,12 @@ fest ein und wählt in `gki_defconfig` den TCP-Standard `bbr3`.
 Der Installer wendet zuerst den Core und danach den Zusatzpatch an.
 BBRv1 (`bbr`) und die anderen Algorithmen bleiben verfügbar.
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
-> beschriebenen Ergebnisse stammen vom crDroid-16.0-Kernel. Die 16.0-Fassung bleibt auf dem
-> Branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
+> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
+> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 26.10.2026
+> war auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom 25.10.2026 (gebaut aus diesem
+> Repository auf Stand `4bdecab`) `bbr3` der Standard-Algorithmus, und alle bestehenden
+> TCP-Verbindungen nutzten ihn; siehe *Verpackung und Prüfstatus*. Die 16.0-Fassung bleibt auf
+> dem Branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
 
 ## Voraussetzungen und Anwendung
 
@@ -95,6 +93,15 @@ Die Quell- und Helferprüfungen sind vollständig verifiziert:
 unter Linux 6.6 (Build `Sat Oct 3 23:45:41 CEST 2026`) live verifiziert und abgenommen:
 BBRv3 ist als Standard-Algorithmus aktiv (`net.ipv4.tcp_congestion_control = bbr3`), die Kernel-Symbole
 (`bbr3_*`) sind geladen und alle aktiven TCP-Sockets (`ss -tin`) nutzen live `bbr3`.
+
+**Geräteprüfung unter crDroid 17.0 (26.10.2026):** OnePlus 13, Kernel 6.6.144, Build vom
+25.10.2026: `net.ipv4.tcp_congestion_control = bbr3`, verfügbar `reno bbr bbr3 cubic`, und
+`ss -tin` zeigte `bbr3` auf allen 29 bestehenden Verbindungen, auch zu NAT64-Zielen. Dieser
+Build enthielt zusätzlich das Testmodul [bbrv3-experimental](../bbrv3-experimental/)
+(`/sys/module/tcp_bbr3/version` = `3-2026x`). Die Prüfung belegt deshalb die gemeinsamen
+Grundpatches dieses Moduls (Registrierung und Standard), nicht allein den unveränderten
+Algorithmus dieses Moduls.
+
 Quellprüfungen belegen keine Durchsatz- oder Latenzgewinne. Modulprüfungen laufen bei jedem
 Push über GitHub Actions.
 

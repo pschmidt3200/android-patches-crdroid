@@ -11,13 +11,11 @@ Hardware nein sagt.
 
 ---
 
-> **crDroid-17.0-Fassung: quellgeprüft und gebaut, Modulfunktionen am Gerät noch nicht
-> geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen sich an den
-> [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Sie sind Teil des
-> 17.0-ROM-Builds des Maintainers vom 22.10.2026 für das OnePlus 13, gebaut aus diesem
-> Repository auf Stand `4bdecab`; Builds dieser Reihe laufen seit dem 20.10.2026 auf dem Gerät.
-> Die Funktionen dieses Moduls wurden unter 17.0 noch nicht einzeln geprüft; die unten
-> beschriebenen Ergebnisse stammen aus crDroid 16.0. Die 16.0-Fassung bleibt auf dem Branch
+> **crDroid-17.0-Fassung: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und lassen
+> sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 26.10.2026
+> wurden beide Korrekturen auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom
+> 25.10.2026 geprüft, gebaut aus diesem Repository auf Stand `4bdecab`; siehe *Prüfung*. Die
+> 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/oplus-hardware-fixes).
 
 ## Was sie korrigieren
@@ -87,6 +85,23 @@ den die Serie vorbereitet wurde, steht in `NOTICE`.
 
 Beide Patches wurden auf ein unverändertes `hardware/oplus` beim in `NOTICE` genannten
 Commit angewendet und wieder zurückgenommen; vorwärts und rückwärts sauber.
+
+Auf dem Referenzgerät mit crDroid 17.0 (OnePlus 13, Build vom 25.10.2026, geprüft am 26.10.2026):
+
+* **LTPO** — Ausschalten schrieb `adfr_config` von `0x109f` auf `0x0`; nach erneutem Öffnen
+  stand der Schalter **aus**, also der echte Zustand. Einschalten stellte exakt `0x109f`
+  wieder her. Das Display lief weiter mit variabler Bildwiederholrate (60/120 Hz).
+* **Touch** — Mit eingeschaltetem Double-Tap-to-Wake protokollierte der Touchtreiber bei
+  jedem Ausschalten des Bildschirms die vollständige Kette: Gestentyp gesetzt, Gestenmodus
+  als an zurückgelesen, Weckgeste `0x09` aktiviert, Energiespar-Gestenmodus aktiv; ein
+  Doppeltipp weckte das Gerät danach. Mit ausgeschalteter Einstellung weckte ein Doppeltipp
+  nicht. Unter 17.0 laufen diese Schreibvorgänge über die OPlus-Touch-HAL per Knotennummer,
+  nicht über Dateien unter `/proc/touchpanel`. Alle vier Touch-HAL-Schnittstellen (drei
+  `vendor.lineage.touch`, eine `vendor.oplus.hardware.touch`) waren registriert, kein
+  Touch-Fehler im Protokoll.
+* **Handschuhmodus** — Ein Schreibvorgang wurde von der Touch-HAL bestätigt (`ret=0`);
+  die Wirkung auf die Touch-Erkennung wurde nicht bewertet. Bildschirm-aus-Gesten außer
+  Doppeltipp wurden nicht ausgeübt.
 
 Auf dem Referenzgerät (OnePlus 13, crDroid-16.0-Build vom 07.10.2026):
 

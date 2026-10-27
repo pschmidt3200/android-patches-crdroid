@@ -17,10 +17,11 @@ Source Project, LineageOS and crDroid. Retain the actual copyright and attributi
 notices of each affected source file. This overview does not replace the upstream
 per-file notices or license an entire ROM tree.
 
-crDroid 17.0 edition, 2026-10-20: source checks only (strict apply and reverse at the
-reference commits in this NOTICE); Built into the maintainer's crDroid 17.0 ROM of 2026-10-22 for the OnePlus 13
-(repository commit 4bdecab); device validation of this module's own functions is pending. The crDroid 16.0
-edition is kept on branch 16.0 of this repository.
+crDroid 17.0 edition, 2026-10-20: strict apply and reverse at the reference commits in this
+NOTICE. Device-verified on a OnePlus 13 on 2026-10-26 (crDroid 17.0 build of 2026-10-25,
+repository commit 4bdecab): the LTPO screen reads back the real adfr_config (0x109f -> 0x0
+-> 0x109f), double-tap-to-wake works on and off with the full driver chain, and one glove-mode
+write was acknowledged. The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 
 Reference repository, commit and public source (as used by crDroid branch 17.0):
   hardware/oplus                f5f9acbc690d9c5488ea994a15df9340b1192e22  https://github.com/crdroidandroid/android_hardware_oplus

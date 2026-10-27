@@ -10,13 +10,10 @@ make existing code tell the truth when the hardware says no.
 
 ---
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured on crDroid
-> 16.0. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-26 both fixes were
+> checked on a OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25, made from
+> this repository at commit `4bdecab`; see *Verification*. The 16.0 edition stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/oplus-hardware-fixes).
 
 ## What they fix
@@ -86,6 +83,22 @@ this series was prepared against.
 
 Both patches were applied to a clean `hardware/oplus` at the commit named in `NOTICE`,
 then reverted; forward and reverse apply cleanly.
+
+On the reference device with crDroid 17.0 (OnePlus 13, build of 2026-10-25, checked 2026-10-26):
+
+* **LTPO** — switching off wrote `adfr_config` from `0x109f` to `0x0`; after reopening, the
+  screen showed the switch **off**, the real state. Switching on restored exactly `0x109f`.
+  The display kept variable refresh rates (60/120 Hz).
+* **Touch** — with double-tap-to-wake on, every screen-off logged the full chain in the touch
+  driver: gesture type set, gesture mode read back as on, wake-up gesture `0x09` enabled,
+  low-power gesture mode entered; a double-tap then woke the device. With the setting off,
+  a double-tap did not wake it. On 17.0 these writes go through the OPlus touch HAL by node
+  number, not through files under `/proc/touchpanel`. All four touch HAL interfaces (three
+  `vendor.lineage.touch`, one `vendor.oplus.hardware.touch`) were registered and no touch
+  error was logged.
+* **Glove mode** — one glove-mode write was acknowledged by the touch HAL
+  (`ret=0`); its effect on touch handling was not assessed. Screen-off gestures other than
+  double-tap were not exercised.
 
 On the reference device (OnePlus 13, crDroid 16.0 build of 2026-10-07):
 

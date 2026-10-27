@@ -12,13 +12,11 @@ into the kernel and selects `bbr3` as its TCP congestion-control default in
 `gki_defconfig`. The installer applies the core first, then the companion.
 BBRv1 (`bbr`) and other congestion controllers remain available.
 
-> **crDroid 17.0 edition: source-checked and built; module functions not yet verified on the
-> device.** These patches target crDroid 17.0 and apply and revert cleanly at the
-> [`NOTICE`](NOTICE) reference commits. They are part of the maintainer's crDroid 17.0 ROM build
-> of 2026-10-22 for the OnePlus 13, made from this repository at commit `4bdecab`; builds of
-> this series have been running on the device since 2026-10-20. This module's own functions have
-> not been checked individually on 17.0; the results described below were measured with the
-> crDroid 16.0 kernel. The 16.0 edition stays on branch
+> **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
+> revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-26, on a OnePlus 13
+> running the maintainer's crDroid 17.0 build of 2026-10-25 (made from this repository at commit
+> `4bdecab`), `bbr3` was the default congestion control and all established TCP connections used
+> it; see *Packaging and validation*. The 16.0 edition stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/bbrv3).
 
 ## Requirements and use
@@ -98,6 +96,14 @@ Source and helper validation is fully verified:
 running Linux 6.6 (build `Sat Oct 3 23:45:41 CEST 2026`):
 BBRv3 is active as the default congestion control algorithm (`net.ipv4.tcp_congestion_control = bbr3`),
 kernel symbols (`bbr3_*`) are loaded, and all active TCP sockets (`ss -tin`) run on `bbr3`.
+
+**crDroid 17.0 device check (2026-10-26):** OnePlus 13, kernel 6.6.144, build of 2026-10-25:
+`net.ipv4.tcp_congestion_control = bbr3`, available `reno bbr bbr3 cubic`, and `ss -tin`
+showed `bbr3` on all 29 established connections, including NAT64 destinations. That build
+also carried the testing-only [bbrv3-experimental](../bbrv3-experimental/) update
+(`/sys/module/tcp_bbr3/version` = `3-2026x`). The check therefore confirms the shared base
+patches of this module (registration and default), not this module's unchanged algorithm alone.
+
 Source checks do not measure throughput or latency. Module checks run on GitHub Actions on every push.
 
 
