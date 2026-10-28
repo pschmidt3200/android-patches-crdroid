@@ -7,14 +7,16 @@ OnePlus `device/oneplus/sm8750-common`, Datei `configs/gps/gps.conf`; die SUPL-A
 zusätzlich `configs/gps/gps_debug.conf`, installiert nach `/vendor/etc`.
 Die Auswahl erfolgt beim Build; es entsteht kein neues Android-Einstellungsmenü.
 
-> **crDroid-17.0-Fassung 2.1: quellgeprüft, noch nicht gebaut oder am Gerät geprüft.** Diese
-> Patches zielen auf crDroid 17.0 und lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits
-> sauber anwenden und zurücknehmen. Die Geräteprüfung der Fassung 2.0 am 27.10.2026 ergab, dass
-> die SUPL-Wahl zur Laufzeit überschrieben wird: Das Android-Framework übergibt der GNSS-HAL den
-> SUPL-Server aus der Carrier-Konfiguration (dort `supl.google.com`). Fassung 2.1 installiert
-> deshalb zusätzlich `/vendor/etc/gps_debug.conf`, die das Framework nach der
-> Carrier-Konfiguration liest; siehe *Prüfung und Grenzen*. Die 16.0-Fassung bleibt auf dem
-> Branch
+> **crDroid-17.0-Fassung 2.1: am Gerät geprüft.** Diese Patches zielen auf crDroid 17.0 und
+> lassen sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Die
+> Geräteprüfung der Fassung 2.0 am 27.10.2026 ergab, dass der SUPL-Server aus der
+> Carrier-Konfiguration (dort `supl.google.com`) die SUPL-Wahl zur Laufzeit überschreibt.
+> Fassung 2.1 installiert deshalb zusätzlich `/vendor/etc/gps_debug.conf`. Am 28.10.2026 war die
+> Datei auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom 28.10.2026, gebaut aus
+> diesem Repository auf Stand `d627ee4`, vorhanden, und die Konfiguration des Frameworks ergibt
+> `supl.grapheneos.org`. Welcher Server dann angefragt wird, lässt sich auf diesem Gerät nicht
+> beobachten: Es hat keine SIM-Karte, und Android fordert SUPL nur über Mobilfunk an; siehe
+> *Prüfung und Grenzen*. Die 16.0-Fassung bleibt auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/gps-servers).
 
 ## Einen, beide oder keinen auswählen
@@ -76,7 +78,24 @@ bash .github/scripts/check-reference.sh --branch 17.0 gps-servers
 
 Fassung 2.1 ergänzt den SUPL-Patch um `configs/gps/gps_debug.conf` und den Eintrag in `common.mk`.
 Beide Patches lassen sich einzeln und zusammen am Referenzcommit und auf dem Branch `17.0` sauber
-anwenden und zurücknehmen. ROM-Build und Geräteprüfung der Fassung 2.1 stehen noch aus.
+anwenden und zurücknehmen.
+
+**Geräteprüfung der Fassung 2.1 unter crDroid 17.0 (28.10.2026):** OnePlus 13, Build vom
+28.10.2026 mit beiden Patches.
+* `/vendor/etc/gps_debug.conf` ist installiert (`SUPL_HOST=supl.grapheneos.org`,
+  `SUPL_PORT=7275`), mit dem SELinux-Label `vendor_configs_file`, das jede Domain lesen darf.
+* `GnssConfiguration` liest seine Quellen in dieser Reihenfolge, spätere überschreiben frühere:
+  Carrier-Konfiguration (`gps.supl_host = supl.google.com`), `config_gnssParameters` (im
+  Framework leer; keines der 237 Overlay-APKs des Builds setzt es), `/vendor/etc/gps_debug.conf`
+  (`supl.grapheneos.org`) und `/system/etc/gps_debug.conf` (keine aktiven Zeilen). Das Framework
+  übergibt der HAL per `setAgpsServer` deshalb `supl.grapheneos.org:7275`.
+* Auf dem Referenzgerät nicht prüfbar: welcher Server tatsächlich angefragt wird. Android
+  fordert SUPL nur über eine Mobilfunkverbindung an (`NET_CAPABILITY_SUPL`,
+  `TRANSPORT_CELLULAR`), und das Referenzgerät hat keine SIM-Karte; dort kann also keine
+  SUPL-Sitzung stattfinden, und während der Prüfung wurde keine protokolliert.
+* Mit laufender XTRA-Hilfe (durch eine getrennte ROM-Änderung eingeschaltet) kam der erste Fix
+  am offenen Fenster nach 91 s (Prüfung der Fassung 2.0 ohne XTRA: 208 s), aus GPS, GLONASS,
+  BeiDou und Galileo. Das wird diesem Modul nicht zugeschrieben.
 
 **Geräteprüfung der Fassung 2.0 unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026 mit beiden
 Patches.

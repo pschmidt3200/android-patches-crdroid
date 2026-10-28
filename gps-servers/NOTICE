@@ -6,8 +6,11 @@ NOTICE. Checked on a OnePlus 13 on 2026-10-27 (edition 2.0, crDroid 17.0 build o
 GNSS reaches a fix, but the Android framework passes the carrier-configuration SUPL host
 (supl.google.com) to the HAL, so the GrapheneOS SUPL choice did not take effect there.
 Edition 2.1 (2026-10-27) therefore also installs /vendor/etc/gps_debug.conf with the same
-SUPL values, which the framework reads after the carrier configuration; it is
-source-checked, not yet built or checked on a device. The crDroid 16.0 edition is kept on
+SUPL values, which the framework reads after the carrier configuration. Checked on a OnePlus
+13 on 2026-10-28 (edition 2.1, crDroid 17.0 build of 2026-10-28, repository commit d627ee4):
+the file is installed and the framework configuration resolves to supl.grapheneos.org:7275;
+the server actually contacted could not be observed, because the device has no SIM card and
+Android requests SUPL only over a cellular connection. The crDroid 16.0 edition is kept on
 branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:

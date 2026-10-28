@@ -11,7 +11,9 @@ Two independently selectable configuration patches for the GNSS configuration of
 
 ## Status on crDroid 17.0
 
-Source-checked: both patches apply and revert cleanly, alone and together, at the NOTICE reference commit and on branch `17.0`. This edition has not yet been built into a ROM or checked on a device.
+Source-checked: both patches apply and revert cleanly, alone and together, at the NOTICE reference commit and on branch `17.0`.
+
+**Checked on the device on 2026-10-28** (OnePlus 13, crDroid 17.0 build of 2026-10-28, made from this repository at commit `d627ee4`): `/vendor/etc/gps_debug.conf` is installed, and the framework's configuration chain (carrier configuration, resource overlays, `/vendor/etc/gps_debug.conf`, `/system/etc/gps_debug.conf`) resolves to `supl.grapheneos.org:7275`, which it passes to the GNSS HAL. Which server is actually contacted could not be observed: Android requests SUPL only over a cellular connection, and the test device has no SIM card.
 
 ## Source baselines
 
@@ -30,6 +32,6 @@ Publication requires installer tests and real source application/reversal at the
 
 ## Deutsch
 
-Zweite Fassung für crDroid 17.0: Der SUPL-Patch installiert zusätzlich `/vendor/etc/gps_debug.conf` mit denselben SUPL-Werten, weil das Android-Framework sonst den SUPL-Server aus der Carrier-Konfiguration an die GNSS-HAL übergibt und `gps.conf` übersteuert. Das ersetzt auch bei Notrufen den SUPL-Server des Netzbetreibers. Quellgeprüft, noch nicht gebaut oder am Gerät geprüft. Der NTP-Patch ist unverändert.
+Zweite Fassung für crDroid 17.0: Der SUPL-Patch installiert zusätzlich `/vendor/etc/gps_debug.conf` mit denselben SUPL-Werten, weil das Android-Framework sonst den SUPL-Server aus der Carrier-Konfiguration an die GNSS-HAL übergibt und `gps.conf` übersteuert. Das ersetzt auch bei Notrufen den SUPL-Server des Netzbetreibers. Am 28.10.2026 auf einem OnePlus 13 geprüft (Build vom 28.10.2026): `/vendor/etc/gps_debug.conf` ist installiert, die Konfigurationskette des Frameworks ergibt `supl.grapheneos.org:7275`; welcher Server tatsächlich angefragt wird, ließ sich nicht beobachten, weil Android SUPL nur über Mobilfunk anfordert und das Testgerät keine SIM-Karte hat. Der NTP-Patch ist unverändert.
 
 Apache License 2.0; preserve LICENSE, NOTICE and upstream file notices.
