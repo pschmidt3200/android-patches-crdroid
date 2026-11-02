@@ -1,24 +1,24 @@
 # SUSFS core context corrections for crDroid sm8750
 
 **Only our maintenance delta is included.** `patches/susfs-core-context.patch`
-corrects the original upstream patch file's context, hunk positions and index
-metadata for crDroid's OnePlus sm8750 kernel. It does not contain a complete
-SUSFS core patch or change its added/removed kernel code.
+removes the stray leading blank line of the original upstream patch file. It does not
+contain a complete SUSFS core patch or change its added/removed kernel code.
 
-The relevant context now uses `vma_data_pages()` instead of the obsolete
-`vma_pages()`. The corrected complete upstream patch is applicable to
-`kernel/oneplus/sm8750`, branch `17.0`, commit
-`48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976` (Android 15 / Linux 6.6),
-used by crDroid 17.0, alone and after the `bbrv3` patches (checked 2026-10-20 in an isolated
+Since upstream `c7f670f57b7d` the upstream core applies to crDroid's OnePlus sm8750 kernel
+without any context correction; upstream now uses `vma_data_pages()` itself. The patch is
+applicable to `kernel/oneplus/sm8750`, branch `17.0`, commit
+`acb4c5815254d4ca0815d8740794ad40303197d5` (Android 15 / Linux 6.6),
+used by crDroid 17.0, alone and after the `bbrv3` patches (checked 2026-11-02 in an isolated
 kernel index). The crDroid 16.0 edition is frozen separately. Other revisions
 require separate validation.
 
-> **17.0 update, 2026-10-20:** rebased against upstream `4a4cb1be85a4` on `gki-android15-6.6`.
-> Pinned and current-branch source application/reversal pass. Kernel additions/removals are
-> identical to upstream; only context and patch metadata change. The patch is part of the
-> maintainer's crDroid 17.0 ROM build of 2026-10-22, made from this repository at commit
-> `4bdecab`; device acceptance of SUSFS itself remains pending. Device measurements below refer
-> to the frozen crDroid 16.0 edition. The frozen 16.0 edition stays on branch
+> **17.0 update, 2026-11-02:** moved to upstream `c7f670f57b7d` on `gki-android15-6.6`, which
+> brings the priority UID filter that KernelSU-Next `dev-susfs` now binds (`0x60030`). Pinned
+> and current-branch source application/reversal pass. Kernel additions, removals and context
+> are identical to upstream. The kernel objects touched by the core compile together with
+> KernelSU-Next `dev-susfs` `bea056e5` (no full kernel link). This edition is not yet built into
+> a ROM or checked on a device. Device measurements below refer to the frozen crDroid 16.0
+> edition, which stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
 
 ## Two separate application steps
@@ -30,7 +30,7 @@ build root. Prepare it from the exact upstream revision if it is not already the
 ```bash
 cd /path/to/crdroid
 git clone --branch gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git external/susfs4ksu
-git -C external/susfs4ksu checkout --detach 4a4cb1be85a4694372d3efb9420de69982eac29a
+git -C external/susfs4ksu checkout --detach c7f670f57b7d43d75066b6657f8aee9cdf580d96
 ```
 
 From this patch collection, with all module files from the same edition:
@@ -42,7 +42,7 @@ sha256sum /path/to/crdroid/external/susfs4ksu/kernel_patches/50_add_susfs_in_gki
 ```
 
 Expected corrected SHA256:
-`db6de46a32533e3f5cf3d32d139977ce2f0e570b9d5170095615617af52557d4`.
+`570f59daec43fe603a80ab3905a254e4a505757d46bbd9bfab4876fdf0196012`.
 The original input SHA256 and upstream attribution are in [NOTICE](NOTICE).
 The installer rejects an already modified target checkout by default.
 `--check --reverse` followed by `--reverse` restores **that patch file**;

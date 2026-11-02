@@ -73,9 +73,12 @@ bash .github/scripts/check-reference.sh --branch 17.0 donation-disable
 
 Source validation is complete:
 - 34 of 34 helper tests (`test-apply-script.sh`) passed cleanly.
-- Clean apply and reverse (3/3 patches) on the 17.0 reference commits and crDroid `17.0` HEAD (2026-10-20);
+- Clean apply and reverse (3/3 patches) on the 17.0 reference commits and crDroid `17.0` HEAD (2026-11-02);
   the same check passed for 16.0 before.
 - Successful dry-run simulation against local crDroid source trees.
+- Rebased on 2026-11-02: upstream rewrote `BuildMaintainerPreference` on 2026-11-01. Builds not
+  signed with the official key now show "Unofficial" instead of a maintainer name. The device
+  check below predates this rebase.
 
 **crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25. The
 installed Settings app contains no `DonateActivity`; `DonateReceiver` is still registered, as

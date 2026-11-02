@@ -1,25 +1,27 @@
 # SUSFS-Core-Kontextkorrekturen für crDroid sm8750
 
 **Enthalten ist ausschließlich unsere Wartungsänderung.**
-`patches/susfs-core-context.patch` korrigiert Kontext, Hunk-Positionen und
-Index-Metadaten der originalen Upstream-Patchdatei. Der vollständige SUSFS-Core
-wird nicht mitgeliefert. Seine hinzugefügten/entfernten Kernelzeilen bleiben
-unverändert; neue SUSFS-Funktionen wurden dabei nicht entwickelt.
+`patches/susfs-core-context.patch` entfernt die überzählige erste Leerzeile der originalen
+Upstream-Patchdatei. Der vollständige SUSFS-Core wird nicht mitgeliefert. Seine
+hinzugefügten/entfernten Kernelzeilen bleiben unverändert; neue SUSFS-Funktionen wurden
+dabei nicht entwickelt.
 
-Der Kontext enthält jetzt `vma_data_pages()` statt des veralteten `vma_pages()`.
-Die korrigierte Upstream-Patchdatei zielt auf `kernel/oneplus/sm8750`, Branch
-`17.0`, Commit `48baf0c723f8d6d1efa4db9d2cb5ad6df83ab976` (Android 15 / Linux 6.6)
-für crDroid 17.0, allein und nach den `bbrv3`-Patches (geprüft am 20.10.2026 im isolierten
-Kernelindex). Die crDroid-16.0-Fassung bleibt getrennt eingefroren. Andere Quellstände
-benötigen eigene Prüfung.
+Seit Upstream `c7f670f57b7d` passt der Upstream-Core ohne jede Kontextkorrektur auf den
+crDroid-Kernel; Upstream nutzt jetzt selbst `vma_data_pages()`. Die Patchdatei zielt auf
+`kernel/oneplus/sm8750`, Branch `17.0`, Commit `acb4c5815254d4ca0815d8740794ad40303197d5`
+(Android 15 / Linux 6.6) für crDroid 17.0, allein und nach den `bbrv3`-Patches (geprüft am
+02.11.2026 im isolierten Kernelindex). Die crDroid-16.0-Fassung bleibt getrennt eingefroren.
+Andere Quellstände benötigen eigene Prüfung.
 
-> **17.0-Update vom 20.10.2026:** Auf Upstream `4a4cb1be85a4` im Branch `gki-android15-6.6` neu
-> aufgesetzt. Anwendung/Ruecknahme am Pin und aktuellen Branch bestehen. Hinzugefuegte/entfernte
-> Kernelzeilen bleiben exakt upstream; nur Kontext und Patch-Metadaten aendern sich. Der Patch
-> ist Teil des 17.0-ROM-Builds des Maintainers vom 22.10.2026, gebaut aus diesem Repository auf
-> Stand `4bdecab`; die Geraeteabnahme von SUSFS selbst steht aus. Die Geraetemessungen unten
-> stammen aus crDroid 16.0. Die eingefrorene 16.0-Fassung bleibt auf Branch
-> [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core).
+> **17.0-Update vom 02.11.2026:** Auf Upstream `c7f670f57b7d` im Branch `gki-android15-6.6`
+> umgestellt; der bringt den Priority-UID-Filter, den KernelSU-Next `dev-susfs` jetzt anbindet
+> (`0x60030`). Anwendung und Rücknahme am Pin und am aktuellen Branch bestehen. Hinzugefügte und
+> entfernte Kernelzeilen sowie der Kontext sind identisch mit Upstream. Die vom Core berührten
+> Kernel-Objekte kompilieren zusammen mit KernelSU-Next `dev-susfs` `bea056e5` (kein
+> vollständiger Kernel-Link). Diese Fassung ist noch nicht in eine ROM gebaut und nicht am Gerät
+> geprüft. Die Gerätemessungen unten stammen aus der eingefrorenen crDroid-16.0-Fassung, die auf
+> Branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/susfs-core)
+> bleibt.
 
 ## Anwendung in zwei Schritten
 
@@ -30,7 +32,7 @@ crDroid-Baum. Falls noch nicht vorhanden, den genauen Upstream-Stand vorbereiten
 ```bash
 cd /pfad/zu/crdroid
 git clone --branch gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git external/susfs4ksu
-git -C external/susfs4ksu checkout --detach 4a4cb1be85a4694372d3efb9420de69982eac29a
+git -C external/susfs4ksu checkout --detach c7f670f57b7d43d75066b6657f8aee9cdf580d96
 ```
 
 In der Patchsammlung alle Moduldateien aus derselben Fassung verwenden:
@@ -42,7 +44,7 @@ sha256sum /pfad/zu/crdroid/external/susfs4ksu/kernel_patches/50_add_susfs_in_gki
 ```
 
 Erwartete SHA256 der korrigierten vollständigen Upstream-Patchdatei:
-`db6de46a32533e3f5cf3d32d139977ce2f0e570b9d5170095615617af52557d4`.
+`570f59daec43fe603a80ab3905a254e4a505757d46bbd9bfab4876fdf0196012`.
 [NOTICE](NOTICE) nennt Originalhash, Quellen und Autoren.
 Ein bereits veränderter Checkout wird standardmäßig abgelehnt.
 `--check --reverse` und danach `--reverse` nehmen nur diese Patchdatei-Korrektur
