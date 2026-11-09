@@ -1,11 +1,11 @@
 # Target repository: bionic
 # Maintenance: README.md
-# crDroid 16.0: allow Morphe ART runtime to load ROM framework resources.
-# Reference: fcfacc3e0ba78b59de4bdd46b8bec3676e5c305c
+# crDroid 17.0: allow Morphe ART runtime to load ROM framework resources.
+# Reference: dd42d6911f3d7822038aadf795f37d182efb116e
 # No blanket app_process exemption; defer caching until its final name.
 --- a/libc/bionic/custom_rom_hide.cpp
 +++ b/libc/bionic/custom_rom_hide.cpp
-@@ -131,6 +131,7 @@
+@@ -133,6 +133,7 @@ static const char* const kMountFilterKeywords[] = {
  
  static const char* const kAllowlistedPackages[] = {
      "org.lineageos.updater",
@@ -13,7 +13,7 @@
      nullptr
  };
  
-@@ -257,13 +258,23 @@
+@@ -334,16 +335,26 @@ static bool name_is_zygote(const char* name) {
      return false;
  }
  
@@ -23,7 +23,11 @@
 +    *transient_name = false;
  
      char name[256];
-     if (!read_cmdline_name(name, sizeof(name))) return false;
+     if (!read_cmdline_name(name, sizeof(name)) || name[0] == '\0') {
+-        *is_zygote = true;
++        *transient_name = true;
+         return true;
+     }
  
 -    if (name_is_zygote(name)) { *is_zygote = true; return true; }
 +    if (name_is_zygote(name)) { *transient_name = true; return true; }
@@ -40,18 +44,16 @@
  
      for (const char* const* p = kAllowlistedPackages; *p; ++p) {
          if (strcmp(name, *p) == 0) return true;
-@@ -277,10 +288,10 @@
-     pid_t cur = getpid();
-     if (cur == cached_pid) return cached_value;
+@@ -359,9 +370,9 @@ static bool is_exempt_process() {
+         return atomic_load_explicit(&cached_value, memory_order_relaxed);
+     }
  
 -    bool is_zygote = false;
 -    bool result = compute_exempt(&is_zygote);
--
 -    if (!is_zygote) {
 +    bool transient_name = false;
 +    bool result = compute_exempt(&transient_name);
-+
 +    if (!transient_name) {
-         cached_value = result;
-         cached_pid = cur;
+         atomic_store_explicit(&cached_value, result, memory_order_relaxed);
+         atomic_store_explicit(&cached_pid, cur, memory_order_release);
      }

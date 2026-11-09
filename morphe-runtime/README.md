@@ -21,7 +21,9 @@ This is a process-name compatibility rule, not package-signature validation.
 > **crDroid 17.0 edition: device-verified.** These patches target crDroid 17.0 and apply and
 > revert cleanly at the [`NOTICE`](NOTICE) reference commits. On 2026-10-27 Morphe's process
 > runtime was checked on a OnePlus 13 running the maintainer's crDroid 17.0 build of 2026-10-25,
-> made from this repository at commit `4bdecab`; see *Validation and limits*. The 16.0 edition
+> made from this repository at commit `4bdecab`; see *Validation and limits*. On 2026-11-09 the
+> patch was rebased onto upstream's `custom_rom_hide` hardening (`c8be18d0` to `dd42d691`); the
+> device check predates this rebase. The 16.0 edition
 > stays on branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 
@@ -45,9 +47,11 @@ Do not apply it twice through different patch managers.
 ## Validation and limits
 
 The actual C++ filter was compiled and exercised on the host with controlled
-UID, PID and `/proc/self/cmdline` inputs: **43 checks, zero failures**.
-Unpatched source failed nine checks. A counterprobe with only the allowlist
-entry still fails the three late-rename cases. The host probe does not run
+UID, PID and `/proc/self/cmdline` inputs. Against `bionic` `dd42d691`: **44 checks, zero
+failures**. Unpatched source failed nine checks. A counterprobe with only the allowlist
+entry still fails the three late-rename cases. Since `c8be18d0`, upstream itself exempts
+empty or unreadable process names and the bare `app_process` names; the patch keeps that
+and the probe checks that none of these results is cached. The host probe does not run
 ART and does not establish ROM or device acceptance.
 
 After installing a patched ROM, enable Morphe's **Process runtime** and

@@ -22,7 +22,9 @@ Die Ausnahme prüft den Prozessnamen, keine Paketsignatur.
 > sich an den [`NOTICE`](NOTICE)-Referenzcommits sauber anwenden und zurücknehmen. Am 27.10.2026
 > wurde Morphes Prozess-Laufzeit auf einem OnePlus 13 mit dem 17.0-Build des Maintainers vom
 > 25.10.2026, gebaut aus diesem Repository auf Stand `4bdecab`, geprüft; siehe *Prüfung und
-> Grenzen*. Die 16.0-Fassung bleibt auf dem Branch
+> Grenzen*. Am 09.11.2026 wurde der Patch auf die Härtung von `custom_rom_hide` (`c8be18d0`
+> bis `dd42d691`) neu aufgesetzt; die Geräteprüfung stammt von davor. Die 16.0-Fassung bleibt
+> auf dem Branch
 > [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0/morphe-runtime).
 
 ## Anwenden und zurücknehmen
@@ -46,9 +48,12 @@ Den Patch nicht über zwei Patchmanager doppelt einbinden.
 ## Prüfung und Grenzen
 
 Der echte C++-Filter wurde auf dem Host mit kontrollierter UID, PID und
-Prozesskennung kompiliert: **43 Prüfungen, null Fehler**. Die ungepatchte
-Quelle scheitert an neun Prüfungen; nur der Ausnahmelisteneintrag lässt
-noch die drei späten Umbenennungen scheitern. Die Probe startet kein ART.
+Prozesskennung kompiliert. Gegen `bionic` `dd42d691`: **44 Prüfungen, null Fehler**. Die
+ungepatchte Quelle scheitert an neun Prüfungen; nur der Ausnahmelisteneintrag lässt noch
+die drei späten Umbenennungen scheitern. Seit `c8be18d0` nimmt Upstream leere oder
+unlesbare Prozessnamen und die nackten `app_process`-Namen selbst aus; der Patch behält
+das bei, und die Probe prüft, dass keines dieser Ergebnisse zwischengespeichert wird.
+Die Probe startet kein ART.
 
 Nach Installation Morphes **Process runtime** einschalten und den
 fehlgeschlagenen Patchvorgang wiederholen. Das Laden der LineageOS-
