@@ -1,5 +1,7 @@
 # Donation Disable v2.0
 
+> **Superseded.** This is an older release, replaced by [Donation Disable v2.1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/donation-disable-v2.1).
+
 First edition for **crDroid 17.0 / Android 17**. Version 2.x is the crDroid 17.0 line; the final crDroid 16.0 edition is [`donation-disable-v1.0`](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/donation-disable-v1.0) on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0).
 
 Removes the donation prompts in Settings. Personal preference against this form of donation request inside the ROM, not an objection to donations in general.

@@ -1,5 +1,7 @@
 # Morphe Runtime Compatibility v2.0
 
+> **Superseded.** This is an older release, replaced by [Morphe Runtime Compatibility v2.1](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/morphe-runtime-v2.1).
+
 First edition for **crDroid 17.0 / Android 17**. Version 2.x is the crDroid 17.0 line; the final crDroid 16.0 edition is [`morphe-runtime-v1.0`](https://github.com/pschmidt3200/android-patches-crdroid/releases/tag/morphe-runtime-v1.0) on branch [`16.0`](https://github.com/pschmidt3200/android-patches-crdroid/tree/16.0).
 
 Morphe runtime compatibility for crDroid in libc.
