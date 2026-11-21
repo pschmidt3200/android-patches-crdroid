@@ -77,7 +77,7 @@ diff --git a/src/com/android/settings/deviceinfo/firmwareversion/BuildMaintainer
 @@ -125,3 +107,3 @@ class BuildMaintainerPreference :
          }
 -        preference.isSelectable = hasMaintainer && resolvedDonateUrl != null
-+        preference.isSelectable = false
++        preference.isSelectable = hasMaintainer
      }
 @@ -177,3 +159,2 @@ class BuildMaintainerPreference :
          overlayMaintainer: String,
@@ -147,11 +147,7 @@ diff --git a/src/com/android/settings/deviceinfo/firmwareversion/LineageVersionD
 -            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 +    override fun intent(context: Context): Intent? = null
  
-@@ -64,2 +52,3 @@ class LineageVersionDetailPreference :
-         preference.isCopyingEnabled = true
-+        preference.isSelectable = false
-         preference.onPreferenceClickListener = this
-@@ -70,43 +59,7 @@ class LineageVersionDetailPreference :
+@@ -70,43 +58,7 @@ class LineageVersionDetailPreference :
  
 -    // return true swallows the click event, while return false will start the intent
 -    override fun onPreferenceClick(preference: Preference): Boolean {
