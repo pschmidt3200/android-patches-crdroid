@@ -82,6 +82,9 @@ Source validation is complete:
 - Rebased on 2026-11-21: upstream reworked `DonateReceiver` (no stacked reminders, snooze after
   dismiss) on 2026-11-19. The patch still deletes `DonateActivity` and keeps the cleanup-only
   receiver. Clean apply on crDroid `17.0` HEAD of 2026-11-21; no new device test.
+- Changed on 2026-11-21: the maintainer and crDroid version entries are no longer marked as not
+  selectable, which Android 17 drew in grey. Taps on both still do nothing; copying by long press
+  stays. Source checks only, no new device test.
 
 **crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25. The
 installed Settings app contains no `DonateActivity`; `DonateReceiver` is still registered, as

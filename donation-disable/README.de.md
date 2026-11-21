@@ -87,6 +87,9 @@ Die Quelltests sind vollständig verifiziert:
   (Erinnerungen nicht mehr gestapelt, nach Wegwischen erneut nach einem Tag). Der Patch löscht
   weiterhin `DonateActivity` und behält den Receiver, der nur aufräumt. Saubere Anwendung auf
   crDroid `17.0` HEAD vom 21.11.2026; keine neue Geräteprüfung.
+- Am 21.11.2026 geändert: Maintainer- und crDroid-Versionseintrag sind nicht mehr als nicht
+  auswählbar markiert; Android 17 hatte beide deshalb grau gezeichnet. Antippen bewirkt weiterhin
+  nichts, Kopieren per Langdruck bleibt. Nur Quellprüfung, keine neue Geräteprüfung.
 
 **Geräteprüfung unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026. Die
 installierte Einstellungen-App enthält keine `DonateActivity`; `DonateReceiver` ist wie
