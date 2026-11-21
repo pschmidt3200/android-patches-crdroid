@@ -79,6 +79,9 @@ Source validation is complete:
 - Rebased on 2026-11-02: upstream rewrote `BuildMaintainerPreference` on 2026-11-01. Builds not
   signed with the official key now show "Unofficial" instead of a maintainer name. The device
   check below predates this rebase.
+- Rebased on 2026-11-21: upstream reworked `DonateReceiver` (no stacked reminders, snooze after
+  dismiss) on 2026-11-19. The patch still deletes `DonateActivity` and keeps the cleanup-only
+  receiver. Clean apply on crDroid `17.0` HEAD of 2026-11-21; no new device test.
 
 **crDroid 17.0 device check (2026-10-27):** OnePlus 13, crDroid 17.0 build of 2026-10-25. The
 installed Settings app contains no `DonateActivity`; `DonateReceiver` is still registered, as

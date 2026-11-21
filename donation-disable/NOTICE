@@ -5,10 +5,12 @@ NOTICE. Device-verified on a OnePlus 13 on 2026-10-27 (crDroid 17.0 build of 202
 repository commit 4bdecab): no DonateActivity, no pending donation alarm, the reminder
 channel is deleted, and no donation prompt appeared. Rebased on 2026-11-02 to the maintainer
 preference and strings that upstream rewrote on 2026-11-01; the device check above predates
-this rebase. The crDroid 16.0 edition is kept on branch 16.0 of this repository.
+this rebase. Rebased again on 2026-11-21: upstream reworked the reminder receiver on
+2026-11-19; the cleanup-only receiver is unchanged. Source checks only, no new device test.
+The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 
 Reference repositories, commits and public sources:
-  packages/apps/crDroidSettings 1c50ab11e2a64a731608588b73bd9796c508ab56 https://github.com/crdroidandroid/android_packages_apps_crDroidSettings
+  packages/apps/crDroidSettings 8aa2aa99805668d75256a9fd81ff03f1fe4d6c3e https://github.com/crdroidandroid/android_packages_apps_crDroidSettings
   packages/apps/Settings 07f7f688d4fe34c18026a4c1540bdf2e06d752df https://github.com/crdroidandroid/android_packages_apps_Settings
 
 The affected sources carry Apache 2.0 notices from the crDroid Android

@@ -83,6 +83,10 @@ Die Quelltests sind vollständig verifiziert:
 - Am 02.11.2026 neu aufgesetzt: Upstream hat `BuildMaintainerPreference` am 01.11.2026 neu
   geschrieben. Nicht mit dem offiziellen Schlüssel signierte Builds zeigen jetzt „Unofficial“ statt
   eines Maintainer-Namens. Die Geräteprüfung unten stammt von vor diesem Stand.
+- Am 21.11.2026 erneut neu aufgesetzt: Upstream hat `DonateReceiver` am 19.11.2026 umgebaut
+  (Erinnerungen nicht mehr gestapelt, nach Wegwischen erneut nach einem Tag). Der Patch löscht
+  weiterhin `DonateActivity` und behält den Receiver, der nur aufräumt. Saubere Anwendung auf
+  crDroid `17.0` HEAD vom 21.11.2026; keine neue Geräteprüfung.
 
 **Geräteprüfung unter crDroid 17.0 (27.10.2026):** OnePlus 13, Build vom 25.10.2026. Die
 installierte Einstellungen-App enthält keine `DonateActivity`; `DonateReceiver` ist wie

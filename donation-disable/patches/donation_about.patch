@@ -1,6 +1,6 @@
 # Target repository: packages/apps/crDroidSettings
 # Subject: Remove donation entry and default maintainer donation URL
-# Reference commit: 1c50ab11e2a64a731608588b73bd9796c508ab56
+# Reference commit: 8aa2aa99805668d75256a9fd81ff03f1fe4d6c3e
 
 diff --git a/res/values/cr_strings.xml b/res/values/cr_strings.xml
 --- a/res/values/cr_strings.xml
