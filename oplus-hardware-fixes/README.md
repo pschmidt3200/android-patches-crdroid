@@ -32,6 +32,10 @@ than showing a stored wish; if a write fails, the screen shows the actual value 
 can be read. Automatic preference persistence is suppressed, so nothing is saved behind
 your back.
 
+Since crDroid's change of 2026-11-22 the minimum refresh rate (`min_fps`) follows the LTPO
+switch (1 with LTPO on, 120 off). The patch keeps that: it is written once the LTPO mask has
+been confirmed, and only if the node is writable — the same condition crDroid uses.
+
 ### Touch HAL: stop on failure instead of reporting success
 
 `crdroid_oplus_touch_error_handling.patch`

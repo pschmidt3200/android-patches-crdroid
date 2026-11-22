@@ -35,6 +35,11 @@ deaktiviert statt einen gespeicherten Wunsch darzustellen; schlägt ein Schreibv
 zeigt die Seite den tatsächlichen Wert, soweit er lesbar ist. Die automatische
 Preference-Persistenz ist unterbunden, es wird also nichts hinter dem Rücken gespeichert.
 
+Seit crDroids Änderung vom 22.11.2026 folgt die Mindest-Bildrate (`min_fps`) dem LTPO-Schalter
+(1 bei LTPO an, 120 bei aus). Der Patch behält das bei: Sie wird geschrieben, sobald die
+LTPO-Maske bestätigt ist, und nur, wenn der Knoten beschreibbar ist — dieselbe Bedingung wie bei
+crDroid.
+
 ### Touch-HAL: bei Fehlern anhalten statt Erfolg melden
 
 `crdroid_oplus_touch_error_handling.patch`

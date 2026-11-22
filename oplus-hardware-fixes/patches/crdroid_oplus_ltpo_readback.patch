@@ -3,19 +3,13 @@
 diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java
 --- a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java
 +++ b/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java
-@@ -51,40 +51,84 @@
+@@ -52,46 +52,89 @@
      public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
          addPreferencesFromResource(R.xml.ltpo_settings);
  
 -        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-+        mLTPOSwitch = (SwitchPreferenceCompat) findPreference(KEY_LTPO_SWITCH);
-+        // The persisted choice is for boot restore, not the current hardware state.
-+        mLTPOSwitch.setPersistent(false);
-+        mLTPOSwitch.setOnPreferenceChangeListener(this);
-+        refreshLTPOState();
-+    }
- 
--        mLTPOSwitch = (SwitchPreferenceCompat) findPreference(KEY_LTPO_SWITCH);
+-
+         mLTPOSwitch = (SwitchPreferenceCompat) findPreference(KEY_LTPO_SWITCH);
 -        if (Utils.fileWritable(FILE_LTPO)) {
 -            mLTPOSwitch.setEnabled(true);
 -            String current = Utils.getFileValue(FILE_LTPO, "0x0");
@@ -24,6 +18,12 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/cr
 -            mLTPOSwitch.setOnPreferenceChangeListener(this);
 -        } else {
 -            mLTPOSwitch.setEnabled(false);
++        // The persisted choice is for boot restore, not the current hardware state.
++        mLTPOSwitch.setPersistent(false);
++        mLTPOSwitch.setOnPreferenceChangeListener(this);
++        refreshLTPOState();
++    }
++
 +    @Override
 +    public void onResume() {
 +        super.onResume();
@@ -38,7 +38,7 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/cr
 +            if (current.matches("0[xX][0-9a-fA-F]{1,8}")) {
 +                return Long.parseLong(current.substring(2), 16);
 +            }
-         }
++        }
 +        Log.e(TAG, "LTPO config is unreadable or malformed");
 +        return null;
 +    }
@@ -54,12 +54,17 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/cr
 +        if (!Utils.fileWritable(FILE_LTPO) || !Utils.writeValue(FILE_LTPO, value)) {
 +            Log.e(TAG, "Failed to write LTPO config");
 +            return false;
-+        }
+         }
 +        Long current = readLTPOConfig();
 +        long expected = enabled ? 0x109fL : 0L;
 +        if (current == null || current.longValue() != expected) {
 +            Log.e(TAG, "LTPO config readback does not match " + value);
 +            return false;
++        }
++        // Upstream (crDroid e53c884): the minimum refresh rate follows LTPO. Best effort, as there:
++        // the node is optional, and LTPO itself is already confirmed at this point.
++        if (Utils.fileWritable(FILE_MIN_FPS) && !Utils.writeValue(FILE_MIN_FPS, enabled ? "1" : "120")) {
++            Log.e(TAG, "Failed to write minimum refresh rate");
 +        }
 +        return true;
      }
@@ -75,8 +80,9 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/cr
              boolean enabled = (Boolean) newValue;
 -            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 -            sharedPrefs.edit().putBoolean(KEY_LTPO_SWITCH, enabled).apply();
--    	    Utils.writeValue(FILE_LTPO, enabled ? "0x109f" : "0x0");
--            return true;
+-            Utils.writeValue(FILE_LTPO, enabled ? "0x109f" : "0x0");
+-            if (Utils.fileWritable(FILE_MIN_FPS)) {
+-                Utils.writeValue(FILE_MIN_FPS, enabled ? "1" : "120");
 +            boolean confirmed = writeLTPOSetting(enabled);
 +            if (confirmed) {
 +                SharedPreferences sharedPrefs =
@@ -86,7 +92,8 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/cr
 +            } else {
 +                // Failed writes can still change hardware; show its readable state.
 +                refreshLTPOState();
-+            }
+             }
+-            return true;
 +            return confirmed;
          }
  
@@ -100,6 +107,9 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/LTPOSettings.java b/ltpo/src/com/cr
 -            boolean enabled = !"0x0".equals(current != null ? current.trim() : null);
 -            boolean value = sharedPrefs.getBoolean(KEY_LTPO_SWITCH, enabled);
 -            Utils.writeValue(FILE_LTPO, value ? "0x109f" : "0x0");
+-            if (Utils.fileWritable(FILE_MIN_FPS)) {
+-                Utils.writeValue(FILE_MIN_FPS, value ? "1" : "120");
+-            }
 +        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 +        if (!sharedPrefs.contains(KEY_LTPO_SWITCH)) {
 +            return;
@@ -143,10 +153,10 @@ diff --git a/ltpo/src/com/crdroid/ltpo/oplus/Utils.java b/ltpo/src/com/crdroid/l
              fos.flush();
 -            fos.close();
 -        } catch (FileNotFoundException e) {
+-            e.printStackTrace();
+-        } catch (IOException e) {
 +        } catch (IOException | SecurityException e) {
              e.printStackTrace();
--        } catch (IOException e) {
--            e.printStackTrace();
 +            return false;
          }
 +        // Reaching this point also confirms that close() succeeded.

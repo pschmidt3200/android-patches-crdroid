@@ -23,8 +23,14 @@ repository commit 4bdecab): the LTPO screen reads back the real adfr_config (0x1
 -> 0x109f), double-tap-to-wake works on and off with the full driver chain, and one glove-mode
 write was acknowledged. The crDroid 16.0 edition is kept on branch 16.0 of this repository.
 
+Rebased 2026-11-22: crDroid now also sets the minimum refresh rate
+(/sys/kernel/oplus_display/min_fps, 1 with LTPO on, 120 with LTPO off) when the LTPO switch
+changes and on boot restore. The LTPO patch keeps that behaviour: the minimum refresh rate is
+written after the LTPO config has been written and read back, and only if the node is writable,
+as in crDroid. This rebased edition has not been verified on a device yet.
+
 Reference repository, commit and public source (as used by crDroid branch 17.0):
-  hardware/oplus                f5f9acbc690d9c5488ea994a15df9340b1192e22  https://github.com/crdroidandroid/android_hardware_oplus
+  hardware/oplus                7b5c1335ea5dd65e18b088b18db242bd00182297  https://github.com/crdroidandroid/android_hardware_oplus
 
 WHAT THE PATCHES DO
 
